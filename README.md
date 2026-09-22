@@ -2,26 +2,53 @@
 
 A proposed assistant that turns meeting recordings into summaries, cited decisions, and a living action-item list that updates across later meetings.
 
-The repository has an installable Python CLI scaffold and offline smoke tests.
-Meeting processing and the background service are not implemented yet. See the
+The Python CLI imports AMI transcripts and extracts summaries, cited decisions,
+commitments, and suggestions using a local Codex login. The optional CCB bridge
+transcribes audio locally with Whisper. Database persistence and the background
+service are not implemented yet. See the
 [Milestone 1 proposal](docs/milestone_1/project_proposal.md) for the planned scope.
 
-**Repository:** https://github.com/BryanDYang/ai-capstone
+**Repository:** https://github.com/BryanDYang/guardian-agent
 
 ## Quick start
 
 Install Python 3.12 and uv, then run:
 
 ```bash
-git clone https://github.com/BryanDYang/ai-capstone.git
-cd ai-capstone
+git clone https://github.com/BryanDYang/guardian-agent.git
+cd guardian-agent
 uv sync --locked --extra dev
 uv run labsync --help
 uv run labsync status
 uv run labsync status --json
 ```
 
-No API keys, meeting data, or `contexts` files are needed for this scaffold.
+Status and offline tests need no API keys, meeting data, or `contexts` files.
+
+## First extraction with Codex
+
+Install the Codex CLI and run `codex login`, then:
+
+```bash
+uv run labsync extract tests/fixtures/meeting.json \
+  --model gpt-5.6-sol --output artifacts/synthetic-codex.json
+```
+
+This sends the transcript to Codex using your saved login and consumes model
+usage. Select a model your account can access. The command checks the output
+schema, quoted evidence, and owner labels before saving JSON with run metadata.
+It refuses to overwrite an existing output. This is an extraction prototype,
+not an accuracy benchmark or an audio transcription service.
+
+See [the integration guide](docs/codex-integration.md) for AMI download/import
+commands, the CCB source audit, database mapping, and current limitations.
+
+## Audio with CCB's transcriber
+
+The supplied source in `contexts/meeting_transcriber-master` now connects to
+Codex extraction. See [the audio integration guide](docs/ccb-transcriber.md)
+for installation and commands. The verified path preserves recordings and raw
+transcripts; speaker diarization remains an unverified optional step.
 
 ## Development
 

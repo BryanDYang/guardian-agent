@@ -21,6 +21,7 @@ env/
 
 # Environment variables
 .env
+artifacts/
 
 # Pytest / coverage
 .pytest_cache/

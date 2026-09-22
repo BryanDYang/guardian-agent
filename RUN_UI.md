@@ -29,8 +29,8 @@ If Node is missing, install it from [nodejs.org](https://nodejs.org/).
 Open a terminal and run:
 
 ```bash
-git clone -b feature/meeting-ui-draft https://github.com/BryanDYang/ai-capstone.git
-cd ai-capstone/meeting-assistant-ui
+git clone -b feature/meeting-ui-draft https://github.com/BryanDYang/guardian-agent.git
+cd guardian-agent/meeting-assistant-ui
 npm install
 npm run dev
 ```

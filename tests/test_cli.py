@@ -17,9 +17,9 @@ def test_status(command):
         [*command, "status", "--json"], capture_output=True, text=True, check=True
     )
     state = json.loads(result.stdout)
-    assert state["implementation"] == "scaffold"
+    assert state["implementation"] == "transcript_extraction"
     assert state["service"] == "not_implemented"
-    assert state["meeting_processing"] == "not_implemented"
+    assert state["meeting_processing"] == "audio_and_transcript"
 
 
 def test_unknown_command_fails():

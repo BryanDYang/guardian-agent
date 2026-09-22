@@ -4,7 +4,7 @@
 **Track:** AI Engineering
 **Project name:** [TODO]
 **Team:** Will Liu, Guadalupe Cantera, Bryan Yang
-**Repository:** https://github.com/BryanDYang/ai-capstone
+**Repository:** https://github.com/BryanDYang/guardian-agent
 **Canvas deadline:** September 28, 2026 (recorded by the team; confirm submission time/timezone in Canvas)
 **Last updated:** September 16, 2026
 **Status:** Collaborative draft; Milestone 1 TA/professor feedback pending.
