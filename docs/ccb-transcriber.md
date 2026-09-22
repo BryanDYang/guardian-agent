@@ -14,7 +14,7 @@ Run from the project root:
 
 ```bash
 uv sync --locked --extra dev --extra audio
-uv run labsync transcribe /path/to/meeting.mp3 \
+uv run --locked --extra audio labsync transcribe /path/to/meeting.mp3 \
   --source contexts/meeting_transcriber-master \
   --project-id demo --meeting-id meeting-001 \
   --whisper-model base --output-dir artifacts/meeting-001

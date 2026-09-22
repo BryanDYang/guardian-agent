@@ -43,12 +43,52 @@ not an accuracy benchmark or an audio transcription service.
 See [the integration guide](docs/codex-integration.md) for AMI download/import
 commands, the CCB source audit, database mapping, and current limitations.
 
-## Audio with CCB's transcriber
+## Test the audio backend
 
-The supplied source in `contexts/meeting_transcriber-master` now connects to
-Codex extraction. See [the audio integration guide](docs/ccb-transcriber.md)
-for installation and commands. The verified path preserves recordings and raw
-transcripts; speaker diarization remains an unverified optional step.
+The backend is currently a CLI pipeline; there is no HTTP server to start.
+From the project root, with CCB's source at `contexts/meeting_transcriber-master`:
+
+```bash
+uv sync --locked --extra dev --extra audio
+uv run --locked --extra dev pytest
+uv run --locked --extra audio labsync transcribe \
+  tests/fixtures/ami/TS3005a-90s-135s.wav \
+  --project-id ami-TS3005 --meeting-id TS3005a-90s-135s \
+  --whisper-model tiny --output-dir artifacts/backend-test
+```
+
+The tests run offline. Transcription processes the included 45-second audio clip
+locally and downloads Whisper weights on first use. It writes raw CCB output to
+`artifacts/backend-test/ccb-transcript.json` and normalized turns to
+`artifacts/backend-test/transcript.json`. Speaker labels remain UNKNOWN unless
+speaker diarization is configured. Use a fresh output directory for each run.
+
+Then check your Codex login and extract meeting information:
+
+```bash
+codex login status
+uv run --locked labsync extract artifacts/backend-test/transcript.json \
+  --model gpt-5.6-sol --output artifacts/backend-test/extraction.json
+cat artifacts/backend-test/extraction.json
+```
+
+Run `codex login` if needed. This step sends the generated transcript to Codex.
+Success means a saved, validated extraction containing `summary`, `decisions`,
+`commitments`, and `suggestions`. This opening/agenda clip may have no commitments;
+empty lists are valid. Database writes and UI binding are not implemented yet.
+See [the audio integration guide](docs/ccb-transcriber.md) for more details.
+
+### Environment warning after the folder rename
+
+If `VIRTUAL_ENV` still references `ai-capstone/.venv`, run `deactivate` in the
+terminal where that environment is active, or open a fresh terminal. Use `uv run`
+without activating `.venv`; the old activation script also contains the previous
+path. Do not use `--active` to target the obsolete environment.
+
+The dev-only quick start is sufficient for offline tests. `uv sync --extra dev`
+omits the optional audio extra and removes its packages. For audio testing, use
+`uv sync --locked --extra dev --extra audio` and include `--extra audio` on
+transcription commands so they also work after a dev-only sync.
 
 ## Visible test data
 

@@ -18,7 +18,7 @@ From the repository root, with CCB's source provided separately at
 
 ```bash
 uv sync --locked --extra dev --extra audio
-uv run labsync transcribe tests/fixtures/ami/TS3005a-90s-135s.wav \
+uv run --locked --extra audio labsync transcribe tests/fixtures/ami/TS3005a-90s-135s.wav \
   --project-id ami-TS3005 --meeting-id TS3005a-90s-135s \
   --whisper-model tiny --output-dir artifacts/ami-audio-test
 uv run labsync extract artifacts/ami-audio-test/transcript.json \
