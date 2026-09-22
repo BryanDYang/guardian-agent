@@ -50,6 +50,15 @@ Codex extraction. See [the audio integration guide](docs/ccb-transcriber.md)
 for installation and commands. The verified path preserves recordings and raw
 transcripts; speaker diarization remains an unverified optional step.
 
+## Visible test data
+
+- [AMI audio fixture](tests/fixtures/ami/README.md): a 45-second mixed-speaker WAV,
+  with attribution, provenance, and commands for automatic transcription.
+- [Synthetic transcript](tests/fixtures/meeting.json): a small text-only fixture
+  for testing extraction without audio processing.
+
+Full AMI downloads and generated outputs stay local. ICSI is not yet included.
+
 ## Development
 
 ```bash

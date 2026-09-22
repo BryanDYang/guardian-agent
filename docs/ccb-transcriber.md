@@ -71,6 +71,7 @@ validation passed; that suggestion's usefulness still needs human evaluation.
 The clip's source file was preserved. Timestamps are relative to the clip,
 not the full AMI meeting.
 
+The [audio fixture](../tests/fixtures/ami/README.md) is included in the repository.
 Local results: `artifacts/audio-smoke/ccb-tiny/`. This proves the integration,
 not recognition accuracy. The tiny model visibly misrecognized some words.
 Use a larger model and human-reviewed references for evaluation.
