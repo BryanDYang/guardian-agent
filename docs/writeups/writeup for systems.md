@@ -1,6 +1,6 @@
 **1. [[Native Presentation System]] (SwiftUI)** Drives the 3-axis tab layout: the Projects/Meetings dashboard (summaries, decisions, transcripts, attendee storylines), the date-based Tasks calendar with 3-state execution (Open, Done, Dropped), and the conversational Chat view.
 
-**2. [[Audio Playback & Deep-Linking Engine ]**](AVFoundation) Enables sub-second playhead seeking (`AVPlayer.seek(to: CMTime)`) mapped directly to transcript offsets, decision evidence, task proof citations, and chat source references without streaming full raw audio over the network repeatedly.
+**2. [[Audio Playback & Deep-Linking Engine ]](AVFoundation)** Enables sub-second playhead seeking (`AVPlayer.seek(to: CMTime)`) mapped directly to transcript offsets, decision evidence, task proof citations, and chat source references without streaming full raw audio over the network repeatedly.
 
 **3. [[Mobile OS Integration Service]] (Apple EventKit)** Natively bridges device capabilities by extracting attendee metadata from calendar events and exporting approved tasks and deadlines directly to Apple Reminders and Calendar, eliminating the need for a dedicated push notification backend.
 
