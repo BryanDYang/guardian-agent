@@ -1,20 +1,25 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Meeting assistant UI
 
-# Run and deploy your AI Studio app
+The React/Vite Meetings screen connects to the local LabSync backend for audio
+upload, processing status, transcripts, summaries, commitments, and playback.
 
-This contains everything you need to run your app locally.
+Start the backend from the repository root:
 
-View your app in AI Studio: https://ai.studio/apps/06fa25b1-c238-4e6d-89fa-64128043182e
+```bash
+uv run --locked --extra audio --extra server labsync serve --whisper-model tiny
+```
 
-## Run Locally
+Then, in this directory:
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev
+```
 
+Open http://localhost:3000. No Gemini API key is needed.
+See [the full setup and test guide](../RUN_UI.md) for Codex login, CCB source,
+fixture upload, persistence, and current limitations.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+TypeScript check: `npm run lint`. Production bundle: `npm run build`.
+The documented integration uses Vite's development proxy; production hosting is
+not configured yet. Tasks and Chat are not connected.

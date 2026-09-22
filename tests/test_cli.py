@@ -18,7 +18,7 @@ def test_status(command):
     )
     state = json.loads(result.stdout)
     assert state["implementation"] == "transcript_extraction"
-    assert state["service"] == "not_implemented"
+    assert state["service"] == "local_http_available"
     assert state["meeting_processing"] == "audio_and_transcript"
 
 

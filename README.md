@@ -4,8 +4,9 @@ A proposed assistant that turns meeting recordings into summaries, cited decisio
 
 The Python CLI imports AMI transcripts and extracts summaries, cited decisions,
 commitments, and suggestions using a local Codex login. The optional CCB bridge
-transcribes audio locally with Whisper. Database persistence and the background
-service are not implemented yet. See the
+transcribes audio locally with Whisper. The local HTTP backend connects the
+Meetings UI to uploads, processing, results, and playback. PostgreSQL persistence
+is not implemented yet. See the
 [Milestone 1 proposal](docs/milestone_1/project_proposal.md) for the planned scope.
 
 **Repository:** https://github.com/BryanDYang/guardian-agent
@@ -43,9 +44,33 @@ not an accuracy benchmark or an audio transcription service.
 See [the integration guide](docs/codex-integration.md) for AMI download/import
 commands, the CCB source audit, database mapping, and current limitations.
 
-## Test the audio backend
+## Run the connected UI
 
-The backend is currently a CLI pipeline; there is no HTTP server to start.
+In one terminal at the repo root:
+
+```bash
+uv sync --locked --extra dev --extra audio --extra server
+codex login status
+uv run --locked --extra audio --extra server labsync serve --whisper-model tiny
+```
+
+In another terminal:
+
+```bash
+cd meeting-assistant-ui
+npm install
+npm run dev
+```
+
+Open **http://localhost:3000**, add a meeting, and upload the
+[included AMI WAV](tests/fixtures/ami/TS3005a-90s-135s.wav). The UI shows processing
+progress, real results, and playable audio. See [RUN_UI.md](RUN_UI.md) for the full
+walkthrough. Results persist locally under `artifacts/server`; Tasks, Chat, and
+PostgreSQL integration remain unfinished.
+
+## Test the audio backend from the CLI
+
+You can also test the same processing pipeline directly, without the UI.
 From the project root, with CCB's source at `contexts/meeting_transcriber-master`:
 
 ```bash
@@ -75,7 +100,8 @@ cat artifacts/backend-test/extraction.json
 Run `codex login` if needed. This step sends the generated transcript to Codex.
 Success means a saved, validated extraction containing `summary`, `decisions`,
 `commitments`, and `suggestions`. This opening/agenda clip may have no commitments;
-empty lists are valid. Database writes and UI binding are not implemented yet.
+empty lists are valid. This CLI command saves files; UI uploads use the HTTP
+backend described above.
 See [the audio integration guide](docs/ccb-transcriber.md) for more details.
 
 ### Environment warning after the folder rename

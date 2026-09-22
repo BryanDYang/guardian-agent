@@ -8,6 +8,8 @@ load it locally and do not copy or redistribute its code in the LabSync package.
 Audited `meeting_transcriber.py` SHA-256:
 `c1f1a342ecf5924d9d92ee9791790ab90d98beef5a0a61377b552235ba1c0fa3`.
 
+For the connected browser workflow, see [RUN_UI.md](../RUN_UI.md).
+
 ## Working audio-to-Codex path
 
 Run from the project root:

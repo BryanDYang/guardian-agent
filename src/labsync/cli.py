@@ -57,7 +57,35 @@ def main(argv: list[str] | None = None) -> int:
     audio.add_argument(
         "--diarize", action="store_true", help="Requires pyannote and HF_TOKEN"
     )
+    server = commands.add_parser("serve", help="Start the local UI backend")
+    server.add_argument("--port", type=int, default=8000)
+    server.add_argument("--storage", type=Path, default=Path("artifacts/server"))
+    server.add_argument(
+        "--source", type=Path, default=Path("contexts/meeting_transcriber-master")
+    )
+    server.add_argument("--model", default="gpt-5.6-sol")
+    server.add_argument(
+        "--whisper-model",
+        default="base",
+        choices=["tiny", "base", "small", "medium", "large", "turbo"],
+    )
+    server.add_argument("--diarize", action="store_true")
     args = parser.parse_args(argv)
+    if args.command == "serve":
+        try:
+            import uvicorn
+
+            from .server import create_app
+        except ImportError:
+            parser.exit(1, "Install the server extra: uv sync --extra server\n")
+        uvicorn.run(
+            create_app(
+                args.storage, args.source, args.model, args.whisper_model, args.diarize
+            ),
+            host="127.0.0.1",
+            port=args.port,
+        )
+        return 0
     if args.command in {"transcribe", "import-ccb"}:
         from .ccb import import_transcript, transcribe
 
@@ -121,14 +149,12 @@ def main(argv: list[str] | None = None) -> int:
     state = {
         "version": version("ai-capstone"),
         "implementation": "transcript_extraction",
-        "service": "not_implemented",
+        "service": "local_http_available",
         "meeting_processing": "audio_and_transcript",
     }
     if args.json:
         print(json.dumps(state))
     else:
         print(f"LabSync {state['version']} - transcript extraction via Codex")
-        print(
-            "Local CCB audio is available; the background service is not implemented."
-        )
+        print("Run labsync serve for the local UI backend.")
     return 0

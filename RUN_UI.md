@@ -1,88 +1,100 @@
-# Run the meeting assistant UI locally
+# Run the connected meeting UI
 
-This is a clickable prototype of the meeting-assistant UI. It uses mock meeting/task/chat data, so you do **not** need a Gemini API key or the Python CLI to try it.
+Use branch `feature/ccb-codex-integration` in
+[guardian-agent](https://github.com/BryanDYang/guardian-agent).
+The Meetings screen uses the Python backend. There is no Gemini key in the browser.
 
-**Repo:** [https://github.com/BryanDYang/agent-accountability-lab](https://github.com/BryanDYang/agent-accountability-lab)  
-**Branch:** `feature/meeting-ui-draft`
+## Terminal 1: backend
 
----
-
-## What you need first
-
-1. **Git** (already installed if you use GitHub)
-2. **Node.js 18 or newer** (this also installs `npm`)
-
-Check that both work:
+From the repository root, with CCB's supplied source present at
+`contexts/meeting_transcriber-master`:
 
 ```bash
-git --version
-node -v
-npm -v
+uv sync --locked --extra dev --extra audio --extra server
+codex login status
+uv run --locked --extra audio --extra server labsync serve --whisper-model tiny
 ```
 
-If Node is missing, install it from [nodejs.org](https://nodejs.org/).
+Run `codex login` if needed. The backend listens on `127.0.0.1:8000`.
+`tiny` is useful for a fast smoke test; omit the option to use `base`.
+Whisper downloads weights on first use. Audio runs locally; generated transcript
+text is sent through your Codex CLI login for extraction.
 
----
+The server uses the same Codex executable and login as your terminal. It processes
+one recording at a time. Both servers are intended for local, single-user
+development. There is no account authentication or production deployment setup.
 
-## Option A: You do not have the repo yet
+## Terminal 2: UI
 
-Open a terminal and run:
-
-```bash
-git clone -b feature/meeting-ui-draft https://github.com/BryanDYang/guardian-agent.git
-cd guardian-agent/meeting-assistant-ui
-npm install
-npm run dev
-```
-
-Then open **[http://localhost:3000](http://localhost:3000)** in your browser.
-
----
-
-
-
-## Option B: You already cloned the repo
-
-From the repo folder:
+From the repository root:
 
 ```bash
-git fetch origin
-git checkout feature/meeting-ui-draft
-git pull
 cd meeting-assistant-ui
 npm install
 npm run dev
 ```
 
-Then open **[http://localhost:3000](http://localhost:3000)** in your browser.
+Open **http://localhost:3000**. Vite forwards `/api` to the Python backend.
+Keep both terminals open. Ports 3000 and 8000 must be free; if they are already
+running from an agent session, use the existing servers rather than starting
+duplicates.
 
----
+## Test the entire path
 
+1. Select **Add meeting** (the plus button).
+2. Enter a title, project, and date.
+3. Choose `tests/fixtures/ami/TS3005a-90s-135s.wav`.
+4. Confirm permission to process the public audio and submit.
+5. Watch the state change from queued to transcribing, extracting, and ready.
+6. Read Summary, Commitments, and Transcript. Click transcript turns or quoted
+   evidence to seek and play the recording.
 
+The included clip contains opening remarks, so no commitments is a valid result.
+The tiny model can misrecognize words. Output is a model prediction, not a
+verified meeting record. Speakers remain unidentified without diarization.
+The existing `--diarize` option still needs pyannote and accepted model access
+through `HF_TOKEN`; that live branch has not been verified.
 
-## What you should see
+The UI replaces the mock meetings with real API data. Tasks and Chat show clear
+unavailable states. Commitment approval, task tracking, storyline extraction,
+and project question answering are not connected in this checkpoint.
 
-The app looks like a phone-sized preview with three tabs:
+## Persistence and troubleshooting
 
-- **Meetings** — mock meeting list and details
-- **Tasks** — mock action items
-- **Chat** — mock chat with the assistant
+Uploads, job state, raw transcripts, predictions, and logs live under
+`artifacts/server/<meeting-id>/` (ignored by Git). They survive page refreshes and
+backend restarts. This is filesystem persistence, not the preliminary PostgreSQL
+schema. Use one backend process per storage directory.
 
-Leave the terminal open while you use the app. To stop the server, press **Ctrl+C**.
+Failed jobs show an error and a retry action. Read
+`artifacts/server/<meeting-id>/processing.log` for details. Retry starts a new
+attempt and may consume model usage again. Interrupted jobs are marked failed
+on restart. Graceful shutdown waits for submitted jobs to finish.
 
----
+A backend connection error means the Python server is unavailable or its port
+does not match the Vite proxy. Recordings up to 512 MB are accepted. WAV and MP3
+are recommended for browser playback; other supported uploads may transcribe
+successfully even if the browser cannot play their codec.
 
+After a repository folder rename, deactivate any environment pointing at the
+old path. Use `uv run` without reactivating that old environment.
 
+## Checks
 
-## If something goes wrong
+```bash
+uv run --locked --extra dev pytest
+uv run --locked --extra dev ruff check src tests
+uv run --locked --extra dev ruff format --check src tests
+cd meeting-assistant-ui
+npm run lint
+npm run build
+```
 
+The API tests cover upload validation, stored results, byte-range audio serving,
+failures, retries, restart recovery, and browser-origin restrictions. Model calls
+are stubbed in offline tests. The real Chrome smoke test separately exercised
+public audio upload, Whisper, Codex, playback, seeking, refresh, and mobile layout.
 
-| Problem                                                  | What to try                                                                        |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `command not found: node` or `npm`                       | Install Node.js 18+, then open a new terminal                                      |
-| `could not find path` / no `meeting-assistant-ui` folder | Make sure you are on branch `feature/meeting-ui-draft` (`git branch`)              |
-| Port 3000 is already in use                              | Stop the other app using that port, or tell a teammate so they can change the port |
-| `npm install` fails                                      | Delete `node_modules` and try `npm install` again                                  |
-
-
-You do **not** need to copy `.env.example` or set `GEMINI_API_KEY` to browse this prototype.
+API endpoints: `GET /api/health`, `GET/POST /api/meetings`,
+`GET /api/meetings/{id}`, `GET /api/meetings/{id}/audio`,
+and `POST /api/meetings/{id}/retry`. Local API documentation: http://127.0.0.1:8000/docs.
