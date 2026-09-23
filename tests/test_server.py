@@ -154,3 +154,16 @@ def test_interrupted_job_and_origin_check(tmp_path, fake_process):
             ).status_code
             == 403
         )
+
+
+def test_purge_project_meetings(tmp_path, fake_process):
+    with TestClient(create_app(tmp_path)) as client:
+        meeting_id = upload(client).json()["id"]
+        wait_for(client, meeting_id, "completed")
+
+        response = client.delete("/api/projects/Capstone/meetings")
+
+        assert response.status_code == 200
+        assert response.json() == {"deleted": 1}
+        assert client.get("/api/meetings").json() == []
+        assert not (tmp_path / meeting_id).exists()

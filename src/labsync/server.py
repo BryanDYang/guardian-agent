@@ -247,6 +247,21 @@ def create_app(
         finally:
             file.file.close()
 
+    @app.delete("/api/projects/{project}/meetings")
+    def purge_project(project: str):
+        with lock:
+            records = [
+                json.loads(path.read_text()) for path in storage.glob("*/meeting.json")
+            ]
+            matching = [record for record in records if record["project"] == project]
+            if any(record["status"] in ACTIVE for record in matching):
+                raise HTTPException(
+                    409, "Wait for active project meetings to finish before purging"
+                )
+            for record in matching:
+                shutil.rmtree(folder(record["id"]))
+        return {"deleted": len(matching)}
+
     @app.get("/api/meetings/{meeting_id}")
     def detail(meeting_id: str):
         with lock:
