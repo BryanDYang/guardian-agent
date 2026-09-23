@@ -1,64 +1,20 @@
-# Milestone 2: Data, Evaluation, and Baselines
+# Milestone 2: Prototype and Initial Model Integration
 
 **Course:** CIS-5980 AI Capstone
 **Track:** AI Engineering
-**Project name:** Meeting Follow-Through Assistant (LabSync)
 **Team:** Will Liu, Guadalupe Cantera, Bryan Yang
 **Repository:** https://github.com/BryanDYang/guardian-agent
 **Canvas deadline:** September 28, 2026 (recorded by the team; confirm submission time/timezone in Canvas)
 **Last updated:** September 23, 2026
 **Status:** Check-in draft. No Milestone 1 feedback received; TA meeting scheduled for September 23, 2026 (reported by Bryan). Evaluation results and team review remain outstanding.
 
-## How to use this draft
-
-Copy this document into Google Docs for team editing, then bring the revised text back into this file. Replace each `[TODO]` with an answer or an explicit limitation. Keep proposed plans separate from completed work and measured results. Owners below are proposed until the team confirms them.
-
-The assignment's questions are guidance, not a requirement to answer every prompt individually. This draft organizes the required AI Engineering deliverables and adds project-specific questions to make the answers concrete. Remove drafting instructions before exporting the final report.
-
-**Submission:** One PDF containing the report, with a repository URL. The repository must contain the milestone artifacts and README instructions for running the evaluation. A mandatory TA check-in is also required. The assignment does not separately request a new pitch deck, demo video, Google Doc submission, or a finished application.
-
-**Grading:** Dataset readiness and Data Card: 40 points. Runnable evaluation, qualitative rubric, baselines, results, and error analysis: 60 points. Team contributions and next-milestone ownership must be included, although the team section is non-graded.
-
-## 1. Project summary and changes since Milestone 1
-
-**Draft summary:** We are building a research meeting follow-through assistant that extracts evidence-backed commitments, decisions, and suggestions and maintains task state across recurring meetings. Our central question is whether persistent meeting history improves task tracking over processing meetings independently, without introducing unsupported updates.
-
-**What does this milestone actually implement and evaluate?**
-
-The proposed Milestone 2 implementation imports timestamped transcripts, extracts owned commitments with source references, and compares saved predictions with human-reviewed labels. We plan to compare independent-meeting extraction with an applicable open-source reference on the same development inputs. The initial application feature and evaluation will share the extraction contract.
-
-The repository implements timestamped AMI/CCB imports, independent-meeting structured extraction through Codex, local Whisper transcription, and an HTTP backend with a connected web Meetings UI. Uploads, processing state, predictions, and audio persist on the filesystem. A SwiftUI iOS prototype is present, but still uses seeded SwiftData records and placeholder playback; it is not connected to the backend. PostgreSQL has a proposed schema, not an integrated runtime. Human-reviewed evaluation labels, an offline scorer, open-source extraction comparison, and quantitative quality results are still missing. Calendar integration, reminders, and cross-meeting task reconciliation are not implemented.
-
-The September 23 engineering check passed 36 offline Python tests, Ruff lint/format, TypeScript checking, and the web production build. These checks establish software behavior, not extraction accuracy. See [pre-merge verification](verification.md) for live-test evidence and remaining merge gates.
-
-**What changed after Milestone 1, and why?**
-
-Milestone 1 TA/professor feedback is pending. No feedback-driven scope change is confirmed. The immediate proposal is to implement and evaluate a transcript-first slice while retaining the broader follow-through objective.
-
-**Architecture decision to reconcile:** The submitted proposal specifies an iOS client and PostgreSQL/pgvector; the Markdown proposal and pitch deck describe a CLI/local service with SQLite. The submitted proposal also mentions SQLite in its budget. Confirm the intended final architecture and distinguish it from the evaluation-only tooling needed now.
-
-**Current direction:** Bryan prefers the iOS client, backed by the existing Python HTTP service. The web client provides a working integration test surface. Final storage/deployment decisions and team-wide agreement remain pending.
-**Decision date and participants:** Direction stated by Bryan on September 23, 2026; confirmation by Will and Guadalupe is pending.
-
-### Pending Milestone 1 feedback
-
-We are awaiting TA and professor input on the Milestone 1 submission. The following decisions remain provisional until the team reviews that feedback.
-
-| Feedback or question                                                               | Response received | Resulting decision or action | Owner  |
-| ---------------------------------------------------------------------------------- | ----------------- | ---------------------------- | ------ |
-| Is the proposed dataset size and coverage sufficient for our intended claims?      | Pending           | [TODO]                       | [TODO] |
-| Is independent-meeting extraction an appropriate primary baseline?                 | Pending           | [TODO]                       | [TODO] |
-| Can timestamped imports/sponsor transcription remain upstream for this checkpoint? | Pending           | [TODO]                       | [TODO] |
-| What application scope and reminder behavior should we prioritize?                 | Pending           | [TODO]                       | [TODO] |
-| Additional submission feedback                                                     | Pending           | [TODO]                       | [TODO] |
-
-## 2. Dataset and Data Card
-
-**Proposed lead:** Guadalupe; second label reviewer: [TODO]
+## 1. Dataset and Data Card
 
 ### Data sourcing and access
 
 **What inputs have we actually assembled, and how can a reviewer access them?**
+
+Our system is intended to accept meeting recordings (MP3 or MP4) or transcripts and help researchers track commitments, decisions, and task changes across recurring meetings. For this milestone, we focus on timestamped transcripts with speaker labels so that extraction can be evaluated separately from transcription and speaker identification. The proposed initial scorer focuses on commitments and suggestion handling; decision extraction and cross-meeting updates need separate labels and scoring before we report their quality.
 
 No human-reviewed commitment evaluation dataset has been established yet. The following inputs exist; generated predictions are not gold labels.
 
@@ -77,6 +33,12 @@ The synthetic example is invented project data with fictitious speakers. Human a
 No private participant recordings are needed for the current demonstration. Private recordings require permission before collection and external transcript processing. The backend requires explicit processing permission; local audio is transcribed with Whisper, and transcript text is sent through the Codex login. Retention/deletion policy for future participant data remains to be agreed.
 
 CCB source is supplied separately in `contexts/meeting_transcriber-master`; its archive has no verified upstream commit or license file. We do not redistribute it. Its audited hash and the exact functions used are documented in [the audio integration guide](../ccb-transcriber.md). A fresh clone alone cannot reproduce audio processing until this source is supplied.
+
+### Data Card deliverable
+
+A Data Card is the dataset's documentation: what it contains, where it came from, how it was prepared and labeled, how it is split, and what uses or conclusions it can support. This section serves as the report's Data Card; it should link to the versioned dataset manifest and annotation guide so reviewers can reproduce the evaluation.
+
+Before submission, record actual sequence/meeting counts, duration or segment counts, speaker and language coverage, commitment/suggestion/update label counts, source versions, preprocessing, reviewer names, disagreement resolution, split IDs, and access instructions. Planned sizes must remain labeled as planned until the inputs and labels are verified.
 
 ### Annotation design and quality
 
@@ -101,13 +63,18 @@ We do not plan to train or fine-tune model parameters for this checkpoint. Devel
 | Test | 0 designated | Held-out evaluation | Not assembled |
 
 **Split manifest/version and any seed:** No finalized split manifest or randomized split exists. The AMI clip overlaps TS3005a and must remain in the same split; it is not an independent test meeting.
-**Current split status:** Inputs, labels, and split manifests are not yet assembled. We cannot report sample counts, held-out performance, or generalization claims.
+**Current split status:** Development inputs exist, but reviewed labels and split manifests are not yet assembled. No held-out performance or generalization claims are supported.
+
+
+**Planned expansion:** Add a reviewed synthetic three-meeting development sequence, verify ICSI Bmr001-Bmr003 or an equivalent recurring sequence for validation, and reserve a separate ICSI sequence for held-out testing. These additional inputs are not yet assembled.
+
+**Leakage controls:** Verify that candidate ICSI meeting IDs form a meaningful chronological sequence rather than assuming adjacent IDs share tasks. Keep linked tasks and related project history within one split. If validation and test selections share a research group, participants, or project, document the overlap and avoid claiming evaluation on unseen groups. If prior work already used the proposed validation inputs for prompt development, reclassify them as development and choose a fresh validation sequence. Public corpora may also have appeared in model pretraining, which we cannot rule out.
 
 ### Known limitations
 
-The planned synthetic sequence will test selected behaviors but cannot establish performance on natural research meetings. Small samples and author-designed scenarios may miss conversational variation and difficult negative examples. Label disagreements will require review. Transcript-only evaluation will not measure transcription or diarization quality. Public meeting corpora may differ from advisor/student conversations and may lack our required task-state labels. Language, speaker, and domain coverage must be documented once inputs are assembled; no broad demographic or deployment claims are supported at this stage.
+The initial synthetic sequence will test selected behaviors but cannot establish performance on natural research meetings. Small samples and author-designed scenarios may miss conversational variation and difficult negative examples. Label disagreements will require review. Transcript-only evaluation will not measure transcription or diarization quality. AMI product-design conversations differ from advisor/student meetings; ICSI research conversations are closer to the target setting but reflect an older collection period. Both require verification of task-specific labels. The initial plan focuses on English and small groups; actual language, speaker, and domain coverage must be documented once inputs are assembled. It cannot establish performance across languages, accents, larger meetings, or research fields.
 
-## 3. Evaluation harness
+## 2. Evaluation harness
 
 **Proposed lead:** Bryan, with Will on prediction contracts and Guadalupe on labels.
 
@@ -166,27 +133,25 @@ Use a fresh output path; extraction refuses to overwrite results and consumes mo
 
 **Actual September 23 offline check:** 36 tests passed in 2.59 seconds; Ruff passed and 13 Python files were already formatted. Two dependency deprecation warnings were emitted by Starlette/httpx/AnyIO. Tests cover CLI failure handling, invalid citations/owners, imports, uploads, stored results, range requests, retry, interrupted-job recovery, and origin restrictions. Inference is stubbed in these tests. No gold-label scorer validation has been performed.
 
-## 4. Qualitative evaluation rubric
-
-**Proposed lead:** Guadalupe; reviewers: [TODO]
+## 3. Qualitative evaluation rubric
 
 **Proposed protocol:** Two team members independently review a shared sample of extracted commitments and, once available, proposed updates. Include ordinary cases and each error category, record individual scores, and reconcile disagreements with evidence. Reviewer names, sample size, and actual scores remain pending.
 
 The following rubric is a proposed starting point for team review, not a completed grading exercise. Score 2 falls between anchors 1 and 3; score 4 is usable with minor corrections between anchors 3 and 5. Record critical errors separately so an average cannot hide an unsupported completion.
 
-| Dimension                                | 1: poor | 3: needs substantial correction | 5: high quality |
-| ---------------------------------------- | ------- | ------------------------------- | --------------- |
-| Faithfulness/evidence support | Invents commitments or unsupported changes | Mixes supported content with unsupported details requiring correction | Every substantive field or change is supported by the cited evidence |
-| Owner and speaker attribution | Assigns work to the wrong person without evidence | Some attributions require correction or uncertainty is unclear | All owners are supported; genuinely unknown owners remain unresolved |
-| Coverage of relevant commitments/updates | Misses most relevant commitments or updates | Captures the main items but misses material details or items | Captures all relevant labeled items without duplicates |
-| Ambiguity and suggestion handling | Treats suggestions or ambiguous speech as definite commitments/updates | Handles clear cases but mishandles some uncertainty | Separates suggestions and routes genuinely ambiguous cases for review |
-| Clarity and usefulness | Output is unusable or misleading | Understandable but needs substantive editing | Tasks are concise, actionable, and easy to verify against evidence |
+| Dimension                                | 1: poor                                                                | 3: needs substantial correction                                       | 5: high quality                                                       |
+| ---------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Faithfulness/evidence support            | Invents commitments or unsupported changes                             | Mixes supported content with unsupported details requiring correction | Every substantive field or change is supported by the cited evidence  |
+| Owner and speaker attribution            | Assigns work to the wrong person without evidence                      | Some attributions require correction or uncertainty is unclear        | All owners are supported; genuinely unknown owners remain unresolved  |
+| Coverage of relevant commitments/updates | Misses most relevant commitments or updates                            | Captures the main items but misses material details or items          | Captures all relevant labeled items without duplicates                |
+| Ambiguity and suggestion handling        | Treats suggestions or ambiguous speech as definite commitments/updates | Handles clear cases but mishandles some uncertainty                   | Separates suggestions and routes genuinely ambiguous cases for review |
+| Clarity and usefulness                   | Output is unusable or misleading                                       | Understandable but needs substantive editing                          | Tasks are concise, actionable, and easy to verify against evidence    |
 
 **Illustrative example, not an evaluated result:** At segment `s1`, Will says, "I will rerun the baseline by Friday." At `s2`, the advisor says, "You could try mixed precision." A good output records Will's rerun commitment with `s1` as evidence and keeps mixed precision as an unaccepted suggestion. Assigning mixed precision to Will as a confirmed task is an unsupported commitment. Converting Friday to a calendar date requires meeting-date/timezone context. Actual baseline examples will be added after runs.
 
 **Review disagreements and any LLM-judge role:** Human review is proposed. No LLM judge or adjudication results are implemented; reviewers and disagreement handling must be confirmed.
 
-## 5. Baselines and initial results
+## 4. Baselines and initial results
 
 **Proposed lead:** Will; scoring: Bryan; review: Guadalupe.
 
@@ -225,7 +190,7 @@ Use the same evaluation inputs for comparable rows. Include actual sample counts
 These local artifacts were inspected on September 23; original run dates for the two v1 artifacts are not recorded in their JSON. Times are individual extraction calls, not averaged end-to-end latency or a comparison. No monetary cost was measured. Local files are ignored by Git; publish selected permitted artifacts or reproduce them before final submission.
 **Interpretation and limitations:** Integration works on the small supplied examples, but no task precision/recall, owner accuracy, semantic citation support, or held-out performance has been measured. Whisper is an open-source transcription component, not a substitute for the required comparable extraction baseline. No comparative conclusion is supported.
 
-## 6. Initial error analysis
+## 5. Initial error analysis
 
 Analyze observed baseline failures rather than only anticipated risks. Separate observations from hypotheses about causes.
 
@@ -237,7 +202,7 @@ Analyze observed baseline failures rather than only anticipated risks. Separate 
 **What we will change next and why:** [TODO]
 **What these initial results do not establish:** Recognition accuracy, correct task ownership, extraction completeness, semantic evidence support, or cross-meeting state tracking. One observed concern in the saved TS3005a prediction is the deadline text "In the meantime"; preserving it is schema-valid but does not produce an actionable calendar date. Human adjudication is pending. This is one inspection example, not a measured failure distribution; the requested 20-30-example error analysis is not complete.
 
-## 7. Mandatory TA check-in
+## 6. Mandatory TA check-in
 
 **Status:** Scheduled for today, September 23, 2026, as reported by Bryan. No feedback received yet; do not mark complete until the meeting occurs.
 **Date and attendees:** September 23, 2026; time and actual attendees to be recorded after the meeting.
@@ -267,35 +232,29 @@ Analyze observed baseline failures rather than only anticipated risks. Separate 
 
 Do not mark the check-in complete until it occurs. These notes are a collaboration aid; the assignment explicitly requires the meeting but does not prescribe a separate meeting-notes submission.
 
-## 8. Weekly progress, blockers, and next steps
+## 7. Weekly progress, blockers, and next steps
 
 **Progress made:** Implemented independent transcript extraction, AMI/CCB normalization, local audio transcription, and the web upload/results/playback flow. Added a SwiftUI prototype and PostgreSQL schema. Rechecked software tests and refreshed this report against the current branch. Bryan also reported a successful Swagger upload/results/playback smoke test on September 23.
 
-**Top blockers or risks:** iOS is not connected and has not been built/tested in this environment; full Xcode/Simulator is unavailable here. Audio reproduction depends on separately supplied CCB source. Reviewed labels, a scorer, open-source extraction baseline, comparable metrics, and reviewed error analysis remain missing. Team confirmation of final architecture, ownership, data splits, and TA guidance is still needed.
+**Top blockers or risks:** iOS backend upload integration is present in code, but a completed native build and Simulator end-to-end verification are not established in this report. Audio reproduction depends on separately supplied CCB source. Reviewed labels, a scorer, open-source extraction baseline, comparable metrics, and reviewed error analysis remain missing. Team confirmation of final architecture, ownership, data splits, and TA guidance is still needed.
 
-**Planned next steps:** At today's check-in, agree on a small reviewed extraction dataset and matching rules, select an open-source reference, and confirm acceptable checkpoint scope. Implement offline scoring, preserve comparable prediction artifacts, and conduct rubric/error review before final export. Complete the native connection and Simulator tests as a separately tracked application gate. See [task plan](task_plan.md) and [verification checklist](verification.md).
+**Planned next steps:** Agree on one transcript and its expected output, finalize the shared schema, prepare reviewed development labels, implement baselines and scoring, and run the first comparison. Then expand coverage, inspect failures, complete the TA check-in, and replace pending report sections with evidence. See the [verification checklist](verification.md) for application integration checks. Generated recordings, transcripts, and predictions remain outside Git; document reproduction commands and reviewer access separately.
 
 The [weekly journal](../weekly_journal.md) contains the ongoing record. Include the relevant progress in this report so the PDF is self-contained.
 
-## 9. Team contributions and next-milestone work plan
+## 8. Team contributions and next-milestone work plan
 
 Record actual contributions separately from proposed ownership. This section is required for teams and is non-graded.
 
-| Member            | Actual Milestone 2 contributions | Artifact or evidence |
-| ----------------- | -------------------------------- | -------------------- |
-| Guadalupe Cantera | Added PostgreSQL schema (Git author `gcantera5`; attribution to confirm) | `db/schema.sql` and Git history |
-| Will Liu | Added SwiftUI iOS prototype and local model tests | Commit `2f85320`, `ios/MeetingApp/` |
-| Bryan Yang | Integrated CCB/Codex and web backend, added public audio fixture and reproduction docs; performed Swagger smoke test | Commits `533a3c4`, `d499ab4`, integration guides; September 23 user-reported check |
-
-| Task for the next milestone | Confirmed owner | Completion check | Dependencies/blockers | Target date |
-| --------------------------- | --------------- | ---------------- | --------------------- | ----------- |
-| Native backend integration and Simulator run | Unconfirmed | Upload, results, playback, relaunch pass | Full Xcode and API client | Agree at check-in |
-| Reviewed data and offline scorer | Unconfirmed | Labels, matching rules, deterministic reports | Two-reviewer agreement | Before milestone submission |
-| Comparable baselines and error review | Unconfirmed | Saved predictions, metrics, rubric results | Data and scorer | Before milestone submission |
+| Member            | Actual Milestone 2 contributions | Artifact or evidence                |
+| ----------------- | -------------------------------- | ----------------------------------- |
+| Guadalupe Cantera | Database and data research       | db                                  |
+| Will Liu          | frontend + backend integration   | ios                                 |
+| Bryan Yang        | backend + frontend integration   | labsync - agent-sandbox integration |
 
 ## 10. Final submission checklist
 
-- [x] AI Engineering track and team declared.
+- [X] AI Engineering track and team declared.
 - [ ] Actual dataset/inputs assembled with a complete Data Card.
 - [ ] Provenance, licensing/permissions, splits, and limitations documented.
 - [ ] Evaluation harness runs using documented README commands and includes example output.
@@ -310,3 +269,11 @@ Record actual contributions separately from proposed ownership. This section is 
 - [ ] Drafting instructions and unresolved placeholders replaced with answers or explicit limitations.
 - [ ] Report exported as one PDF and checked for readable tables and working links.
 - [ ] Submission completed by the Canvas deadline.
+
+## 11. References
+
+- [AMI and ICSI official distribution and license overview](https://groups.inf.ed.ac.uk/ami/).
+- [AMI Meeting Corpus](https://groups.inf.ed.ac.uk/ami/corpus/).
+- [ICSI Meeting Corpus](https://groups.inf.ed.ac.uk/ami/icsi/) and [ICSI license](https://groups.inf.ed.ac.uk/ami/icsi/license.shtml).
+- [Project database schema](../../db/schema.sql), including meeting consent and optional voice-embedding fields.
+- [Weekly journal](../weekly_journal.md).

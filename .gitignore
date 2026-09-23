@@ -21,7 +21,6 @@ env/
 
 # Environment variables
 .env
-artifacts/
 
 # Pytest / coverage
 .pytest_cache/
@@ -41,3 +40,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local recordings, transcripts, and generated processing outputs
+/artifacts/
