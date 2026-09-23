@@ -2,6 +2,10 @@
 
 These are proposed issue descriptions, not issues already created on GitHub. Confirm owners before assigning their accounts. Check existing issues for duplicates first. The submission draft records a September 28, 2026 deadline; confirm the time/timezone in Canvas.
 
+## September 23 checkpoint
+
+See [verification](verification.md) for passing engineering checks and merge gates. The extraction contract and independent inference path now exist; tasks A/C need team review and evaluation completion rather than implementation from scratch. Audio and web processing work; the native iOS app remains a seeded prototype. Tasks B/D/E/F (reviewed labels, open-source extraction reference, scorer, and measured analysis) remain the critical report dependencies. Bryan reports a TA meeting today with no feedback received yet. Record its actual outcomes before completing G.
+
 ## GitHub setup
 
 1. Create a repository milestone named `Milestone 2` with the recorded submission date.

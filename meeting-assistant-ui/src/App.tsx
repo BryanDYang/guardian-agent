@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Tab } from './types';
 import { MeetingsTab } from './views/MeetingsTab';
-import { TasksView } from './views/TasksView';
-import { ChatView } from './views/ChatView';
 import { Mic2, CheckSquare, MessageSquare } from 'lucide-react';
 import { cn } from './lib/utils';
 import { meetingNavigation } from './lib/events';
@@ -20,7 +18,7 @@ export default function App() {
   return (
     <div className="h-screen w-full flex justify-center bg-gray-900 font-sans sm:p-8">
       {/* iOS Device Frame Constraint (for preview purposes on desktop) */}
-      <div className="w-full h-full sm:max-w-[400px] sm:h-[850px] bg-white sm:rounded-[3rem] sm:shadow-2xl sm:border-[8px] sm:border-black overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+      <div className="w-full h-full sm:max-w-[400px] sm:h-full sm:max-h-[850px] bg-white sm:rounded-[3rem] sm:shadow-2xl sm:border-[8px] sm:border-black overflow-hidden relative shadow-[0_0_50px_rgba(0,0,0,0.5)]">
         
         {/* Dynamic Island / Status Bar spacer */}
         <div className="absolute top-0 w-full h-12 z-50 pointer-events-none flex justify-center items-start pt-2">
@@ -30,8 +28,8 @@ export default function App() {
         {/* Main Content Area */}
         <div className="h-full w-full relative">
           {activeTab === 'meetings' && <MeetingsTab />}
-          {activeTab === 'tasks' && <TasksView />}
-          {activeTab === 'chat' && <ChatView />}
+          {activeTab === 'tasks' && <PendingFeature title="Task workspace" message="Review extracted commitments inside each meeting. Task approval and tracking are not connected yet." />}
+          {activeTab === 'chat' && <PendingFeature title="Project chat" message="Project question answering is not connected yet. Open a meeting to explore its transcript and cited notes." />}
         </div>
 
         {/* Global Bottom Tab Bar */}
@@ -77,3 +75,5 @@ function TabButton({ icon, label, isActive, onClick }: { icon: React.ReactNode, 
   );
 }
 
+
+function PendingFeature({ title, message }: { title: string; message: string }) { return <div className="px-6 pt-16"><h1 className="text-2xl font-bold mb-4">{title}</h1><p className="text-sm text-gray-500 leading-relaxed">{message}</p></div>; }

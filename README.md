@@ -2,26 +2,128 @@
 
 A proposed assistant that turns meeting recordings into summaries, cited decisions, and a living action-item list that updates across later meetings.
 
-The repository has an installable Python CLI scaffold and offline smoke tests.
-Meeting processing and the background service are not implemented yet. See the
+The Python CLI imports AMI transcripts and extracts summaries, cited decisions,
+commitments, and suggestions using a local Codex login. The optional CCB bridge
+transcribes audio locally with Whisper. The local HTTP backend connects the
+Meetings UI to uploads, processing, results, and playback. PostgreSQL persistence
+is not implemented yet. See the
 [Milestone 1 proposal](docs/milestone_1/project_proposal.md) for the planned scope.
 
-**Repository:** https://github.com/BryanDYang/ai-capstone
+**Repository:** https://github.com/BryanDYang/guardian-agent
 
 ## Quick start
 
 Install Python 3.12 and uv, then run:
 
 ```bash
-git clone https://github.com/BryanDYang/ai-capstone.git
-cd ai-capstone
+git clone https://github.com/BryanDYang/guardian-agent.git
+cd guardian-agent
 uv sync --locked --extra dev
 uv run labsync --help
 uv run labsync status
 uv run labsync status --json
 ```
 
-No API keys, meeting data, or `contexts` files are needed for this scaffold.
+Status and offline tests need no API keys, meeting data, or `contexts` files.
+
+## First extraction with Codex
+
+Install the Codex CLI and run `codex login`, then:
+
+```bash
+uv run labsync extract tests/fixtures/meeting.json \
+  --model gpt-5.6-sol --output artifacts/synthetic-codex.json
+```
+
+This sends the transcript to Codex using your saved login and consumes model
+usage. Select a model your account can access. The command checks the output
+schema, quoted evidence, and owner labels before saving JSON with run metadata.
+It refuses to overwrite an existing output. This is an extraction prototype,
+not an accuracy benchmark or an audio transcription service.
+
+See [the integration guide](docs/codex-integration.md) for AMI download/import
+commands, the CCB source audit, database mapping, and current limitations.
+
+## Run the connected UI
+
+In one terminal at the repo root:
+
+```bash
+uv sync --locked --extra dev --extra audio --extra server
+codex login status
+uv run --locked --extra audio --extra server labsync serve --whisper-model tiny
+```
+
+In another terminal:
+
+```bash
+cd meeting-assistant-ui
+npm install
+npm run dev
+```
+
+Open **http://localhost:3000**, add a meeting, and upload the
+[included AMI WAV](tests/fixtures/ami/TS3005a-90s-135s.wav). The UI shows processing
+progress, real results, and playable audio. See [RUN_UI.md](RUN_UI.md) for the full
+walkthrough. Results persist locally under `artifacts/server`; Tasks, Chat, and
+PostgreSQL integration remain unfinished.
+
+## Test the audio backend from the CLI
+
+You can also test the same processing pipeline directly, without the UI.
+From the project root, with CCB's source at `contexts/meeting_transcriber-master`:
+
+```bash
+uv sync --locked --extra dev --extra audio
+uv run --locked --extra dev pytest
+uv run --locked --extra audio labsync transcribe \
+  tests/fixtures/ami/TS3005a-90s-135s.wav \
+  --project-id ami-TS3005 --meeting-id TS3005a-90s-135s \
+  --whisper-model tiny --output-dir artifacts/backend-test
+```
+
+The tests run offline. Transcription processes the included 45-second audio clip
+locally and downloads Whisper weights on first use. It writes raw CCB output to
+`artifacts/backend-test/ccb-transcript.json` and normalized turns to
+`artifacts/backend-test/transcript.json`. Speaker labels remain UNKNOWN unless
+speaker diarization is configured. Use a fresh output directory for each run.
+
+Then check your Codex login and extract meeting information:
+
+```bash
+codex login status
+uv run --locked labsync extract artifacts/backend-test/transcript.json \
+  --model gpt-5.6-sol --output artifacts/backend-test/extraction.json
+cat artifacts/backend-test/extraction.json
+```
+
+Run `codex login` if needed. This step sends the generated transcript to Codex.
+Success means a saved, validated extraction containing `summary`, `decisions`,
+`commitments`, and `suggestions`. This opening/agenda clip may have no commitments;
+empty lists are valid. This CLI command saves files; UI uploads use the HTTP
+backend described above.
+See [the audio integration guide](docs/ccb-transcriber.md) for more details.
+
+### Environment warning after the folder rename
+
+If `VIRTUAL_ENV` still references `ai-capstone/.venv`, run `deactivate` in the
+terminal where that environment is active, or open a fresh terminal. Use `uv run`
+without activating `.venv`; the old activation script also contains the previous
+path. Do not use `--active` to target the obsolete environment.
+
+The dev-only quick start is sufficient for offline tests. `uv sync --extra dev`
+omits the optional audio extra and removes its packages. For audio testing, use
+`uv sync --locked --extra dev --extra audio` and include `--extra audio` on
+transcription commands so they also work after a dev-only sync.
+
+## Visible test data
+
+- [AMI audio fixture](tests/fixtures/ami/README.md): a 45-second mixed-speaker WAV,
+  with attribution, provenance, and commands for automatic transcription.
+- [Synthetic transcript](tests/fixtures/meeting.json): a small text-only fixture
+  for testing extraction without audio processing.
+
+Full AMI downloads and generated outputs stay local. ICSI is not yet included.
 
 ## Development
 

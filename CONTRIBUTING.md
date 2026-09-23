@@ -7,8 +7,8 @@ This document covers development of the meeting follow-through assistant.
 Install Python 3.12 and uv, then run:
 
 ```bash
-git clone https://github.com/BryanDYang/ai-capstone.git
-cd ai-capstone
+git clone https://github.com/BryanDYang/guardian-agent.git
+cd guardian-agent
 uv sync --locked --extra dev
 uv run labsync status
 uv run ruff check src tests

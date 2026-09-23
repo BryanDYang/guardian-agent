@@ -1,0 +1,21 @@
+{
+  "corpus": "AMI Meeting Corpus",
+  "meeting_id": "TS3005a",
+  "file": "TS3005a-90s-135s.wav",
+  "source_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/TS3005a/audio/TS3005a.Mix-Headset.wav",
+  "attribution": "AMI Consortium / Edinburgh Centre for Speech Technology Research",
+  "license": "CC-BY-4.0",
+  "license_url": "https://groups.inf.ed.ac.uk/ami/corpus/license.shtml",
+  "source_start_seconds": 90,
+  "source_end_seconds": 135,
+  "transformations": [
+    "Cropped to 90-135 seconds",
+    "Converted to mono 16 kHz PCM WAV"
+  ],
+  "sha256": "3fadc260625a694ba4252d5bddd10a325f98940a3a6e4ffe07d8a0a8c21fd7ad",
+  "channels": 1,
+  "sample_rate_hz": 16000,
+  "sample_width_bytes": 2,
+  "duration_seconds": 45.0,
+  "purpose": "Audio-to-transcript integration smoke test; not a labeled extraction benchmark"
+}

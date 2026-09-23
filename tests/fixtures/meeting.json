@@ -1,0 +1,9 @@
+{
+  "project_id": "synthetic-demo",
+  "meeting_id": "synthetic-001",
+  "turns": [
+    {"id": "t1", "speaker": "Alex", "start_time_ms": 0, "end_time_ms": 5000, "content": "We agree to use the public AMI transcripts for our first extraction test."},
+    {"id": "t2", "speaker": "Sam", "start_time_ms": 5000, "end_time_ms": 10000, "content": "I will prepare the transcript fixture by Friday."},
+    {"id": "t3", "speaker": "Alex", "start_time_ms": 10000, "end_time_ms": 15000, "content": "We could add a calendar integration later, but nobody is taking that on yet."}
+  ]
+}

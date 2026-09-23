@@ -9,16 +9,34 @@ description = "Meeting follow-through assistant for research teams"
 readme = "README.md"
 requires-python = ">=3.12"
 license = {file = "LICENSE"}
-dependencies = []
+dependencies = [
+    "pydantic>=2,<3",
+]
 
 [project.urls]
-Repository = "https://github.com/BryanDYang/ai-capstone"
+Repository = "https://github.com/BryanDYang/guardian-agent"
 
 [project.scripts]
 labsync = "labsync.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "ruff>=0.11"]
+dev = [
+    "fastapi>=0.141.1",
+    "httpx>=0.28.1",
+    "pytest>=8",
+    "python-multipart>=0.0.32",
+    "ruff>=0.11",
+]
+audio = [
+    "imageio-ffmpeg>=0.6.0",
+    "openai-whisper>=20250625",
+    "scipy>=1.18.1",
+]
+server = [
+    "fastapi>=0.141.1",
+    "python-multipart>=0.0.32",
+    "uvicorn>=0.53.0",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

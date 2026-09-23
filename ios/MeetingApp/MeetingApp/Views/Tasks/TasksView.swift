@@ -77,14 +77,17 @@ struct TasksView: View {
 
     private var selectedDayBar: some View {
         HStack {
-            (
-                Text(calendar.isDateInToday(selectedDate) ? "TODAY " : "")
-                    .fontWeight(.bold)
-                    .foregroundColor(.blue)
-                + Text(Self.isoFormatter.string(from: selectedDate))
+            HStack(spacing: 0) {
+                if calendar.isDateInToday(selectedDate) {
+                    Text("TODAY ")
+                        .fontWeight(.bold)
+                        .foregroundStyle(.blue)
+                }
+
+                Text(Self.isoFormatter.string(from: selectedDate))
                     .fontWeight(.medium)
-                    .foregroundColor(.blue.opacity(0.7))
-            )
+                    .foregroundStyle(.blue.opacity(0.7))
+            }
             .font(.footnote)
 
             Spacer()
