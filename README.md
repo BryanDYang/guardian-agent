@@ -125,6 +125,25 @@ transcription commands so they also work after a dev-only sync.
 
 Full AMI downloads and generated outputs stay local. ICSI is not yet included.
 
+## Extraction evaluation
+
+[Initial measured results](docs/milestone_2/results/README.md) compare rules,
+Codex and local Granite Code 8B on 24 synthetic development cases. Run the
+offline scorer tests and a fresh rule baseline:
+
+```bash
+uv run --locked --extra dev pytest tests/benchmarks/
+uv run --locked python -m labsync.evaluation run --method rules \
+  --directory artifacts/evaluation/rules-new
+uv run --locked python -m labsync.evaluation score \
+  --directory artifacts/evaluation/rules-new
+```
+
+See the [fixture protocol](tests/fixtures/evaluation/README.md) for live inference,
+annotation rules, matching and metric definitions. Labels are AI-authored pending
+human review; the reported action-matching scores are development proxies.
+This implements the extraction portion of [checklist Phase 5](docs/checklist.md).
+
 ## Development
 
 ```bash

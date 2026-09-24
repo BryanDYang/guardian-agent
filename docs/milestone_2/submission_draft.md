@@ -27,15 +27,16 @@ We would also like to eventually test our system using recordings from our own p
 
 For this milestone, we are focusing on transcripts rather than raw audio so we can evaluate task extraction separately from transcription and speaker identification.
 
-**Current inputs:** No human-reviewed commitment evaluation dataset has been established yet. The following inputs exist; generated predictions are not gold labels.
+**Current inputs:** A scored synthetic development suite is now available: 24 independent micro-meetings, 35 turns, 15 labeled obligations, and 11 negative cases. Labels and matching rules were AI-authored before inference and still need human review. The following inputs exist; generated predictions are not gold labels.
 
 | Source/subset | Actual size | Format and coverage | Access |
 | --- | --- | --- | --- |
+| Synthetic development benchmark | 24 micro-meetings, 35 turns, 15 obligations | AI-authored labels; frozen lexical matching; 3 measured baselines | `tests/fixtures/evaluation/development.json` |
 | Synthetic extraction example | 1 meeting, 3 turns | Explicit agreement, Sam's commitment with raw deadline, unaccepted suggestion | `tests/fixtures/meeting.json` |
 | AMI TS3005 manual transcripts | 1 series, 4 meetings; 287/693/619/1,194 nonempty turns | Timestamped corpus speakers A-D; no reviewed LabSync commitment/state labels | Local `artifacts/ami/TS3005{a,b,c,d}.json`; reproduction in `docs/codex-integration.md` |
 | AMI audio excerpt | 1 clip, 45 seconds, TS3005a 90-135s | Mono 16 kHz PCM WAV; opening/agenda content, not a commitment benchmark | `tests/fixtures/ami/TS3005a-90s-135s.wav` |
 
-See the [integration guide](../codex-integration.md) for acquisition and conversion commands and the [AMI fixture documentation](../../tests/fixtures/ami/README.md) for attribution, checksums, and audio preparation. Full corpus downloads and generated predictions remain local and ignored by Git.
+See the [integration guide](../codex-integration.md) for acquisition and conversion commands and the [AMI fixture documentation](../../tests/fixtures/ami/README.md) for attribution, checksums, and audio preparation. Full corpus downloads and their generated predictions remain local and ignored by Git. Synthetic benchmark predictions also remain local under `artifacts/evaluation/`; the submission includes the measured results and failure analysis.
 
 ### Provenance and licensing
 
@@ -78,7 +79,7 @@ The test set will remain separate from the development process so that our final
 
 Since we are starting with a relatively small amount of data, we will also document exactly which meetings are included in each split and avoid making broad claims about the system's performance based on only a few examples.
 
-**Current split status:** The tables above describe planned allocations. The three-meeting synthetic sequence, validation/test membership, reviewed labels, and split manifest remain unfinished. The existing synthetic example contains one meeting. The AMI audio clip overlaps TS3005a and must stay in the same split. Verify ICSI chronology and continuity before treating the proposed IDs as a related sequence.
+**Current split status:** The new 24-case suite is development-only and does not establish sequence tracking. The tables above describe planned corpus allocations. The three-meeting synthetic sequence, validation/test membership, human-reviewed labels, and corpus split manifest remain unfinished. The synthetic suite records its development split and input IDs. The existing synthetic example contains one meeting. The AMI audio clip overlaps TS3005a and must stay in the same split. Verify ICSI chronology and continuity before treating the proposed IDs as a related sequence.
 
 ### Known limitations
 
@@ -100,7 +101,7 @@ These limitations are important to keep in mind because we do not want to assume
 
 ### Data Card Deliverable
 
-This section serves as our Data Card: it documents the data sources, permissions, preparation, splits, and limitations. Before submission, we still need to record the final meeting IDs and counts, annotation guide, label counts, reviewers, disagreements, and access instructions. Generated recordings, transcripts, and predictions will remain outside Git; reviewers can use documented reproduction commands or separately arranged access.
+This section serves as our Data Card. The synthetic benchmark now records its exact inputs, 15 obligation labels, development split, annotation/matching guide and reproducible predictions. Before submission, human reviewers and disagreements must be recorded; corpus labels and final validation/test membership remain unfinished. Real recordings and corpus outputs stay outside Git. Synthetic benchmark outputs remain local; summary measurements and observed failures are included in this report.
 
 #### Annotation details still to finalize
 
@@ -110,6 +111,8 @@ This section serves as our Data Card: it documents the data sources, permissions
 
 **Review and disagreement resolution:** No independently reviewed gold labels or disagreement log exists yet. Assign a labeler and second reviewer at the team check-in before treating examples as scored evaluation data.
 
+**Implemented development guide:** [Fixture protocol](../../tests/fixtures/evaluation/README.md) specifies AI authorship, labels, task granularity, unknown/joint owners, minimal deadline text, one-to-one action-term matching, denominators, and known limitations. These rules were frozen before model runs; they have not been human-adjudicated.
+
 **Annotation guide and schema location:** `src/labsync/extraction.py` contains the provisional Pydantic contract and `meeting-extraction-v2` prompt. Inputs contain project/meeting IDs and turns with IDs, speakers, millisecond timestamps, and content. Outputs contain a summary, decisions, commitments, and suggestions. Commitments preserve nullable owners and verbatim deadline text plus one or more cited quotes. Team-reviewed annotation and matching rules are not yet finalized.
 
 ## 2. Evaluation harness
@@ -118,56 +121,42 @@ This section serves as our Data Card: it documents the data sources, permissions
 
 **Why do the chosen metrics reflect success?** Users need commitments to be found without invented tasks, assigned to the right people, and linked to supporting evidence. Precision/recall measures extraction coverage and correctness; owner accuracy measures attribution; duplicate counts expose repeated tasks; citation checks measure traceability. Unsupported completion and state/link metrics will apply when update predictions are implemented. A model that produces no updates cannot be credited with successful reconciliation solely because it has no false completions.
 
-The rows below are proposed metrics. Confirm which are implemented, define their denominators and matching rules, and explicitly mark deferred metrics.
+The implemented extraction metrics are recorded with numerators and denominators in the [initial results summary](results/README.md).
 
-| Metric | Proposed scoring definition | Status |
+| Metric | Implemented definition | Status |
 | --- | --- | --- |
-| Task precision / recall / F1 | One-to-one semantically matched commitments / predicted commitments for precision; matches / gold commitments for recall; harmonic mean for F1 | Scorer not implemented; matching rules need approval |
-| Owner accuracy | Exact owner-label agreement among matched commitments with known gold owners; report null-gold cases separately | Not implemented |
-| Duplicate count/rate | Additional predictions expressing the same obligation beyond the first; count / all predicted commitments | Not implemented |
-| Citation validity | Existing source ID and exact contiguous quote; valid references / all predicted references | Validation implemented, aggregate metric not implemented |
-| Semantic evidence support | Human-supported items / reviewed items; inspect action, owner, and deadline separately | Human review not performed |
-| Unsupported completion rate | Unsupported done transitions / predicted done transitions, with numerator/count reported | Deferred: no state-update implementation |
-| Cross-meeting state/link accuracy | Requires reviewed task identity links and state snapshots | Deferred: no reconciliation implementation |
+| Task precision / recall / F1 proxy | Maximum one-to-one matches using frozen action-term alternatives; matches/predictions, matches/labels, harmonic mean | Measured on 24 synthetic development cases per baseline; semantic adjudication pending |
+| Owner agreement | Exact label agreement among matched tasks with known gold owners; null-owner cases separate | Measured |
+| Deadline text agreement | Exact raw text agreement among matched tasks, including nulls | Measured; not semantic date accuracy |
+| Duplicate proxy | Additional predictions compatible with already matched obligations / predicted tasks | Measured |
+| Citation validity | Exact contiguous quote and existing source ID / all predicted citations | Measured; not semantic support |
+| Evidence completeness | Matched tasks citing all designated gold source IDs with valid quotes / matched tasks | Measured; alternate sufficient evidence may be penalized |
+| Semantic evidence support | Human-supported items / reviewed items | Human review pending |
+| Unsupported completion and state/link accuracy | Requires state-update predictions and reviewed sequences | Deferred: reconciliation not implemented |
 
-**Matching and adjudication (proposal for team approval):** Use one-to-one matching of predicted and labeled commitments based on action meaning, with owners scored separately. Review paraphrases manually and log disputed matches; unmatched repeated predictions count as false positives and duplicates. Do not use string equality alone as semantic correctness.
+### Benchmark and matching protocol
 
-**Empty denominators and missing/invalid predictions (proposal):** Report undefined ratios as N/A with counts, and report failed/missing outputs separately. A failed output leaves all gold commitments missed for recall and must not be removed from coverage reporting. Both-empty cases are not evidence of successful task extraction.
+The suite covers explicit promises, accepted/unaccepted requests, suggestions, negation, conditional speech, completed/partial work, UNKNOWN speakers, multiple owners/actions, repetition, deadline correction, quoted examples, and adversarial transcript text. These are independent current-meeting extraction cases, not evidence of cross-meeting state tracking. See the [annotation and matching protocol](../../tests/fixtures/evaluation/README.md).
 
-### Benchmark or custom test suite
-
-**What does the custom suite measure?**
-
-The planned harness loads labeled timestamped transcripts, runs interchangeable extraction baselines, saves their predictions and run settings, scores predictions against labels, and writes aggregate plus per-example results. Scoring saved predictions will run offline. Live inference will be a separate step. Input import, prediction generation, schema validation, and exact-quote validation run now. Gold-label matching, aggregate scoring, and benchmark report generation remain unimplemented. The sequence scenarios below describe desired coverage, not completed functionality.
-
-| Scenario                     | Expected behavior                                      | Fixture ID | Implemented/scored? |
-| ---------------------------- | ------------------------------------------------------ | ---------- | ------------------- |
-| Explicit completion          | Update the correct existing task to done with evidence | [TODO]     | Not implemented     |
-| Deadline change              | Update the supported date on the correct task          | [TODO]     | Not implemented     |
-| Unaccepted suggestion | Keep separate from an owned commitment | `synthetic-001`, turn `t3` | Fixture and live prediction exist; not independently scored |
-| Ambiguous reference          | Flag uncertainty rather than invent a match            | [TODO]     | Not implemented     |
-| Task not mentioned again     | Preserve the previous state                            | [TODO]     | Not implemented     |
-| Partial progress or negation | Avoid unsupported completion                           | [TODO]     | Not implemented     |
+The scorer uses lexical action matching as a transparent development proxy. Owners and dates are scored separately, and maximum-cardinality matching prevents greedy order effects. Unseen paraphrases can be false negatives; titles containing the expected terms can match despite unsupported additional content. Human semantic adjudication remains necessary. Undefined ratios are N/A; failed/missing outputs retain their gold labels in recall and are reported as failures. Both-empty cases are counted only in the separate negative-case metric.
 
 ### Reproducibility and instructions
 
-**Environment and dependencies:** Python 3.12, uv lockfile, Pytest, Ruff, and optional audio/server extras. The extraction client records requested model, CLI version, prompt version/hash, normalized transcript hash, usage, and elapsed time in current outputs. Historical v1 artifacts predate some metadata fields and must not be pooled with v2 results without rerunning.
-
-**Code revision inspected:** `df3a5390451f6e48f6e9f6f868d509d91a3e53fc` on `feature/ccb-codex-integration`.
-**Live prerequisites:** Installed Codex CLI with a usable login/network connection; local CCB source and Whisper weights for audio. No model credentials are needed for offline tests.
+The harness is `src/labsync/evaluation.py`; live generation and offline scoring are separate commands. It stores predictions, errors, source/suite/input hashes, model settings, UTC run time and latency. Existing Codex metadata includes prompt hash, CLI version and usage; Ollama metadata includes quantization, immutable model digest and runtime version. No gold labels or action terms are sent to either model.
 
 ```bash
-uv sync --locked --extra dev --extra audio --extra server
-uv run --locked --extra dev pytest
-uv run --locked --extra dev ruff check src tests
-uv run --locked --extra dev ruff format --check src tests
-uv run --locked labsync extract tests/fixtures/meeting.json \
-  --model gpt-5.6-sol --output artifacts/m2-synthetic.json
+uv run --locked --extra dev pytest tests/benchmarks/
+uv run --locked python -m labsync.evaluation score \
+  --directory artifacts/evaluation/codex-v1
+uv run --locked python -m labsync.evaluation run --method rules \
+  --directory artifacts/evaluation/rules-new
+uv run --locked python -m labsync.evaluation score \
+  --directory artifacts/evaluation/rules-new
 ```
 
-Use a fresh output path; extraction refuses to overwrite results and consumes model usage. See README and RUN_UI.md for audio/UI commands. There is no evaluation/scoring command yet. Do not describe `pytest` as a task-quality benchmark.
+Full live commands and prerequisites are in the fixture protocol. Offline re-scoring needs the saved local run artifacts but no credentials or network. A fresh checkout can regenerate results using the documented inference commands. Live output directories must be fresh; Codex inference consumes model usage.
 
-**Actual September 23 offline check:** 36 tests passed in 2.59 seconds; Ruff passed and 13 Python files were already formatted. Two dependency deprecation warnings were emitted by Starlette/httpx/AnyIO. Tests cover CLI failure handling, invalid citations/owners, imports, uploads, stored results, range requests, retry, interrupted-job recovery, and origin restrictions. Inference is stubbed in these tests. No gold-label scorer validation has been performed.
+**September 24 verification:** 52 offline tests passed, including 15 new scorer/benchmark tests. Ruff passed. These tests validate scoring against correct and deliberately incorrect predictions, including duplicates, missing outputs, invalid citations and changed input hashes. They are distinct from the 72 actual baseline extraction runs (48 live model calls and 24 rule-based extractions). Existing dependency deprecation warnings remain; they do not alter the benchmark results.
 
 ## 3. Qualitative evaluation rubric
 
@@ -185,7 +174,7 @@ The following rubric is a proposed starting point for team review, not a complet
 | Ambiguity and suggestion handling        | Treats suggestions or ambiguous speech as definite commitments/updates | Handles clear cases but mishandles some uncertainty                   | Separates suggestions and routes genuinely ambiguous cases for review |
 | Clarity and usefulness                   | Output is unusable or misleading                                       | Understandable but needs substantive editing                          | Tasks are concise, actionable, and easy to verify against evidence    |
 
-**Illustrative example, not an evaluated result:** At segment `s1`, Will says, "I will rerun the baseline by Friday." At `s2`, the advisor says, "You could try mixed precision." A good output records Will's rerun commitment with `s1` as evidence and keeps mixed precision as an unaccepted suggestion. Assigning mixed precision to Will as a confirmed task is an unsupported commitment. Converting Friday to a calendar date requires meeting-date/timezone context. Actual baseline examples will be added after runs.
+**Illustrative example, not an evaluated result:** At segment `s1`, Will says, "I will rerun the baseline by Friday." At `s2`, the advisor says, "You could try mixed precision." A good output records Will's rerun commitment with `s1` as evidence and keeps mixed precision as an unaccepted suggestion. Assigning mixed precision to Will as a confirmed task is an unsupported commitment. Converting Friday to a calendar date requires meeting-date/timezone context. Actual baseline outputs and observed failures are now linked in Section 4; this illustrative rubric example is not a completed human score.
 
 **Review disagreements and any LLM-judge role:** Human review is proposed. No LLM judge or adjudication results are implemented; reviewers and disagreement handling must be confirmed.
 
@@ -193,60 +182,41 @@ The following rubric is a proposed starting point for team review, not a complet
 
 **Proposed lead:** Will; scoring: Bryan; review: Guadalupe.
 
-### Simple baseline
+### Baselines and actual measurements
 
-**Method and rationale (implemented, not quantitatively evaluated):** Extract commitments from each meeting independently using a fixed prompt and the agreed output schema. This tests what can be recovered without persistent cross-meeting memory and provides the primary comparison described in Milestone 1.
-**Model/rules, version, prompts, settings, and code path:** Codex CLI `gpt-5.6-sol`, `src/labsync/codex_client.py`, and prompt/contract in `src/labsync/extraction.py`. Current prompt is `meeting-extraction-v2`. Earlier synthetic and AMI transcript artifacts use v1 and CLI 0.149.1. The client checks structured output and cited quotes; it does not establish semantic support.
-**Information available to this baseline:** Current timestamped transcript and supplied speaker labels only, with no prior meeting transcripts, stored task state, or gold labels. Corpus A-D labels are not verified identities; audio without diarization uses UNKNOWN.
+The simple baseline detects first-person promises with fixed rules. The existing Codex independent-meeting extractor uses `gpt-5.6-sol`, CLI 0.149.1 and `meeting-extraction-v2`. The external open-source reference is IBM Granite Code 8B (Apache 2.0), served locally by Ollama 0.6.8 in Q4_0 with temperature 0 and seed 42. It uses the same transcript contract and extraction instructions with JSON Schema output. It was already installed and is code-specialized, so it is a first off-the-shelf reference, not a meeting-specialized or best-open-source claim. Exact model digest, sources, prompts/settings, platform and validation differences are documented in the [results summary](results/README.md).
 
-### Open-source reference baseline
+All methods see only the current transcript and speaker labels, without stored task state or gold labels. The same 24 synthetic development cases contain 15 obligations. Labels were AI-authored and frozen before inference; human review is pending.
 
-**Model/system, source, version, and license:** [TODO]
-**How it is run and adapted to the same evaluation contract:** [TODO]
-**Why it is a relevant reference:** [TODO]
+| Method | Matched / predicted / gold | Task P / R / F1 proxy | Known-owner agreement | Exact deadline text | Duplicate proxy | Citation validity | Failures |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Promise rules v1 | 11 / 16 / 15 | .688 / .733 / .710 | 9/9 | 10/11 | 2/16 | 16/16 | 0/24 |
+| Codex independent extraction v2 | 13 / 14 / 15 | .929 / .867 / .897 | 12/12 | 5/13 | 1/14 | 31/31 | 0/24 |
+| Granite Code 8B | 9 / 11 / 15 | .818 / .600 / .692 | 7/7 | 6/9 | 0/11 | 21/21 | 0/24 |
 
-The assignment requires an open-source reference baseline when applicable. If claiming it is not applicable, explain why and raise that interpretation with the TA. A proprietary model alone does not supply this reference.
+Correct negative-case counts are 9/11, 11/11 and 10/11, respectively. Null-owner agreement among matched tasks is 1/2, 0/1 and 0/2, separate from known owners. Codex and Granite mean extraction times are 5.280 s and 5.061 s across 24 attempts each, including warmup and excluding audio/UI. Runs overlapped, so these are observed timings rather than a controlled speed comparison. Rule timings are mostly below the stored 1 ms resolution. No monetary cost was measured.
 
-### Results table
+**Interpretation:** Codex has the highest action-matching proxy on these fixtures. This does not establish held-out performance, semantic accuracy, or a general model ranking. Exact quotes can still support a negated statement incorrectly treated as a commitment. Exact deadline-span agreement can penalize semantically equivalent `Friday` and `by Friday`. The scorer also has a known false negative for Granite's `Preparing the demo` versus the frozen `prepare` term.
 
-Use the same evaluation inputs for comparable rows. Include actual sample counts and numerators/denominators where appropriate. Use `not measured` rather than zero for missing results. Add or remove columns to match the implemented metrics.
+### Observed failures and next changes
 
-| Method/version                | Split and sample count | Task P/R/F1  | Owner accuracy | Duplicates   | Unsupported completions | Citation validity/support |
-| ----------------------------- | ---------------------- | ------------ | -------------- | ------------ | ----------------------- | ------------------------- |
-| Codex independent extraction | No reviewed split                 | Not measured | Not measured   | Not measured | Not measured            | Not measured              |
-| Open-source reference: not selected | Not run                 | Not measured | Not measured   | Not measured | Not measured            | Not measured              |
+Local reports in `artifacts/evaluation/{rules,codex,granite}-v1/` contain expected and actual outputs and error flags for all 24 examples per method. Raw artifacts are retained locally; the submission presents aggregate results and representative failures. The [failure analysis](results/README.md#observed-errors-and-next-verification) separates observations from likely causes and scoring/annotation limitations.
 
-**Qualitative scores and sample count:** Not measured; no two-reviewer rubric exercise has been completed.
-**Observed integration artifacts, not quality scores:**
+- Rules extract negated and quoted promises, duplicate repeated commitments, and miss cross-turn acceptance.
+- Codex misses the UNKNOWN-owner commitment and merges two distinct actions. Its eight deadline mismatch flags are largely raw-span differences. Joint ownership exposes the single-owner contract's ambiguity.
+- Granite extracts a negated promise, assigns literal UNKNOWN, misses both tasks in `two_owners`, and fails to resolve some accepted/reassigned work. One unmatched task is a lexical scorer false negative.
 
-| Input | Prompt | Saved extraction time | Predicted decisions / commitments / suggestions | Local artifact |
-| --- | --- | --- | --- | --- |
-| Synthetic, 3 turns | v1 | 9.550 s | 1 / 1 / 1 | `artifacts/synthetic-codex.json` |
-| AMI TS3005a, 287 turns | v1 | 48.241 s | 2 / 3 / 4 | `artifacts/ami/TS3005a-codex.json` |
-| AMI 45-second audio, 11 generated turns; September 23 live run | v2 | 5.864 s | 0 / 0 / 0 | `artifacts/server/bfddad72-5e2a-446d-95b6-40b74fb73850/attempt-1/extraction.json` |
+Next, reviewers should resolve joint-owner and task-granularity policies, adjudicate semantic matches and deadline equivalence, and then test a separately versioned prompt on new development examples. Do not silently tune v1 labels or matching terms to these predictions.
 
-These local artifacts were inspected on September 23; original run dates for the two v1 artifacts are not recorded in their JSON. Times are individual extraction calls, not averaged end-to-end latency or a comparison. No monetary cost was measured. Local files are ignored by Git; document reproduction commands and arrange reviewer access separately before final submission; generated artifacts do not need to be committed.
-**Interpretation and limitations:** Integration works on the small supplied examples, but no task precision/recall, owner accuracy, semantic citation support, or held-out performance has been measured. Whisper is an open-source transcription component, not a substitute for the required comparable extraction baseline. No comparative conclusion is supported.
-
-### Analyze baseline failures
-
-Analyze observed baseline failures rather than only anticipated risks. Separate observations from hypotheses about causes.
-
-| Example/source ID | Expected output | Actual output and baseline | Error category | Likely cause | Proposed change and verification |
-| ----------------- | --------------- | -------------------------- | -------------- | ------------ | -------------------------------- |
-| [TODO]            | [TODO]          | [TODO]                     | [TODO]         | [TODO]       | [TODO]                           |
-
-**Most frequent or consequential failures:** [TODO]
-**What we will change next and why:** [TODO]
-**What these initial results do not establish:** Recognition accuracy, correct task ownership, extraction completeness, semantic evidence support, or cross-meeting state tracking. One observed concern in the saved TS3005a prediction is the deadline text "In the meantime"; preserving it is schema-valid but does not produce an actionable calendar date. Human adjudication is pending. This is one inspection example, not a measured failure distribution; the requested 20-30-example error analysis is not complete.
+**Qualitative scores:** No two-human-reviewer rubric exercise has been completed. Automated case reports and AI inspection do not substitute for it. Audio recognition, diarization, RAG, unsupported completion and cross-meeting state tracking remain outside these measurements.
 
 ## 5. Weekly check-ins and blockers
 
 **Progress made:** Implemented independent transcript extraction, AMI/CCB normalization, local audio transcription, and the web upload/results/playback flow. Added a SwiftUI prototype and PostgreSQL schema. Rechecked software tests and refreshed this report against the current branch. Bryan also reported a successful Swagger upload/results/playback smoke test on September 23.
 
-**Top blockers or risks:** iOS backend upload integration is present in code, but a completed native build and Simulator end-to-end verification are not established in this report. Audio reproduction depends on separately supplied CCB source. Reviewed labels, a scorer, open-source extraction baseline, comparable metrics, and reviewed error analysis remain missing. Team confirmation of final architecture, ownership, data splits, and TA guidance is still needed.
+**Top blockers or risks:** iOS backend upload integration is present in code, but a completed native build and Simulator end-to-end verification are not established in this report. Audio reproduction depends on separately supplied CCB source. Human-reviewed labels, semantic adjudication, natural-meeting evaluation and reviewed qualitative scores remain missing. The scorer, three baseline runs, saved predictions and measured development proxies are now available. Team confirmation of final architecture, ownership, data splits, and TA guidance is still needed.
 
-**Planned next steps:** Agree on one transcript and its expected output, finalize the shared schema, prepare reviewed development labels, implement baselines and scoring, and run the first comparison. Then expand coverage, inspect failures, complete the TA check-in, and replace pending report sections with evidence. See the [verification checklist](verification.md) for application integration checks. Generated recordings, transcripts, and predictions remain outside Git; document reproduction commands and reviewer access separately.
+**Planned next steps:** Human-review the 24-case labels and observed errors, resolve task granularity/joint-owner/deadline policies, and expand coverage to natural meetings. Complete qualitative review and TA follow-up before final submission. See the [verification checklist](verification.md) for application integration checks. Raw recordings, predictions and generated reports remain outside Git. The results summary includes measurements, observed failures and reproduction instructions.
 
 Earlier progress is recorded in the [weekly journal](../weekly_journal.md).
 
@@ -258,8 +228,8 @@ Earlier progress is recorded in the [weekly journal](../weekly_journal.md).
 #### Preparation checklist
 
 - [ ] Data Card summary with actual inputs, splits, and limitations.
-- [ ] Working evaluation command and README instructions.
-- [ ] Baseline results table.
+- [x] Working evaluation command and README instructions.
+- [x] Initial development baseline results table; human adjudication still pending.
 - [ ] Top risks and blockers.
 
 #### Questions for discussion
@@ -303,7 +273,7 @@ The following assignments are proposed and need team confirmation.
 
 ### Blockers, dependencies, or risks
 
-Scoring depends on reviewed labels and agreed matching rules. Baseline comparison depends on selecting an applicable open-source extraction system. Audio reproduction requires separately supplied CCB source; native integration still needs end-to-end verification. Final owners, data access arrangements, and TA guidance need team confirmation.
+Initial proxy scoring and baseline comparisons run now. Semantic claims depend on human-reviewed labels and matching; a broader general-purpose open-source reference and natural-meeting evaluation remain follow-up work. Audio reproduction requires separately supplied CCB source; native integration still needs end-to-end verification. Final owners, data access arrangements, and TA guidance need team confirmation.
 
 ## 7. Reference
 

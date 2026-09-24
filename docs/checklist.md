@@ -104,9 +104,17 @@ Partial: FastAPI upload, poll, retry, audio file, project purge. Single-thread w
 
 ## Phase 5 — Offline Evaluation Harness (System 9)
 
-Partial: unit/CLI/HTTP tests with stubbed inference. No WER/DER/RAGAS gate.
+Partial: extraction development evaluation now runs independently of persistence.
+[Measured baseline results](milestone_2/results/README.md) cover 24 synthetic cases
+with AI-authored labels pending human review. No WER/DER/RAGAS gate.
 
 - [x] Offline pytest for extraction contract, CLI, and stubbed server workflow
+- [x] Transcript extraction development fixtures: 24 cases, 15 obligations, annotation and matching protocol (`tests/fixtures/evaluation/`)
+- [x] Offline scorer tests in `tests/benchmarks/`: matching, wrong owners/deadlines, duplicates, invalid citations, failed/missing outputs, input hashes
+- [x] Separate live baseline generation and offline scoring (`python -m labsync.evaluation`)
+- [x] Run rules, Codex, and an external open-source model on identical inputs; save predictions, settings, P/R/F1 proxies, owner/deadline agreement, citations, latency and per-case errors
+- [ ] Human-review development labels and semantic matches; complete two-reviewer rubric
+- [ ] Expand to natural meetings and freeze held-out splits before making general accuracy claims
 - [ ] `pytest tests/benchmarks/` with `jiwer` (WER)
 - [ ] Diarization DER via `pyannote.metrics`
 - [ ] RAGAS (or equivalent) citation faithfulness + grounded refusal (`"I don't know"`)
@@ -232,7 +240,7 @@ Do not jump to more SwiftUI until persistence exists. Workflow order still appli
 2. Phase 2: Postgres up, migrate, repositories, hybrid search
 3. Phase 3: write pipeline output into those tables (including storylines + dedup)
 4. Phase 4: replace JSON API with Postgres + task/chat/RAG/auth/206/WS
-5. Phase 5: run the evaluation gate on fixtures
+5. Phase 5: run the full evaluation gate on fixtures. The transcript-only extraction subset can run now using the Phase 1 contract and Phase 3 extractor; it does not depend on Postgres.
 6. Phase 6–7: point iOS at the real APIs; AVPlayer, EventKit, live Tasks/Chat
 
 )
