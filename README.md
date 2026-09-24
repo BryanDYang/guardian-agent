@@ -125,6 +125,18 @@ transcription commands so they also work after a dev-only sync.
 
 Full AMI downloads and generated outputs stay local. ICSI is not yet included.
 
+## Transcription evaluation
+
+[CCB baseline results](docs/milestone_2/transcription_results.md) measure actual
+Whisper tiny/base transcription against AMI manual references on 12 one-minute
+clips with separate development, validation and test meeting series. Test WER
+is 28.79% for tiny and 24.54% for base in this pilot. JiWER scores the outputs;
+it is not a competing transcription model.
+
+See the [audio evaluation protocol](tests/fixtures/asr/README.md) for data downloads
+and `python -m labsync.asr_evaluation` preparation, inference and scoring commands.
+Raw test artifacts stay local. Offline benchmark tests run with the dev extra.
+
 ## Extraction evaluation
 
 [Initial measured results](docs/milestone_2/results/README.md) compare rules,

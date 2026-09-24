@@ -63,7 +63,16 @@ evidence. Missing speaker labels become `UNKNOWN`; commitment owners cannot be
 `UNKNOWN` and remain null unless identified. Milliseconds are rounded from seconds.
 Changing the source segmentation changes these IDs, so retain the original artifact.
 
-## Verified run and limits
+## Measured transcription baseline
+
+The [September 24 pilot](milestone_2/transcription_results.md) runs these same CCB
+functions on 12 one-minute AMI clips using Whisper tiny and base, scored with
+JiWER against manual references. Development, validation and test meetings come
+from disjoint series. Test WER is 28.79% for tiny and 24.54% for base over 705
+reference words; this is a small initial result, not a full-corpus accuracy claim.
+See the [protocol](../tests/fixtures/asr/README.md) for reproducible commands.
+
+## Earlier integration smoke and limits
 
 A 45-second excerpt of AMI TS3005a's mixed-headset recording, from 90s to 135s,
 was processed with the actual supplied CCB functions and Whisper `tiny`.

@@ -1,0 +1,96 @@
+{
+  "version": "ami-asr-pilot-v1",
+  "selection": "Frozen 2026-09-24 before transcription: 90-150, 210-270 and 330-390 seconds of each selected meeting. No output-based clip selection.",
+  "partition": "AMI full-corpus-ASR series allocation; TS3005 training portion used only for local development, not model training; IS1008 development portion used for validation; IS1009 and ES2004 official test portion.",
+  "partition_url": "https://groups.inf.ed.ac.uk/ami/corpus/datasets.shtml",
+  "annotation_archive": "contexts/datasets/ami/ami_public_manual_1.6.2.zip",
+  "annotation_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusAnnotations/ami_public_manual_1.6.2.zip",
+  "license": "CC-BY-4.0",
+  "attribution": "AMI Consortium / Edinburgh CSTR",
+  "meetings": [
+    {
+      "meeting_id": "TS3005a",
+      "series": "TS3005",
+      "split": "development",
+      "audio_path": "contexts/datasets/ami/TS3005a.Mix-Headset.wav",
+      "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/TS3005a/audio/TS3005a.Mix-Headset.wav",
+      "windows": [
+        [
+          90,
+          150
+        ],
+        [
+          210,
+          270
+        ],
+        [
+          330,
+          390
+        ]
+      ]
+    },
+    {
+      "meeting_id": "IS1008a",
+      "series": "IS1008",
+      "split": "validation",
+      "audio_path": "artifacts/asr/data/IS1008a.Mix-Headset.wav",
+      "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/IS1008a/audio/IS1008a.Mix-Headset.wav",
+      "windows": [
+        [
+          90,
+          150
+        ],
+        [
+          210,
+          270
+        ],
+        [
+          330,
+          390
+        ]
+      ]
+    },
+    {
+      "meeting_id": "IS1009a",
+      "series": "IS1009",
+      "split": "test",
+      "audio_path": "artifacts/asr/data/IS1009a.Mix-Headset.wav",
+      "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/IS1009a/audio/IS1009a.Mix-Headset.wav",
+      "windows": [
+        [
+          90,
+          150
+        ],
+        [
+          210,
+          270
+        ],
+        [
+          330,
+          390
+        ]
+      ]
+    },
+    {
+      "meeting_id": "ES2004a",
+      "series": "ES2004",
+      "split": "test",
+      "audio_path": "artifacts/asr/data/ES2004a.Mix-Headset.wav",
+      "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/ES2004a/audio/ES2004a.Mix-Headset.wav",
+      "windows": [
+        [
+          90,
+          150
+        ],
+        [
+          210,
+          270
+        ],
+        [
+          330,
+          390
+        ]
+      ]
+    }
+  ]
+}

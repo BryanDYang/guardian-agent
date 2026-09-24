@@ -13,7 +13,7 @@
 
 Our system is designed to help researchers keep track of tasks, commitments, and decisions across recurring meetings. It takes meeting recordings (MP3 or MP4) or transcripts and uses them to identify action items, generate summaries, and track how tasks change from one meeting to the next.
 
-For Milestone 2, we are focusing on the transcript-to-task extraction step. We will use timestamped transcripts with speaker labels to test whether our system can correctly identify commitments, decisions, and task updates while evaluating extraction separately from the audio-processing pipeline.
+For Milestone 2, our primary measured baseline is audio transcription through CCB's supplied meeting transcriber. We compare Whisper tiny and base against manual AMI references with separate development, validation and test series. A supplementary transcript-to-task evaluation measures extraction separately; task updates and RAG remain future work.
 
 We plan to use three main data sources:
 
@@ -25,12 +25,13 @@ We plan to use three main data sources:
 
 We would also like to eventually test our system using recordings from our own project meetings or research lab meetings. These would give us a better idea of how our system performs in the setting we are actually building it for. However, we will not record or use any meetings without obtaining written consent from everyone involved.
 
-For this milestone, we are focusing on transcripts rather than raw audio so we can evaluate task extraction separately from transcription and speaker identification.
+Transcription and task extraction are evaluated separately. The audio pilot uses real AMI recordings and manual word references; the extraction diagnostic uses synthetic timestamped transcripts. Neither currently evaluates speaker identification.
 
 **Current inputs:** A scored synthetic development suite is now available: 24 independent micro-meetings, 35 turns, 15 labeled obligations, and 11 negative cases. Labels and matching rules were AI-authored before inference and still need human review. The following inputs exist; generated predictions are not gold labels.
 
 | Source/subset | Actual size | Format and coverage | Access |
 | --- | --- | --- | --- |
+| CCB transcription pilot | 4 meetings, 12 clips, 12 minutes, 1,738 reference words | Manual AMI references; 3 development / 3 validation / 6 test clips, series-disjoint | `tests/fixtures/asr/manifest.json`; raw data local |
 | Synthetic development benchmark | 24 micro-meetings, 35 turns, 15 obligations | AI-authored labels; frozen lexical matching; 3 measured baselines | `tests/fixtures/evaluation/development.json` |
 | Synthetic extraction example | 1 meeting, 3 turns | Explicit agreement, Sam's commitment with raw deadline, unaccepted suggestion | `tests/fixtures/meeting.json` |
 | AMI TS3005 manual transcripts | 1 series, 4 meetings; 287/693/619/1,194 nonempty turns | Timestamped corpus speakers A-D; no reviewed LabSync commitment/state labels | Local `artifacts/ami/TS3005{a,b,c,d}.json`; reproduction in `docs/codex-integration.md` |
@@ -79,7 +80,9 @@ The test set will remain separate from the development process so that our final
 
 Since we are starting with a relatively small amount of data, we will also document exactly which meetings are included in each split and avoid making broad claims about the system's performance based on only a few examples.
 
-**Current split status:** The new 24-case suite is development-only and does not establish sequence tracking. The tables above describe planned corpus allocations. The three-meeting synthetic sequence, validation/test membership, human-reviewed labels, and corpus split manifest remain unfinished. The synthetic suite records its development split and input IDs. The existing synthetic example contains one meeting. The AMI audio clip overlaps TS3005a and must stay in the same split. Verify ICSI chronology and continuity before treating the proposed IDs as a related sequence.
+**Actual audio split:** TS3005a development (3 clips / 544 words), IS1008a validation (3 clips / 489 words), IS1009a and ES2004a test (6 clips / 705 words). Each clip is 60 seconds; time windows and model settings were frozen before inference. Series do not cross splits, and allocation follows AMI full-corpus-ASR membership. No model training was performed. See the [audio protocol](../../tests/fixtures/asr/README.md). These are pilot subsets, not the complete AMI partitions.
+
+**Current extraction split status:** The new 24-case suite is development-only and does not establish sequence tracking. The tables above describe planned corpus allocations. The three-meeting synthetic sequence, validation/test membership, human-reviewed labels, and corpus split manifest remain unfinished. The synthetic suite records its development split and input IDs. The existing synthetic example contains one meeting. The AMI audio clip overlaps TS3005a and must stay in the same split. Verify ICSI chronology and continuity before treating the proposed IDs as a related sequence.
 
 ### Known limitations
 
@@ -93,7 +96,7 @@ There are a few limitations with our current datasets that we need to keep in mi
 
 **Manual annotation:** The ICSI corpus does not include all the labels we need, so our team will have to identify commitments, decisions, task owners, and updates ourselves. Some statements may be difficult to label, especially when deciding whether someone actually committed to a task or was just making a suggestion. To reduce inconsistencies, a second teammate will review the annotations, and we will document any disagreements.
 
-**Transcript quality:** For this milestone, we are assuming that transcripts already have timestamps and speaker labels. This means we are not yet evaluating errors from transcription or speaker identification, which could affect how well the full application performs once we start processing audio recordings.
+**Transcript quality:** Transcription WER is now measured in the audio pilot. Speaker identification and diarization accuracy remain unevaluated. The separate extraction diagnostic assumes supplied transcripts and speaker labels, so it does not quantify propagation of ASR errors into task extraction.
 
 **Limited coverage:** Our initial datasets will focus on English-language meetings with a relatively small number of speakers. Because of this, we cannot yet determine how well our system will perform with different languages, accents, larger meetings, or research groups from different fields.
 
@@ -116,6 +119,26 @@ This section serves as our Data Card. The synthetic benchmark now records its ex
 **Annotation guide and schema location:** `src/labsync/extraction.py` contains the provisional Pydantic contract and `meeting-extraction-v2` prompt. Inputs contain project/meeting IDs and turns with IDs, speakers, millisecond timestamps, and content. Outputs contain a summary, decisions, commitments, and suggestions. Commitments preserve nullable owners and verbatim deadline text plus one or more cited quotes. Team-reviewed annotation and matching rules are not yet finalized.
 
 ## 2. Evaluation harness
+
+### Primary audio evaluation
+
+`src/labsync/asr_evaluation.py` prepares the frozen AMI clips/references, runs the actual CCB bridge, and scores saved predictions offline with JiWER 4.0.0. WER is total substitutions + deletions + insertions divided by total reference words within each split. Failed outputs count as deletions and are reported separately; input hashes guard against mixing runs. Real-time factor records processing time divided by audio duration.
+
+Manual references use word-midpoint clipping and chronological ordering across speakers. Identical normalization lowercases, removes apostrophes, replaces other punctuation with spaces and collapses whitespace. Fillers remain. Overlapping speech, spelling/tokenization differences and crop boundaries can affect these pilot scores; this is not official AMI ASR scoring. See the [complete protocol](../../tests/fixtures/asr/README.md).
+
+```bash
+uv sync --locked --extra dev --extra audio --extra server
+# After downloading the manifest inputs and obtaining the supplied CCB source:
+uv run --no-sync python -m labsync.asr_evaluation prepare --output artifacts/asr/prepared
+uv run --no-sync python -m labsync.asr_evaluation run --model tiny --output artifacts/asr/ccb-tiny-v1
+uv run --no-sync python -m labsync.asr_evaluation run --model base --output artifacts/asr/ccb-base-v1
+uv run --no-sync python -m labsync.asr_evaluation score --output artifacts/asr/ccb-tiny-v1
+uv run --no-sync python -m labsync.asr_evaluation score --output artifacts/asr/ccb-base-v1
+```
+
+Preparation and inference require fresh directories. The test suite now has 58 passing tests, including six additional audio-scoring tests; Ruff passes. Live inference completed all 24 model/clip runs. Offline tests and live quality measurements are separate evidence.
+
+### Supplementary extraction evaluation
 
 ### Metrics and scoring
 
@@ -156,7 +179,7 @@ uv run --locked python -m labsync.evaluation score \
 
 Full live commands and prerequisites are in the fixture protocol. Offline re-scoring needs the saved local run artifacts but no credentials or network. A fresh checkout can regenerate results using the documented inference commands. Live output directories must be fresh; Codex inference consumes model usage.
 
-**September 24 verification:** 52 offline tests passed, including 15 new scorer/benchmark tests. Ruff passed. These tests validate scoring against correct and deliberately incorrect predictions, including duplicates, missing outputs, invalid citations and changed input hashes. They are distinct from the 72 actual baseline extraction runs (48 live model calls and 24 rule-based extractions). Existing dependency deprecation warnings remain; they do not alter the benchmark results.
+**Earlier extraction checkpoint on September 24:** 52 offline tests passed, including 15 new extraction scorer/benchmark tests; the subsequent audio checkpoint above brings the total to 58. Ruff passed. These tests validate scoring against correct and deliberately incorrect predictions, including duplicates, missing outputs, invalid citations and changed input hashes. They are distinct from the 72 actual baseline extraction runs (48 live model calls and 24 rule-based extractions). Existing dependency deprecation warnings remain; they do not alter the benchmark results.
 
 ## 3. Qualitative evaluation rubric
 
@@ -182,7 +205,23 @@ The following rubric is a proposed starting point for team review, not a complet
 
 **Proposed lead:** Will; scoring: Bryan; review: Guadalupe.
 
-### Baselines and actual measurements
+### Primary baseline: CCB audio transcription
+
+CCB's `meeting_transcriber` supplies the actual acoustic functions; `agent-sandbox` is a separate simulation framework. We use the existing Whisper tiny configuration as the baseline and preselect Whisper base as a model-size comparison through the same bridge. Both use English, word timestamps, no initial prompt, no conditioning on previous text, and no diarization or LLM cleanup. This is a configuration comparison within CCB, not an independently developed ASR system. Whisper is the open-source model; JiWER is the scoring library.
+
+| Split | Clips / reference words | Tiny S/D/I | Tiny WER | Base S/D/I | Base WER |
+| --- | --- | --- | --- | --- | --- |
+| Development: TS3005a | 3 / 544 | 21 / 55 / 3 | 14.52% | 16 / 57 / 2 | 13.79% |
+| Validation: IS1008a | 3 / 489 | 47 / 90 / 2 | 28.43% | 40 / 81 / 4 | 25.56% |
+| Test: IS1009a, ES2004a | 6 / 705 | 86 / 103 / 14 | 28.79% | 62 / 102 / 9 | 24.54% |
+
+Each model completed 12/12 clips. The test result is 30 fewer word errors with base: a 4.26 percentage point absolute WER reduction, or 14.78% relative. Test real-time factors are 0.021 for tiny and 0.039 for base on this host. These are single-pass observations on only two test meetings, without a significance claim. We did not train or tune either model on these clips.
+
+**Observed errors:** Substitutions fall from 86 to 62 on test, but deletions stay near 100. Tiny confuses `dogs` with `stocks` and `thief` with `three fanner` in ES2004a-330-390; base recovers those words but still omits other material. Both models incur spelling/tokenization penalties such as `white board` versus `whiteboard`. Fillers are often omitted. Base is not uniformly better: it worsens one development clip. Listening-based error adjudication and broader evaluation are next steps.
+
+The [transcription results report](transcription_results.md) records per-clip results, versions, settings, timings, limitations and sources. References come from AMI manual annotations, not model-generated labels. Raw recordings, references and predictions stay local in ignored directories. This audio evaluation does not establish diarization, RAG, timestamp accuracy or downstream task accuracy.
+
+### Supplementary baseline: task extraction
 
 The simple baseline detects first-person promises with fixed rules. The existing Codex independent-meeting extractor uses `gpt-5.6-sol`, CLI 0.149.1 and `meeting-extraction-v2`. The external open-source reference is IBM Granite Code 8B (Apache 2.0), served locally by Ollama 0.6.8 in Q4_0 with temperature 0 and seed 42. It uses the same transcript contract and extraction instructions with JSON Schema output. It was already installed and is code-specialized, so it is a first off-the-shelf reference, not a meeting-specialized or best-open-source claim. Exact model digest, sources, prompts/settings, platform and validation differences are documented in the [results summary](results/README.md).
 
@@ -208,15 +247,15 @@ Local reports in `artifacts/evaluation/{rules,codex,granite}-v1/` contain expect
 
 Next, reviewers should resolve joint-owner and task-granularity policies, adjudicate semantic matches and deadline equivalence, and then test a separately versioned prompt on new development examples. Do not silently tune v1 labels or matching terms to these predictions.
 
-**Qualitative scores:** No two-human-reviewer rubric exercise has been completed. Automated case reports and AI inspection do not substitute for it. Audio recognition, diarization, RAG, unsupported completion and cross-meeting state tracking remain outside these measurements.
+**Qualitative scores:** No two-human-reviewer rubric exercise has been completed. Automated case reports and AI inspection do not substitute for it. Audio recognition is measured separately above. Diarization, RAG, unsupported completion and cross-meeting state tracking remain outside these measurements.
 
 ## 5. Weekly check-ins and blockers
 
 **Progress made:** Implemented independent transcript extraction, AMI/CCB normalization, local audio transcription, and the web upload/results/playback flow. Added a SwiftUI prototype and PostgreSQL schema. Rechecked software tests and refreshed this report against the current branch. Bryan also reported a successful Swagger upload/results/playback smoke test on September 23.
 
-**Top blockers or risks:** iOS backend upload integration is present in code, but a completed native build and Simulator end-to-end verification are not established in this report. Audio reproduction depends on separately supplied CCB source. Human-reviewed labels, semantic adjudication, natural-meeting evaluation and reviewed qualitative scores remain missing. The scorer, three baseline runs, saved predictions and measured development proxies are now available. Team confirmation of final architecture, ownership, data splits, and TA guidance is still needed.
+**Top blockers or risks:** iOS backend upload integration is present in code, but a completed native build and Simulator end-to-end verification are not established in this report. Audio reproduction depends on separately supplied CCB source. Human-reviewed extraction labels, semantic adjudication and reviewed qualitative scores remain missing. Audio evaluation now uses manual AMI references, but needs more test meetings and listening-based error review. The scorer, three baseline runs, saved predictions and measured development proxies are now available. Team confirmation of final architecture, ownership, data splits, and TA guidance is still needed.
 
-**Planned next steps:** Human-review the 24-case labels and observed errors, resolve task granularity/joint-owner/deadline policies, and expand coverage to natural meetings. Complete qualitative review and TA follow-up before final submission. See the [verification checklist](verification.md) for application integration checks. Raw recordings, predictions and generated reports remain outside Git. The results summary includes measurements, observed failures and reproduction instructions.
+**Planned next steps:** Expand the CCB audio pilot and review recognition errors; then human-review the 24-case extraction labels and observed errors, resolve task granularity/joint-owner/deadline policies, and expand coverage to natural meetings. Complete qualitative review and TA follow-up before final submission. See the [verification checklist](verification.md) for application integration checks. Raw recordings, predictions and generated reports remain outside Git. The results summary includes measurements, observed failures and reproduction instructions.
 
 Earlier progress is recorded in the [weekly journal](../weekly_journal.md).
 
