@@ -1,6 +1,0 @@
-{
-  "name": "Meeting Memory",
-  "description": "Transforms sequences of disconnected meeting recordings into an evidence-backed project memory.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
