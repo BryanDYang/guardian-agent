@@ -16,12 +16,12 @@ Branch: `feature/ccb-codex-integration`. Application revision: `df3a5390451f6e48
 | Browser refresh | Completed meeting still listed |
 | Native iOS build/Simulator | Blocked: full Xcode unavailable; selected developer directory is CommandLineTools, and simctl is absent |
 
-Commands executed against the installed environment:
+Equivalent verification commands using the current `uv` workflow:
 
 ```bash
-.venv/bin/pytest -q
-.venv/bin/ruff check src tests
-.venv/bin/ruff format --check src tests
+uv run --locked --extra dev pytest -q
+uv run --locked --extra dev ruff check src tests
+uv run --locked --extra dev ruff format --check src tests
 cd meeting-assistant-ui
 npm run lint
 npm run build
