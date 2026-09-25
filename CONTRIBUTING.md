@@ -4,6 +4,10 @@ This document covers development of the meeting follow-through assistant.
 
 ## Development setup
 
+Use `uv` for Python dependency management and running commands. `pyproject.toml`
+and `uv.lock` define the environment; `uv` manages the ignored `.venv/` directory
+automatically. No manual environment creation or activation is needed.
+
 Install Python 3.12 and uv, then run:
 
 ```bash
