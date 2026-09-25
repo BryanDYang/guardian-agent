@@ -1,5 +1,8 @@
 # Initial extraction measurements - September 24, 2026
 
+Supplementary task-extraction evaluation. The primary audio baseline and
+split-data measurements are in the [CCB transcription report](../transcription_results.md).
+
 These are actual runs on the same **24 synthetic development micro-meetings
 (35 turns, 15 labeled obligations, 11 negative cases)**. Labels were AI-authored
 before inference and have not been independently reviewed by humans. Matching

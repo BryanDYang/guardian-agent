@@ -23,6 +23,7 @@ labsync = "labsync.cli:main"
 dev = [
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
+    "jiwer>=4,<5",
     "pytest>=8",
     "python-multipart>=0.0.32",
     "ruff>=0.11",

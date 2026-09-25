@@ -104,9 +104,7 @@ Partial: FastAPI upload, poll, retry, audio file, project purge. Single-thread w
 
 ## Phase 5 — Offline Evaluation Harness (System 9)
 
-Partial: extraction development evaluation now runs independently of persistence.
-[Measured baseline results](milestone_2/results/README.md) cover 24 synthetic cases
-with AI-authored labels pending human review. No WER/DER/RAGAS gate.
+Partial: [CCB transcription measurements](milestone_2/transcription_results.md) now cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
 
 - [x] Offline pytest for extraction contract, CLI, and stubbed server workflow
 - [x] Transcript extraction development fixtures: 24 cases, 15 obligations, annotation and matching protocol (`tests/fixtures/evaluation/`)
@@ -115,7 +113,9 @@ with AI-authored labels pending human review. No WER/DER/RAGAS gate.
 - [x] Run rules, Codex, and an external open-source model on identical inputs; save predictions, settings, P/R/F1 proxies, owner/deadline agreement, citations, latency and per-case errors
 - [ ] Human-review development labels and semantic matches; complete two-reviewer rubric
 - [ ] Expand to natural meetings and freeze held-out splits before making general accuracy claims
-- [ ] `pytest tests/benchmarks/` with `jiwer` (WER)
+- [x] `pytest tests/benchmarks/` with `jiwer` (WER): known edit counts, normalization, missing outputs, input hashes and series split checks
+- [x] Run actual CCB transcription with Whisper tiny/base on a frozen AMI pilot; report split-level WER, S/D/I counts, failures and real-time factor
+- [ ] Expand ASR evaluation beyond two test meetings and set reviewed acceptance thresholds
 - [ ] Diarization DER via `pyannote.metrics`
 - [ ] RAGAS (or equivalent) citation faithfulness + grounded refusal (`"I don't know"`)
 - [ ] Run the suite against golden fixtures; record pass/fail before claiming E2E
