@@ -4,6 +4,10 @@ This document covers development of the meeting follow-through assistant.
 
 ## Development setup
 
+Use `uv` for Python dependency management and running commands. `pyproject.toml`
+and `uv.lock` define the environment; `uv` manages the ignored `.venv/` directory
+automatically. No manual environment creation or activation is needed.
+
 Install Python 3.12 and uv, then run:
 
 ```bash
@@ -15,6 +19,9 @@ uv run ruff check src tests
 uv run ruff format --check src tests
 uv run pytest
 ```
+
+To use the shared backend on Will's Mac, get his API key privately and run
+`scripts/use_shared_backend.sh` (see [README](README.md#option-a-use-wills-backend)).
 
 Tests run offline without API keys. Keep real meeting artifacts and participant
 data outside the repository. See [upstream provenance](docs/upstream.md) before
@@ -51,7 +58,7 @@ git checkout -b feature/my-feature
 
 - Keep commits small and focused, with one logical change per commit.
 - Write clear commit messages in the imperative mood.
-- Never commit `.env` or any file containing secrets or API keys.
+- Never commit `.env`, `LabSyncConfig.plist`, or any file containing secrets or API keys.
 - Treat [docs/milestone_1/project_proposal.md](docs/milestone_1/project_proposal.md) as the current project source of truth.
 - Do not reintroduce archived requirements without first updating the active proposal.
 

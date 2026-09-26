@@ -84,7 +84,7 @@ Partial: FastAPI upload, poll, retry, audio file, project purge. Single-thread w
 - [x] `GET /api/meetings/{id}/audio` (full file, not byte-range)
 - [x] `DELETE /api/projects/{project}/meetings`
 - [ ] Swap JSON persistence for Postgres in all of the above
-- [ ] Bearer token guard (`Authorization: Bearer <API_SECRET_KEY>`) on every route
+- [x] Bearer token guard (`Authorization: Bearer <API_SECRET_KEY>`) on every route
 - [ ] `project_id` scoping on reads/writes (UUID, not a free-text project name)
 - [ ] `GET /api/meetings` list (and project list) so clients can sync after relaunch
 - [ ] Task review API: approve / edit / dismiss; return payload for EventKit sync
@@ -188,6 +188,7 @@ Screens exist. Only the Meetings upload/review path is live, and it is local-cac
 - [ ] Filter by project from Postgres `project_id`
 - [ ] Edit assignee, description, due date, status — persist + audit log
 - [ ] Reminders / approaching-deadline highlighting (bell button is a no-op; push notifications are out of scope)
+- [ ] Show a "Connection lost, tap to reconnect" state whenever there's an error, instead of the spinner.
 
 
 

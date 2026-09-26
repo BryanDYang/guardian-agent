@@ -13,6 +13,18 @@ from pathlib import Path
 
 from .extraction import Transcript, Turn
 
+BACKENDS = {"mlx": "mlx-whisper", "openai": "openai-whisper-local"}
+
+MLX_WEIGHTS = {
+    "tiny": "mlx-community/whisper-tiny-mlx",
+    "base": "mlx-community/whisper-base-mlx",
+    "small": "mlx-community/whisper-small-mlx",
+    "medium": "mlx-community/whisper-medium-mlx",
+    "large": "mlx-community/whisper-large-v3-mlx",
+    "turbo": "mlx-community/whisper-large-v3-turbo",
+}
+MERGE_GAP_MS = 1500
+
 
 def import_transcript(path: Path, *, project_id: str, meeting_id: str) -> Transcript:
     """Preserve raw text, timing, and labels; do not infer speaker identities."""
@@ -57,6 +69,39 @@ def import_transcript(path: Path, *, project_id: str, meeting_id: str) -> Transc
     return Transcript(project_id=project_id, meeting_id=meeting_id, turns=turns)
 
 
+def merge_turns(
+    transcript: Transcript, max_gap_ms: int = MERGE_GAP_MS
+) -> tuple[Transcript, dict[str, list[str]]]:
+    """Join consecutive same-speaker segments separated by <= max_gap_ms.
+
+    UNKNOWN segments are never joined: the label may cover several people.
+    Returns the merged transcript and a map of new turn ID -> source segment IDs.
+    """
+    merged: list[dict] = []
+    sources: list[list[str]] = []
+    for turn in transcript.turns:
+        prev = merged[-1] if merged else None
+        if (
+            prev
+            and prev["speaker"] == turn.speaker
+            and turn.speaker.upper() != "UNKNOWN"
+            and turn.start_time_ms - prev["end_time_ms"] <= max_gap_ms
+        ):
+            prev["end_time_ms"] = max(prev["end_time_ms"], turn.end_time_ms)
+            prev["content"] += " " + turn.content.strip()
+            sources[-1].append(turn.id)
+        else:
+            merged.append(turn.model_dump() | {"content": turn.content.strip()})
+            sources.append([turn.id])
+    for i, m in enumerate(merged):
+        m["id"] = f"{transcript.meeting_id}:turn:{i}"
+    result = transcript.model_copy(update={"turns": [Turn(**m) for m in merged]})
+    return (
+        Transcript.model_validate(result.model_dump()),
+        {m["id"]: s for m, s in zip(merged, sources)},
+    )
+
+
 def transcribe(
     recording: Path,
     *,
@@ -65,6 +110,7 @@ def transcribe(
     project_id: str,
     meeting_id: str,
     whisper_model: str,
+    backend: str,
     diarize: bool = False,
 ) -> Path:
     """Call acoustic functions only, avoiding the personal-workflow entry point."""
@@ -79,6 +125,12 @@ def transcribe(
         raise ValueError(f"Output directory already exists: {output}")
     if not project_id.strip() or not meeting_id.strip():
         raise ValueError("Project and meeting IDs must not be blank")
+    if backend not in BACKENDS:
+        raise ValueError(
+            f"Unknown Whisper backend: {backend}; choose from " + ", ".join(BACKENDS)
+        )
+    if backend == "mlx" and whisper_model not in MLX_WEIGHTS:
+        raise ValueError(f"No MLX-Whisper weights for model {whisper_model!r}")
     if diarize and not os.environ.get("HF_TOKEN"):
         raise ValueError("Diarization requires HF_TOKEN and accepted model access")
     try:
@@ -97,6 +149,12 @@ def transcribe(
         sys.path.pop(0)
     if diarize and not module.DIARIZATION_AVAILABLE:
         raise RuntimeError("Install CCB's pyannote dependencies before using --diarize")
+    if backend == "mlx" and not module.MLX_AVAILABLE:
+        raise RuntimeError(
+            "MLX-Whisper requires an Apple Silicon Mac and the audio extra; "
+            "use --whisper-backend openai instead"
+        )
+    weights = MLX_WEIGHTS[whisper_model] if backend == "mlx" else None
 
     original_path = os.environ.get("PATH", "")
     with tempfile.TemporaryDirectory(prefix="labsync-audio-") as directory:
@@ -126,7 +184,11 @@ def transcribe(
                 capture_output=True,
                 timeout=300,
             )
-            model = module.load_whisper_model(whisper_model, "openai")
+            model = (
+                ("mlx", weights)
+                if backend == "mlx"
+                else module.load_whisper_model(whisper_model, "openai")
+            )
             result = module.transcribe_audio(
                 wav, model, condition_on_previous_text=False
             )
@@ -142,22 +204,27 @@ def transcribe(
         "source_audio_sha256": sha256(recording.read_bytes()).hexdigest(),
         "ccb_script_sha256": sha256(script.read_bytes()).hexdigest(),
         "whisper_model": whisper_model,
-        "backend": "openai-whisper-local",
+        "backend": BACKENDS[backend],
+        "whisper_weights": weights,
         "language": result.get("language", "unknown"),
         "diarization": "pyannote" if diarize else "not_run",
         "llm_cleanup": "not_run",
+        "turn_merge_max_gap_ms": MERGE_GAP_MS,
     }
     # Normalize and validate before publishing either artifact.
     raw = {"metadata": metadata, "segments": result.get("timestamped", [])}
     with tempfile.TemporaryDirectory(prefix="labsync-import-") as directory:
         raw_path = Path(directory) / "ccb-transcript.json"
         raw_path.write_text(json.dumps(raw), encoding="utf-8")
-        transcript = import_transcript(
-            raw_path, project_id=project_id, meeting_id=meeting_id
+        transcript, sources = merge_turns(
+            import_transcript(raw_path, project_id=project_id, meeting_id=meeting_id)
         )
     output.mkdir(parents=True, exist_ok=False)
     (output / "ccb-transcript.json").write_text(
         json.dumps(raw, indent=2) + "\n", encoding="utf-8"
+    )
+    (output / "turn-sources.json").write_text(
+        json.dumps(sources, indent=2) + "\n", encoding="utf-8"
     )
     normalized = output / "transcript.json"
     normalized.write_text(transcript.model_dump_json(indent=2) + "\n", encoding="utf-8")

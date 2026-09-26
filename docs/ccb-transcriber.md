@@ -8,7 +8,7 @@ load it locally and do not copy or redistribute its code in the LabSync package.
 Audited `meeting_transcriber.py` SHA-256:
 `c1f1a342ecf5924d9d92ee9791790ab90d98beef5a0a61377b552235ba1c0fa3`.
 
-For the connected browser workflow, see [RUN_UI.md](../RUN_UI.md).
+For the connected app workflow, see [RUN_UI.md](../RUN_UI.md).
 
 ## Working audio-to-Codex path
 
@@ -19,19 +19,26 @@ uv sync --locked --extra dev --extra audio
 uv run --locked --extra audio labsync transcribe /path/to/meeting.mp3 \
   --source contexts/meeting_transcriber-master \
   --project-id demo --meeting-id meeting-001 \
-  --whisper-model base --output-dir artifacts/meeting-001
+  --whisper-model base --whisper-backend mlx --output-dir artifacts/meeting-001
 uv run labsync extract artifacts/meeting-001/transcript.json \
   --model gpt-5.6-sol --output artifacts/meeting-001/extraction.json
 ```
 
 The first command runs locally. Whisper downloads model weights on first use.
-The second uses your Codex login and sends the transcript to Codex. MP4 and other
+The second uses your Codex login and sends the transcript to Codex; use
+`--provider claude --model claude-sonnet-4-5` with `ANTHROPIC_API_KEY` instead. MP4 and other
 FFmpeg-readable inputs also work. Each transcription needs a new output directory.
 
 LabSync calls CCB's `load_whisper_model` and `transcribe_audio` directly.
 It normalizes the input to a temporary 16 kHz mono WAV and disables conditioning
 on previous text, matching the source's normal processing configuration.
-`openai` here means local open-source Whisper, not a paid OpenAI transcription API.
+`transcribe` and `serve` require `--whisper-backend`: `mlx` runs local
+MLX-Whisper (Apple Silicon only) and `openai` runs local open-source OpenAI
+Whisper. There is no automatic choice, and `mlx` fails instead of falling back.
+`ccb-transcript.json` records the backend and, for MLX, the weights repo.
+Neither calls a paid transcription API. LabSync pins full-precision
+`mlx-community` weights because CCB's own map names missing base/small repos.
+The AMI benchmark below still uses local OpenAI Whisper so its results reproduce.
 The `audio` extra includes an FFmpeg binary fallback if FFmpeg is not on PATH.
 
 It bypasses `process_recording`, whose personal workflow queries calendars,
@@ -45,7 +52,15 @@ Artifacts:
 - `ccb-transcript.json`: CCB-compatible segments in seconds plus run metadata,
   including input audio and CCB script hashes, model, and diarization status.
 - `transcript.json`: validated LabSync turns with millisecond timestamps.
+- `turn-sources.json`: each turn ID mapped to the segment IDs it was merged from.
 - `extraction.json`: validated Codex predictions, usage, and prompt metadata.
+
+Consecutive segments from the same diarized speaker are merged into one turn
+when the silence between them is at most 1500 ms. Segment text is trimmed and
+joined with a single space. `UNKNOWN` segments are never merged, because the
+label may cover several people. Turn IDs are `<meeting-id>:turn:<index>`.
+Extraction evidence cites these turn IDs; use `turn-sources.json` to trace a
+turn back to the raw segments in `ccb-transcript.json`.
 
 ## Import an existing CCB result
 
@@ -57,9 +72,11 @@ uv run labsync import-ccb /path/to/ccb/meeting/transcript.json \
 
 The input must contain `segments` with numeric `start`/`end`, `text`, and
 optional `speaker`. Additional upstream metadata is ignored by the importer.
-Whitespace-only segments are skipped; other raw text is preserved. IDs use
-`<meeting-id>:segment:<original-index>` so skipped segments do not renumber
-evidence. Missing speaker labels become `UNKNOWN`; commitment owners cannot be
+Whitespace-only segments are skipped. Segment IDs use
+`<meeting-id>:segment:<original-index>`, so skipped segments do not renumber
+them. Segments are then merged into turns as described above, and the turn to
+segment map is written next to the output as `<output-stem>.sources.json`.
+Missing speaker labels become `UNKNOWN`; commitment owners cannot be
 `UNKNOWN` and remain null unless identified. Milliseconds are rounded from seconds.
 Changing the source segmentation changes these IDs, so retain the original artifact.
 

@@ -1,15 +1,23 @@
 import Foundation
 
 struct MeetingAPIClient {
-    static let shared = MeetingAPIClient(
-        baseURL: URL(string: "http://127.0.0.1:8000")!
-    )
+    static let shared: MeetingAPIClient = {
+        let config = Bundle.main.url(forResource: "LabSyncConfig", withExtension: "plist")
+            .flatMap { NSDictionary(contentsOf: $0) as? [String: String] } ?? [:]
+        return MeetingAPIClient(
+            baseURL: config["BaseURL"].flatMap(URL.init(string:))
+                ?? URL(string: "http://127.0.0.1:8000")!,
+            token: config["APIToken"]
+        )
+    }()
 
     let baseURL: URL
+    private let token: String?
     private let session: URLSession
 
-    init(baseURL: URL, session: URLSession = .shared) {
+    init(baseURL: URL, token: String? = nil, session: URLSession = .shared) {
         self.baseURL = baseURL
+        self.token = token
         self.session = session
     }
 
@@ -82,6 +90,10 @@ struct MeetingAPIClient {
     }
 
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
+        var request = request
+        if let token {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         let (data, response) = try await session.data(for: request)
         guard let response = response as? HTTPURLResponse else {
             throw MeetingAPIError.invalidResponse
