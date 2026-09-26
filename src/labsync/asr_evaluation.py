@@ -205,6 +205,7 @@ def run(dataset_path: Path, output: Path, model: str, source: Path) -> None:
                 project_id=f"ami-{clip['series']}",
                 meeting_id=clip["id"],
                 whisper_model=model,
+                backend="openai",
             )
             transcript = json.loads(normalized.read_text())
             record["hypothesis"] = " ".join(

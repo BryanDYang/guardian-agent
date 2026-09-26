@@ -7,14 +7,14 @@ import time
 from hashlib import sha256
 from pathlib import Path
 
-from .extraction import INSTRUCTIONS, PROMPT_VERSION, Extraction, Transcript
+from .extraction import PROMPT_VERSION, Extraction, Transcript, build_prompt
 
 
 def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
     """Run one independent meeting; never read or copy Codex credentials."""
     if timeout <= 0:
         raise ValueError("timeout must be positive")
-    prompt = INSTRUCTIONS + "\nTRANSCRIPT:\n" + transcript.model_dump_json()
+    prompt = build_prompt(transcript)
     with tempfile.TemporaryDirectory(prefix="labsync-codex-") as directory:
         root = Path(directory)
         schema = root / "schema.json"

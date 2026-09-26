@@ -123,7 +123,13 @@ def run(suite: dict, output: Path, method: str, model: str | None) -> None:
         "source_sha256": digest(
             {
                 name: Path(__file__).with_name(name).read_text()
-                for name in ["evaluation.py", "extraction.py", "codex_client.py"]
+                for name in [
+                    "evaluation.py",
+                    "extraction.py",
+                    "providers.py",
+                    "codex_client.py",
+                    "claude_client.py",
+                ]
             }
         ),
     }
@@ -145,9 +151,11 @@ def run(suite: dict, output: Path, method: str, model: str | None) -> None:
             elif method == "ollama":
                 record.update(ollama_extract(transcript, model))
             else:
-                from .codex_client import extract
+                from .providers import extract
 
-                record.update(extract(transcript, model=model, timeout=240))
+                record.update(
+                    extract(transcript, provider=method, model=model, timeout=240)
+                )
             Extraction.model_validate(record["extraction"])
         except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as exc:
             record["error"] = f"{type(exc).__name__}: {exc}"
@@ -381,7 +389,7 @@ def main() -> None:
     )
     parser.add_argument("--directory", type=Path, required=True)
     parser.add_argument(
-        "--method", choices=["rules", "codex", "ollama"], default="rules"
+        "--method", choices=["rules", "codex", "claude", "ollama"], default="rules"
     )
     parser.add_argument("--model")
     args = parser.parse_args()

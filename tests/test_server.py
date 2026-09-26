@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from labsync.providers import DEFAULT_MODELS
 from labsync.server import create_app
 
 TRANSCRIPT = {
@@ -135,6 +136,47 @@ def test_failure_and_retry(tmp_path, fake_process, monkeypatch):
         assert wait_for(client, meeting_id, "completed")["attempt"] == 2
 
 
+def test_selected_provider_reaches_extraction(tmp_path, fake_process, monkeypatch):
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        fake_process(command, **kwargs)
+
+    monkeypatch.setattr("labsync.server.subprocess.run", run)
+    with TestClient(create_app(tmp_path, provider="claude")) as client:
+        health = client.get("/api/health").json()
+        assert health["extraction_provider"] == "claude"
+        assert health["extraction_model"] == DEFAULT_MODELS["claude"]
+        wait_for(client, upload(client).json()["id"], "completed")
+    extract = commands[-1]
+    assert extract[extract.index("--provider") + 1] == "claude"
+    assert extract[extract.index("--model") + 1] == DEFAULT_MODELS["claude"]
+    with pytest.raises(ValueError, match="Unknown extraction provider"):
+        create_app(tmp_path, provider="gemini")
+
+
+@pytest.mark.parametrize("backend", ["mlx", "openai"])
+def test_whisper_backend_reaches_transcription(
+    tmp_path, fake_process, monkeypatch, backend
+):
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        fake_process(command, **kwargs)
+
+    monkeypatch.setattr("labsync.server.subprocess.run", run)
+    with TestClient(create_app(tmp_path, whisper_backend=backend)) as client:
+        assert client.get("/api/health").json()["whisper_backend"] == backend
+        wait_for(client, upload(client).json()["id"], "completed")
+    transcribe = commands[0]
+    assert transcribe[transcribe.index("--whisper-backend") + 1] == backend
+    for invalid in ["auto", "cuda"]:
+        with pytest.raises(ValueError, match="Unknown Whisper backend"):
+            create_app(tmp_path, whisper_backend=invalid)
+
+
 def test_interrupted_job_and_origin_check(tmp_path, fake_process):
     with TestClient(create_app(tmp_path)) as client:
         meeting_id = upload(client).json()["id"]
@@ -154,6 +196,22 @@ def test_interrupted_job_and_origin_check(tmp_path, fake_process):
             ).status_code
             == 403
         )
+
+
+def test_bearer_token_required(tmp_path):
+    with TestClient(create_app(tmp_path, token="secret")) as client:
+        for headers in [
+            {},
+            {"Authorization": "Bearer wrong"},
+            {"Authorization": "secret"},
+        ]:
+            response = client.get("/api/meetings", headers=headers)
+            assert response.status_code == 401
+            assert response.headers["www-authenticate"] == "Bearer"
+        assert client.get("/api/health").status_code == 401
+        authorized = {"Authorization": "Bearer secret"}
+        assert client.get("/api/meetings", headers=authorized).json() == []
+        assert client.get("/api/health", headers=authorized).status_code == 200
 
 
 def test_purge_project_meetings(tmp_path, fake_process):
