@@ -7,7 +7,7 @@ commitments, and suggestions using a local Codex login. The optional CCB bridge
 transcribes audio locally with Whisper. The local HTTP backend connects the
 Meetings UI to uploads, processing, results, and playback. PostgreSQL persistence
 is not implemented yet. See the
-[Milestone 1 proposal](docs/milestone_1/project_proposal.md) for the planned scope.
+[Milestone 1 proposal](docs/archive/milestone_1/project_proposal.md) for the planned scope.
 
 **Repository:** https://github.com/BryanDYang/guardian-agent
 
@@ -135,7 +135,13 @@ it is not a competing transcription model.
 
 See the [audio evaluation protocol](tests/fixtures/asr/README.md) for data downloads
 and `python -m labsync.asr_evaluation` preparation, inference and scoring commands.
-Raw test artifacts stay local. Offline benchmark tests run with the dev extra.
+The audio run requires the separately supplied CCB source at
+`contexts/meeting_transcriber-master`; it is not bundled in a fresh checkout.
+Obtain it from the project team or course sponsor before attempting audio inference.
+The supplied archive has no verified upstream commit/license, so it has not been
+redistributed. Download AMI inputs using the protocol manifest. Raw audio run
+artifacts stay local. The rule-based extraction example below works without CCB,
+model credentials, or audio downloads. Offline benchmark tests use the dev extra.
 
 ## Extraction evaluation
 
@@ -150,6 +156,28 @@ uv run --locked python -m labsync.evaluation run --method rules \
 uv run --locked python -m labsync.evaluation score \
   --directory artifacts/evaluation/rules-new
 ```
+
+Example score output from the saved `rules-v1` run (metric rows excerpted):
+
+```text
+Method: rules; model: None.
+Scorer: action-terms-v1.
+
+| Metric | Numerator / denominator | Value |
+| --- | --- | --- |
+| task_precision_proxy | 11/16 | 0.688 |
+| task_recall_proxy | 11/15 | 0.733 |
+| task_f1_proxy | 22/31 | 0.710 |
+| negative | 9/11 | 0.818 |
+
+Failed/missing cases: 0.
+```
+
+[Saved scoring evidence](docs/milestone_2/results/slice_results.json) includes
+all three v1 scoring reports and per-case counts, so inspecting these results
+does not require credentials or live inference. [Scenario slices](docs/milestone_2/results/slices.md)
+include exact membership and denominators. The [human review packet](docs/milestone_2/failure_review.md)
+and [compact log](docs/milestone_2/failure_review_log.md) are prepared; human ratings remain pending.
 
 See the [fixture protocol](tests/fixtures/evaluation/README.md) for live inference,
 annotation rules, matching and metric definitions. Labels are AI-authored pending

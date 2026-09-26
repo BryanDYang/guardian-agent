@@ -28,6 +28,15 @@ not a controlled speed comparison. Rule timings are below the stored resolution
 for 23/24 cases, so do not use their rounded mean as a microbenchmark. No monetary
 cost was measured. Token counts are retained where the runtime supplies them.
 
+## Scenario results and human review
+
+[Scenario slices](slices.md) report all 24 cases in six disjoint groups, with
+pooled counts and explicit denominators. [Saved scoring evidence](slice_results.json)
+contains the original per-case scoring snapshots and source hashes. The
+[failure-review packet](../failure_review.md), [compact review log](../failure_review_log.md),
+and independent reviewer sheets are prepared for 28 flagged model/case outputs
+across 14 distinct inputs. Human inspection and agreement results remain pending.
+
 ## Systems and settings
 
 - **Rules:** `rule_extract` in `src/labsync/evaluation.py`, matching `I will`,
@@ -105,9 +114,11 @@ uv run --locked python -m labsync.evaluation score \
   --directory artifacts/evaluation/granite-v1
 ```
 
-Raw predictions and generated reports are retained locally under ignored
-`artifacts/evaluation/` and are not part of the submission. A fresh checkout can
-regenerate them using the fixture protocol.
+Complete inference runs remain local under ignored `artifacts/evaluation/`.
+The saved scoring evidence now includes all per-case commitment predictions,
+labels, flags, and counts used for this report. The failure-review packet also
+includes the flagged cases with source transcripts. A fresh checkout can
+regenerate complete inference runs using the fixture protocol.
 Still required: human label/match review, two-reviewer qualitative scores, natural
 meeting evaluation, held-out splits, and state/reconciliation metrics. WER, DER,
 RAG faithfulness/refusal and Postgres-backed E2E journeys are separate checklist
