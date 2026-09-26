@@ -119,13 +119,64 @@ Each `transcribe` run needs a new `--output-dir`.
 
 ## Evaluation
 
+### Transcription
+
+[CCB baseline results](docs/milestone_2/transcription_results.md) measure actual
+Whisper tiny/base transcription against AMI manual references on 12 one-minute
+clips with separate development, validation and test meeting series. Test WER
+is 28.79% for tiny and 24.54% for base in this pilot. JiWER scores the outputs;
+it is not a competing transcription model.
+
+See the [audio evaluation protocol](tests/fixtures/asr/README.md) for data downloads
+and `python -m labsync.asr_evaluation` preparation, inference and scoring commands.
+The audio run requires the separately supplied CCB source at
+`contexts/meeting_transcriber-master`; it is not bundled in a fresh checkout.
+Obtain it from the project team or course sponsor before attempting audio inference.
+The supplied archive has no verified upstream commit/license, so it has not been
+redistributed. Download AMI inputs using the protocol manifest. Raw audio run
+artifacts stay local. The rule-based extraction example below works without CCB,
+model credentials, or audio downloads. Use a fresh output directory for each run. Offline benchmark tests use the dev extra.
+
+### Task extraction
+
+[Initial measured results](docs/milestone_2/results/README.md) compare rules,
+Codex and local Granite Code 8B on 24 synthetic development cases. Run the
+offline scorer tests and a fresh rule baseline:
+
 ```bash
 uv run --locked --extra dev pytest tests/benchmarks/
-uv run --locked python -m labsync.evaluation run --method rules --directory artifacts/evaluation/rules-new
-uv run --locked python -m labsync.evaluation score --directory artifacts/evaluation/rules-new
+uv run --locked python -m labsync.evaluation run --method rules \
+  --directory artifacts/evaluation/rules-new
+uv run --locked python -m labsync.evaluation score \
+  --directory artifacts/evaluation/rules-new
 ```
 
-Results: [transcription](docs/milestone_2/transcription_results.md), [extraction](docs/milestone_2/results/README.md).
+Example score output from the saved `rules-v1` run (metric rows excerpted):
+
+```text
+Method: rules; model: None.
+Scorer: action-terms-v1.
+
+| Metric | Numerator / denominator | Value |
+| --- | --- | --- |
+| task_precision_proxy | 11/16 | 0.688 |
+| task_recall_proxy | 11/15 | 0.733 |
+| task_f1_proxy | 22/31 | 0.710 |
+| negative | 9/11 | 0.818 |
+
+Failed/missing cases: 0.
+```
+
+[Saved scoring evidence](docs/milestone_2/results/slice_results.json) includes
+all three v1 scoring reports and per-case counts, so inspecting these results
+does not require credentials or live inference. [Scenario slices](docs/milestone_2/results/slices.md)
+include exact membership and denominators. The [human review packet](docs/milestone_2/failure_review.md)
+and [compact log](docs/milestone_2/failure_review_log.md) are prepared; human ratings remain pending.
+
+See the [fixture protocol](tests/fixtures/evaluation/README.md) for live inference,
+annotation rules, matching and metric definitions. Labels are AI-authored pending
+human review; the reported action-matching scores are development proxies.
+This implements the extraction portion of [checklist Phase 5](docs/checklist.md).
 
 ## Development
 

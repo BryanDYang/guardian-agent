@@ -42,8 +42,9 @@ if [ -z "$ID" ]; then
 else
   echo "Reusing tunnel $ID."
 fi
-CREDENTIALS="$CF_DIR/$ID.json"
-[ -f "$CREDENTIALS" ] || fail "Tunnel '$TUNNEL' belongs to another machine (no $CREDENTIALS here).
+# Path to the local Cloudflare credentials file, not a credential value.
+CREDENTIALS_FILE="$CF_DIR/$ID.json"
+[ -f "$CREDENTIALS_FILE" ] || fail "Tunnel '$TUNNEL' belongs to another machine (no $CREDENTIALS_FILE here).
 Pick your own names, for example: $0 api-yourname.guardianagent.dev labsync-yourname"
 
 step "DNS route $HOST"
@@ -64,7 +65,7 @@ else
   fi
   cat >"$CF_CONFIG" <<EOF
 tunnel: $ID
-credentials-file: $CREDENTIALS
+credentials-file: $CREDENTIALS_FILE
 
 ingress:
   - hostname: $HOST
