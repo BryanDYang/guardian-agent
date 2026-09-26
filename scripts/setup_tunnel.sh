@@ -105,7 +105,7 @@ fi
 cat <<EOF
 
 Setup complete. Next:
-  1. Terminal 1:  cd "$ROOT" && uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx
+  1. Terminal 1:  cd "$ROOT" && uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
   2. Terminal 2:  cloudflared tunnel run $TUNNEL
   3. Rebuild the iOS app in Xcode so it bundles the updated LabSyncConfig.plist.
   4. Verify:      scripts/check_tunnel.sh $HOST

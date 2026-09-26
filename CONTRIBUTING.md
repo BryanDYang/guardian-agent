@@ -21,7 +21,7 @@ uv run pytest
 ```
 
 To use the shared backend on Will's Mac, get his API key privately and run
-`scripts/use_shared_backend.sh` (see [README](README.md#use-wills-backend-easiest)).
+`scripts/use_shared_backend.sh` (see [README](README.md#option-a-use-wills-backend)).
 
 Tests run offline without API keys. Keep real meeting artifacts and participant
 data outside the repository. See [upstream provenance](docs/upstream.md) before

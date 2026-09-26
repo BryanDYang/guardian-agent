@@ -4,9 +4,16 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Repository:** https://github.com/BryanDYang/guardian-agent
 
-## Use Will's backend (easiest)
+**Pipeline:** iOS app uploads audio → Cloudflare Tunnel → backend on a Mac → Whisper (medium) transcribes → Codex or Claude extracts decisions and action items → results show up in the app.
 
-The backend runs on Will's M4 Mac. To use it from the iOS app, you only need **Will's API key**. Ask him for it privately and never commit it.
+Pick one:
+
+- **Option A:** use Will's backend. You only need the iOS app and his API key.
+- **Option B:** run the whole pipeline on your own Mac.
+
+## Option A: Use Will's backend
+
+Ask Will for the API key privately. Never commit it.
 
 ```bash
 git clone https://github.com/BryanDYang/guardian-agent.git
@@ -15,56 +22,88 @@ scripts/use_shared_backend.sh
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
 
-The script asks for the key, saves it to the gitignored `LabSyncConfig.plist`, and checks the connection. Rebuild the app in Xcode.
+The script saves the key to the gitignored `LabSyncConfig.plist` and checks that Will's backend is online. Build and run the app in Xcode.
 
-To run your own backend instead, follow Setup below.
+## Option B: Run your own backend (end to end)
 
-## Setup
+**You need:** an Apple Silicon Mac, [Homebrew](https://brew.sh), Xcode, and a Cloudflare login that can manage `guardianagent.dev` (ask Will).
 
-Requires macOS, Python 3.12, and [uv](https://docs.astral.sh/uv/).
+### 1. Get the code and install
 
 ```bash
+brew install uv cloudflared
 git clone https://github.com/BryanDYang/guardian-agent.git
 cd guardian-agent
 uv sync --locked --extra dev --extra audio --extra server
-uv run --locked --extra dev pytest
 ```
 
-Get the `contexts/meeting_transcriber-master` folder from a teammate and put it in the repo root; audio transcription needs it.
+### 2. Add the transcriber
 
-### `.env` and iOS config
+Get the `contexts/meeting_transcriber-master` folder from a teammate and put it in the repo root. It is gitignored, so `git pull` will not bring it. Check it is in place:
+
+```bash
+ls contexts/meeting_transcriber-master/meeting_transcriber.py
+```
+
+### 3. Create `.env` and log in to the extraction model
 
 ```bash
 cp .env.example .env
-TOKEN=$(python3 -c "import secrets; print(secrets.token_urlsafe(32))")
-sed -i '' "s|^API_SECRET_KEY=.*|API_SECRET_KEY=$TOKEN|" .env
-PLIST=ios/MeetingApp/MeetingApp/LabSyncConfig.plist
-cp ios/MeetingApp/LabSyncConfig.example.plist "$PLIST"
-plutil -replace BaseURL -string "http://127.0.0.1:8000" "$PLIST"
-plutil -replace APIToken -string "$TOKEN" "$PLIST"
+codex login        # if codex is missing: npm install -g @openai/codex
 ```
 
-### Extraction provider (pick one)
+Leave `API_SECRET_KEY` blank; step 4 fills it in. To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
+
+### 4. Set up the Cloudflare tunnel (once per Mac)
+
+Pick your own hostname and tunnel name:
 
 ```bash
-codex login                                   # Codex (default)
+scripts/setup_tunnel.sh api-yourname.guardianagent.dev labsync-yourname
 ```
 
-For Claude, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
+This logs you in to Cloudflare, creates the tunnel, generates `API_SECRET_KEY` in `.env`, and points the iOS app at `https://api-yourname.guardianagent.dev` with the same key.
 
-## Run the backend
+### 5. Start the backend (Terminal 1)
 
 ```bash
-uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx
+uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
 ```
 
-Use `--whisper-backend openai` if you are not on Apple Silicon.
+The first upload downloads the medium Whisper weights (about 1.5 GB), so it is slow once.
 
-- Health check: `curl http://127.0.0.1:8000/api/health`
-- API docs: http://127.0.0.1:8000/docs
-- iOS app: `open ios/MeetingApp/MeetingApp.xcodeproj`, then run it in the simulator.
+### 6. Start the tunnel (Terminal 2)
 
-See [RUN_UI.md](RUN_UI.md) for the phone/tunnel setup, speaker labels, and troubleshooting.
+```bash
+cloudflared tunnel run labsync-yourname
+```
+
+### 7. Check everything (Terminal 3)
+
+```bash
+scripts/check_tunnel.sh api-yourname.guardianagent.dev
+```
+
+Every line should say `PASS`. Each `FAIL` line tells you what to fix.
+
+### 8. Run the app
+
+```bash
+open ios/MeetingApp/MeetingApp.xcodeproj
+```
+
+Build and run on your iPhone or the simulator. Upload `tests/fixtures/ami/TS3005a-90s-135s.wav` and wait for the transcript and action items to appear.
+
+### After every `git pull`
+
+```bash
+git pull
+uv sync --locked --extra dev --extra audio --extra server
+```
+
+Then repeat steps 5 to 7. Rebuild the app in Xcode if iOS code changed. You do not need to redo steps 2 to 4.
+
+More: [RUN_UI.md](RUN_UI.md) covers speaker labels and troubleshooting.
 
 ## CLI without the server
 
@@ -96,7 +135,7 @@ uv run --locked --extra dev ruff format --check src tests
 uv run --locked --extra dev pytest
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [the CCB guide](docs/ccb-transcriber.md), [the integration guide](docs/codex-integration.md), and [the project proposal](docs/milestone_1/project_proposal.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md), [the CCB guide](docs/ccb-transcriber.md), [the integration guide](docs/codex-integration.md), and [the project proposal](docs/archive/milestone_1/project_proposal.md).
 
 ## License
 

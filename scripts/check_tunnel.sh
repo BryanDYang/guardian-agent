@@ -44,7 +44,7 @@ if [ "$CODE" = 200 ]; then
 elif [ "$CODE" = 401 ]; then
   fail "Local server answers with the token" "401: restart the server with --env-file .env"
 else
-  fail "Local server answers with the token" "HTTP $CODE: start it with uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx"
+  fail "Local server answers with the token" "HTTP $CODE: start it with uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium"
 fi
 
 CODE="$(status "https://$HOST/api/health")"
