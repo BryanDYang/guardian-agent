@@ -1,6 +1,7 @@
 """Single-user local HTTP API for the meeting UI and CLI pipeline."""
 
 import json
+import secrets
 import shutil
 import subprocess
 import sys
@@ -17,6 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .extraction import Extraction, Transcript
+from .providers import DEFAULT_MODELS
 
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024
 ACTIVE = {"queued", "transcribing", "extracting"}
@@ -26,10 +28,19 @@ EXTENSIONS = {".wav", ".mp3", ".mp4", ".m4a", ".flac", ".ogg", ".webm", ".mov"}
 def create_app(
     storage: Path = Path("artifacts/server"),
     source: Path = Path("contexts/meeting_transcriber-master"),
-    model: str = "gpt-5.6-sol",
+    *,
+    provider: str = "codex",
+    model: str | None = None,
     whisper_model: str = "base",
+    whisper_backend: str = "openai",
     diarize: bool = False,
+    token: str | None = None,
 ) -> FastAPI:
+    if provider not in DEFAULT_MODELS:
+        raise ValueError(f"Unknown extraction provider: {provider}")
+    if whisper_backend not in {"mlx", "openai"}:
+        raise ValueError(f"Unknown Whisper backend: {whisper_backend}")
+    model = model or DEFAULT_MODELS[provider]
     storage, source = storage.resolve(), source.resolve()
     lock = RLock()
 
@@ -79,6 +90,8 @@ def create_app(
                     meeting_id,
                     "--whisper-model",
                     whisper_model,
+                    "--whisper-backend",
+                    whisper_backend,
                     "--output-dir",
                     str(work),
                 ]
@@ -100,6 +113,8 @@ def create_app(
                         "labsync",
                         "extract",
                         str(work / "transcript.json"),
+                        "--provider",
+                        provider,
                         "--model",
                         model,
                         "--output",
@@ -165,9 +180,30 @@ def create_app(
             return JSONResponse({"detail": "Untrusted browser origin"}, status_code=403)
         return await call_next(request)
 
+    @app.middleware("http")
+    async def require_token(request: Request, call_next):
+        if token:
+            supplied = request.headers.get("authorization", "")
+            if not secrets.compare_digest(
+                supplied.encode(), f"Bearer {token}".encode()
+            ):
+                return JSONResponse(
+                    {"detail": "Missing or invalid API token"},
+                    status_code=401,
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+        return await call_next(request)
+
     @app.get("/api/health")
     def health():
-        return {"status": "ok", "diarization": diarize, "whisper_model": whisper_model}
+        return {
+            "status": "ok",
+            "diarization": diarize,
+            "whisper_model": whisper_model,
+            "whisper_backend": whisper_backend,
+            "extraction_provider": provider,
+            "extraction_model": model,
+        }
 
     def public(record):
         return {

@@ -97,3 +97,7 @@ UNKNOWN is an unresolved label and must never be assigned as a commitment owner.
 The summary is an uncited overview; other items must have supporting evidence.
 Return the requested JSON only. Empty lists are valid.
 """
+
+
+def build_prompt(transcript: Transcript) -> str:
+    return INSTRUCTIONS + "\nTRANSCRIPT:\n" + transcript.model_dump_json()

@@ -1,131 +1,125 @@
 # Meeting Follow-Through Assistant
 
-A proposed assistant that turns meeting recordings into summaries, cited decisions, and a living action-item list that updates across later meetings.
-
-The Python CLI imports AMI transcripts and extracts summaries, cited decisions,
-commitments, and suggestions using a local Codex login. The optional CCB bridge
-transcribes audio locally with Whisper. The local HTTP backend connects the
-Meetings UI to uploads, processing, results, and playback. PostgreSQL persistence
-is not implemented yet. See the
-[Milestone 1 proposal](docs/archive/milestone_1/project_proposal.md) for the planned scope.
+Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Repository:** https://github.com/BryanDYang/guardian-agent
 
-## Quick start
+**Pipeline:** iOS app uploads audio → Cloudflare Tunnel → backend on a Mac → Whisper (medium) transcribes → Codex or Claude extracts decisions and action items → results show up in the app.
 
-Install Python 3.12 and uv, then run:
+Pick one:
+
+- **Option A:** use Will's backend. You only need the iOS app and his API key.
+- **Option B:** run the whole pipeline on your own Mac.
+
+## Option A: Use Will's backend
+
+Ask Will for the API key privately. Never commit it.
 
 ```bash
 git clone https://github.com/BryanDYang/guardian-agent.git
 cd guardian-agent
-uv sync --locked --extra dev
-uv run labsync --help
-uv run labsync status
-uv run labsync status --json
+scripts/use_shared_backend.sh
+open ios/MeetingApp/MeetingApp.xcodeproj
 ```
 
-Status and offline tests need no API keys, meeting data, or `contexts` files.
+The script saves the key to the gitignored `LabSyncConfig.plist` and checks that Will's backend is online. Build and run the app in Xcode.
 
-## First extraction with Codex
+## Option B: Run your own backend (end to end)
 
-Install the Codex CLI and run `codex login`, then:
+**You need:** an Apple Silicon Mac, [Homebrew](https://brew.sh), Xcode, and a Cloudflare login that can manage `guardianagent.dev` (ask Will).
 
-```bash
-uv run labsync extract tests/fixtures/meeting.json \
-  --model gpt-5.6-sol --output artifacts/synthetic-codex.json
-```
-
-This sends the transcript to Codex using your saved login and consumes model
-usage. Select a model your account can access. The command checks the output
-schema, quoted evidence, and owner labels before saving JSON with run metadata.
-It refuses to overwrite an existing output. This is an extraction prototype,
-not an accuracy benchmark or an audio transcription service.
-
-See [the integration guide](docs/codex-integration.md) for AMI download/import
-commands, the CCB source audit, database mapping, and current limitations.
-
-## Run the connected UI
-
-In one terminal at the repo root:
+### 1. Get the code and install
 
 ```bash
+brew install uv cloudflared
+git clone https://github.com/BryanDYang/guardian-agent.git
+cd guardian-agent
 uv sync --locked --extra dev --extra audio --extra server
-codex login status
-uv run --locked --extra audio --extra server labsync serve --whisper-model tiny
 ```
 
-In another terminal:
+### 2. Add the transcriber
+
+Get the `contexts/meeting_transcriber-master` folder from a teammate and put it in the repo root. It is gitignored, so `git pull` will not bring it. Check it is in place:
 
 ```bash
-cd meeting-assistant-ui
-npm install
-npm run dev
+ls contexts/meeting_transcriber-master/meeting_transcriber.py
 ```
 
-Open **http://localhost:3000**, add a meeting, and upload the
-[included AMI WAV](tests/fixtures/ami/TS3005a-90s-135s.wav). The UI shows processing
-progress, real results, and playable audio. See [RUN_UI.md](RUN_UI.md) for the full
-walkthrough. Results persist locally under `artifacts/server`; Tasks, Chat, and
-PostgreSQL integration remain unfinished.
-
-## Test the audio backend from the CLI
-
-You can also test the same processing pipeline directly, without the UI.
-From the project root, with CCB's source at `contexts/meeting_transcriber-master`:
+### 3. Create `.env` and log in to the extraction model
 
 ```bash
-uv sync --locked --extra dev --extra audio
-uv run --locked --extra dev pytest
-uv run --locked --extra audio labsync transcribe \
-  tests/fixtures/ami/TS3005a-90s-135s.wav \
+cp .env.example .env
+codex login        # if codex is missing: npm install -g @openai/codex
+```
+
+Leave `API_SECRET_KEY` blank; step 4 fills it in. To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
+
+### 4. Set up the Cloudflare tunnel (once per Mac)
+
+Pick your own hostname and tunnel name:
+
+```bash
+scripts/setup_tunnel.sh api-yourname.guardianagent.dev labsync-yourname
+```
+
+This logs you in to Cloudflare, creates the tunnel, generates `API_SECRET_KEY` in `.env`, and points the iOS app at `https://api-yourname.guardianagent.dev` with the same key.
+
+### 5. Start the backend (Terminal 1)
+
+```bash
+uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
+```
+
+The first upload downloads the medium Whisper weights (about 1.5 GB), so it is slow once.
+
+### 6. Start the tunnel (Terminal 2)
+
+```bash
+cloudflared tunnel run labsync-yourname
+```
+
+### 7. Check everything (Terminal 3)
+
+```bash
+scripts/check_tunnel.sh api-yourname.guardianagent.dev
+```
+
+Every line should say `PASS`. Each `FAIL` line tells you what to fix.
+
+### 8. Run the app
+
+```bash
+open ios/MeetingApp/MeetingApp.xcodeproj
+```
+
+Build and run on your iPhone or the simulator. Upload `tests/fixtures/ami/TS3005a-90s-135s.wav` and wait for the transcript and action items to appear.
+
+### After every `git pull`
+
+```bash
+git pull
+uv sync --locked --extra dev --extra audio --extra server
+```
+
+Then repeat steps 5 to 7. Rebuild the app in Xcode if iOS code changed. You do not need to redo steps 2 to 4.
+
+More: [RUN_UI.md](RUN_UI.md) covers speaker labels and troubleshooting.
+
+## CLI without the server
+
+```bash
+uv run --locked --extra audio labsync transcribe tests/fixtures/ami/TS3005a-90s-135s.wav \
   --project-id ami-TS3005 --meeting-id TS3005a-90s-135s \
-  --whisper-model tiny --output-dir artifacts/backend-test
+  --whisper-model tiny --whisper-backend mlx --output-dir artifacts/backend-test
+uv run --locked --env-file .env labsync extract artifacts/backend-test/transcript.json \
+  --output artifacts/backend-test/extraction.json
 ```
 
-The tests run offline. Transcription processes the included 45-second audio clip
-locally and downloads Whisper weights on first use. It writes raw CCB output to
-`artifacts/backend-test/ccb-transcript.json` and normalized turns to
-`artifacts/backend-test/transcript.json`. Speaker labels remain UNKNOWN unless
-speaker diarization is configured. Use a fresh output directory for each run.
+Each `transcribe` run needs a new `--output-dir`.
 
-Then check your Codex login and extract meeting information:
+## Evaluation
 
-```bash
-codex login status
-uv run --locked labsync extract artifacts/backend-test/transcript.json \
-  --model gpt-5.6-sol --output artifacts/backend-test/extraction.json
-cat artifacts/backend-test/extraction.json
-```
-
-Run `codex login` if needed. This step sends the generated transcript to Codex.
-Success means a saved, validated extraction containing `summary`, `decisions`,
-`commitments`, and `suggestions`. This opening/agenda clip may have no commitments;
-empty lists are valid. This CLI command saves files; UI uploads use the HTTP
-backend described above.
-See [the audio integration guide](docs/ccb-transcriber.md) for more details.
-
-### Environment warning after the folder rename
-
-If `VIRTUAL_ENV` still references `ai-capstone/.venv`, run `deactivate` in the
-terminal where that environment is active, or open a fresh terminal. Use `uv run`
-without activating `.venv`; the old activation script also contains the previous
-path. Do not use `--active` to target the obsolete environment.
-
-The dev-only quick start is sufficient for offline tests. `uv sync --extra dev`
-omits the optional audio extra and removes its packages. For audio testing, use
-`uv sync --locked --extra dev --extra audio` and include `--extra audio` on
-transcription commands so they also work after a dev-only sync.
-
-## Visible test data
-
-- [AMI audio fixture](tests/fixtures/ami/README.md): a 45-second mixed-speaker WAV,
-  with attribution, provenance, and commands for automatic transcription.
-- [Synthetic transcript](tests/fixtures/meeting.json): a small text-only fixture
-  for testing extraction without audio processing.
-
-Full AMI downloads and generated outputs stay local. ICSI is not yet included.
-
-## Transcription evaluation
+### Transcription
 
 [CCB baseline results](docs/milestone_2/transcription_results.md) measure actual
 Whisper tiny/base transcription against AMI manual references on 12 one-minute
@@ -141,9 +135,9 @@ Obtain it from the project team or course sponsor before attempting audio infere
 The supplied archive has no verified upstream commit/license, so it has not been
 redistributed. Download AMI inputs using the protocol manifest. Raw audio run
 artifacts stay local. The rule-based extraction example below works without CCB,
-model credentials, or audio downloads. Offline benchmark tests use the dev extra.
+model credentials, or audio downloads. Use a fresh output directory for each run. Offline benchmark tests use the dev extra.
 
-## Extraction evaluation
+### Task extraction
 
 [Initial measured results](docs/milestone_2/results/README.md) compare rules,
 Codex and local Granite Code 8B on 24 synthetic development cases. Run the
@@ -187,24 +181,15 @@ This implements the extraction portion of [checklist Phase 5](docs/checklist.md)
 ## Development
 
 ```bash
-uv run ruff check src tests
-uv run ruff format --check src tests
-uv run pytest
+uv run --locked --extra dev ruff check src tests
+uv run --locked --extra dev ruff format --check src tests
+uv run --locked --extra dev pytest
 ```
 
-CI runs these checks and the installed CLI on every push and pull request.
-Application code lives in `src/labsync`, tests in `tests`, and project documents
-in `docs`. See [CONTRIBUTING.md](CONTRIBUTING.md) for the contribution workflow
-and [upstream provenance](docs/upstream.md) for how the professor's
-`agent-sandbox` informed this setup.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [the CCB guide](docs/ccb-transcriber.md), [the integration guide](docs/codex-integration.md), and [the project proposal](docs/archive/milestone_1/project_proposal.md).
 
 ## License
 
-Project code uses the [MIT license](LICENSE). Third-party code and assets retain
-their own licenses and notices.
+[MIT](LICENSE). Third-party code keeps its own license.
 
-**Team:** Bryan Yang, Will Liu, and Guadalupe Cantera
-
-**Course:** CIS-5980, AI Engineering track
-
-Previous project materials are retained in [the guardian-agent archive](docs/archive/guardian-agent/). They describe a superseded direction. The [weekly journal](docs/weekly_journal.md) preserves historical progress; its earlier entries refer to that direction.
+**Team:** Bryan Yang, Will Liu, and Guadalupe Cantera · **Course:** CIS-5980, AI Engineering track

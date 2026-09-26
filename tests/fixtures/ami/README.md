@@ -20,7 +20,7 @@ From the repository root, with CCB's source provided separately at
 uv sync --locked --extra dev --extra audio
 uv run --locked --extra audio labsync transcribe tests/fixtures/ami/TS3005a-90s-135s.wav \
   --project-id ami-TS3005 --meeting-id TS3005a-90s-135s \
-  --whisper-model tiny --output-dir artifacts/ami-audio-test
+  --whisper-model tiny --whisper-backend openai --output-dir artifacts/ami-audio-test
 uv run labsync extract artifacts/ami-audio-test/transcript.json \
   --model gpt-5.6-sol --output artifacts/ami-audio-test/extraction.json
 ```

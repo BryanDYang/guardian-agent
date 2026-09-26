@@ -56,7 +56,7 @@ decision, and suggestion references and means exact quote/source agreement only.
 Zero denominators produce null (`N/A` in Markdown). Missing, failed, or invalid
 schema outputs retain their labels in recall and count as failures. They contribute
 no valid predictions to precision. Report failure coverage alongside every score.
-The Codex production client rejects invalid evidence before returning outputs;
+The Codex and Claude production clients reject invalid evidence before returning outputs;
 Ollama raw structured outputs remain available for offline citation scoring. This
 validation difference is part of the measured systems and can affect failure rates.
 
@@ -75,6 +75,10 @@ uv run --locked python -m labsync.evaluation score \
 uv run --locked python -m labsync.evaluation run --method codex \
   --model gpt-5.6-sol --directory artifacts/evaluation/codex-new
 
+# Live inference with Claude instead, using ANTHROPIC_API_KEY:
+uv run --locked python -m labsync.evaluation run --method claude \
+  --model claude-sonnet-4-5 --directory artifacts/evaluation/claude-new
+
 # Local open-source reference; install/pull the model before running:
 ollama serve
 # In another terminal:
@@ -87,7 +91,8 @@ Run `score` against each resulting directory. Live commands require fresh output
 directories and save each attempt separately, including failures. Inference sees
 only transcripts, never labels or matching terms. Run metadata records suite and
 source hashes, UTC time, platform, model settings and identity; Codex records CLI
-version, prompt hash, token usage, and elapsed time. Ollama records model digest,
+version, prompt hash, token usage, and elapsed time; Claude records the served
+model, API version, prompt hash, token usage, and elapsed time. Ollama records model digest,
 quantization, runtime version, prompt hash and generation counts. Model tags can
 change; compare the recorded digest before claiming an exact replication.
 Scoring makes no network calls and refuses a mismatched suite/input hash.

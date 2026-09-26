@@ -1,100 +1,47 @@
-# Run the connected meeting UI
+# Run the backend with the iOS app
 
-Use branch `feature/ccb-codex-integration` in
-[guardian-agent](https://github.com/BryanDYang/guardian-agent).
-The Meetings screen uses the Python backend. There is no Gemini key in the browser.
+Using Will's backend? Skip this file and run `scripts/use_shared_backend.sh` ([details](README.md#option-a-use-wills-backend)).
 
-## Terminal 1: backend
+Running your own backend? Follow the [end-to-end steps in the README](README.md#option-b-run-your-own-backend-end-to-end). The short version, once setup is done:
 
-From the repository root, with CCB's supplied source present at
-`contexts/meeting_transcriber-master`:
+Terminal 1:
 
 ```bash
-uv sync --locked --extra dev --extra audio --extra server
-codex login status
-uv run --locked --extra audio --extra server labsync serve --whisper-model tiny
+uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
 ```
 
-Run `codex login` if needed. The backend listens on `127.0.0.1:8000`.
-`tiny` is useful for a fast smoke test; omit the option to use `base`.
-Whisper downloads weights on first use. Audio runs locally; generated transcript
-text is sent through your Codex CLI login for extraction.
-
-The server uses the same Codex executable and login as your terminal. It processes
-one recording at a time. Both servers are intended for local, single-user
-development. There is no account authentication or production deployment setup.
-
-## Terminal 2: UI
-
-From the repository root:
+Terminal 2:
 
 ```bash
-cd meeting-assistant-ui
-npm install
-npm run dev
+cloudflared tunnel run labsync-yourname
 ```
 
-Open **http://localhost:3000**. Vite forwards `/api` to the Python backend.
-Keep both terminals open. Ports 3000 and 8000 must be free; if they are already
-running from an agent session, use the existing servers rather than starting
-duplicates.
-
-## Test the entire path
-
-1. Select **Add meeting** (the plus button).
-2. Enter a title, project, and date.
-3. Choose `tests/fixtures/ami/TS3005a-90s-135s.wav`.
-4. Confirm permission to process the public audio and submit.
-5. Watch the state change from queued to transcribing, extracting, and ready.
-6. Read Summary, Commitments, and Transcript. Click transcript turns or quoted
-   evidence to seek and play the recording.
-
-The included clip contains opening remarks, so no commitments is a valid result.
-The tiny model can misrecognize words. Output is a model prediction, not a
-verified meeting record. Speakers remain unidentified without diarization.
-The existing `--diarize` option still needs pyannote and accepted model access
-through `HF_TOKEN`; that live branch has not been verified.
-
-The UI replaces the mock meetings with real API data. Tasks and Chat show clear
-unavailable states. Commitment approval, task tracking, storyline extraction,
-and project question answering are not connected in this checkpoint.
-
-## Persistence and troubleshooting
-
-Uploads, job state, raw transcripts, predictions, and logs live under
-`artifacts/server/<meeting-id>/` (ignored by Git). They survive page refreshes and
-backend restarts. This is filesystem persistence, not the preliminary PostgreSQL
-schema. Use one backend process per storage directory.
-
-Failed jobs show an error and a retry action. Read
-`artifacts/server/<meeting-id>/processing.log` for details. Retry starts a new
-attempt and may consume model usage again. Interrupted jobs are marked failed
-on restart. Graceful shutdown waits for submitted jobs to finish.
-
-A backend connection error means the Python server is unavailable or its port
-does not match the Vite proxy. Recordings up to 512 MB are accepted. WAV and MP3
-are recommended for browser playback; other supported uploads may transcribe
-successfully even if the browser cannot play their codec.
-
-After a repository folder rename, deactivate any environment pointing at the
-old path. Use `uv run` without reactivating that old environment.
-
-## Checks
+Check:
 
 ```bash
-uv run --locked --extra dev pytest
-uv run --locked --extra dev ruff check src tests
-uv run --locked --extra dev ruff format --check src tests
-cd meeting-assistant-ui
-npm run lint
-npm run build
+scripts/check_tunnel.sh api-yourname.guardianagent.dev
 ```
 
-The API tests cover upload validation, stored results, byte-range audio serving,
-failures, retries, restart recovery, and browser-origin restrictions. Model calls
-are stubbed in offline tests. The real Chrome smoke test separately exercised
-public audio upload, Whisper, Codex, playback, seeking, refresh, and mobile layout.
+## Speaker labels (optional)
 
-API endpoints: `GET /api/health`, `GET/POST /api/meetings`,
-`GET /api/meetings/{id}`, `GET /api/meetings/{id}/audio`,
-and `POST /api/meetings/{id}/retry`. Local API documentation: http://127.0.0.1:8000/docs.
+Accept the terms for `pyannote/speaker-diarization-3.1` and `pyannote/segmentation-3.0` on Hugging Face, then set `HF_TOKEN` in `.env`.
+
+```bash
+uv sync --locked --extra dev --extra audio --extra server --extra diarize
+uv run --locked --env-file .env --extra audio --extra server --extra diarize labsync serve --whisper-backend mlx --whisper-model medium --diarize
+```
+
+## Troubleshooting
+
+Logs: `artifacts/server/<meeting-id>/processing.log`
+
+| Symptom | Fix |
+| --- | --- |
+| "Missing or invalid API token" | Using Will's backend: re-run `scripts/use_shared_backend.sh` with his current key. Own backend: make `.env` and `LabSyncConfig.plist` match, rebuild, start the server with `--env-file .env` |
+| "Invalid host header" | Re-run `scripts/setup_tunnel.sh` |
+| HTTP 502 | Start the backend |
+| HTTP 530 | Start `cloudflared tunnel run` |
+| "Transcribing failed" | Add `contexts/meeting_transcriber-master` (README step 2) |
+| "Extracting failed" | Run `codex login` or fix `ANTHROPIC_API_KEY` |
+| First upload is slow | The medium Whisper weights (about 1.5 GB) download on first use |
+| Upload over 100 MB fails | Cloudflare plan limit |
