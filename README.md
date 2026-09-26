@@ -140,7 +140,7 @@ model credentials, or audio downloads. Use a fresh output directory for each run
 ### Task extraction
 
 [Initial measured results](docs/milestone_2/results/README.md) compare rules,
-Codex and local Granite Code 8B on 24 synthetic development cases. Run the
+Codex and local Qwen3 8B on 24 synthetic development cases. Run the
 offline scorer tests and a fresh rule baseline:
 
 ```bash
@@ -170,8 +170,8 @@ Failed/missing cases: 0.
 [Saved scoring evidence](docs/milestone_2/results/slice_results.json) includes
 all three v1 scoring reports and per-case counts, so inspecting these results
 does not require credentials or live inference. [Scenario slices](docs/milestone_2/results/slices.md)
-include exact membership and denominators. The [human review packet](docs/milestone_2/failure_review.md)
-and [compact log](docs/milestone_2/failure_review_log.md) are prepared; human ratings remain pending.
+include exact membership and denominators. The [human review packet](docs/milestone_2/human_review.md)
+and [review log](docs/milestone_2/human_review_log.md) cover all 72 outputs with one verified review; a 12-output spot check is pending.
 
 See the [fixture protocol](tests/fixtures/evaluation/README.md) for live inference,
 annotation rules, matching and metric definitions. Labels are AI-authored pending

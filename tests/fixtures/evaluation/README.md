@@ -82,9 +82,9 @@ uv run --locked python -m labsync.evaluation run --method claude \
 # Local open-source reference; install/pull the model before running:
 ollama serve
 # In another terminal:
-ollama pull granite-code:8b
+ollama pull qwen3:8b
 uv run --locked python -m labsync.evaluation run --method ollama \
-  --model granite-code:8b --directory artifacts/evaluation/granite-new
+  --model qwen3:8b --directory artifacts/evaluation/qwen-new
 ```
 
 Run `score` against each resulting directory. Live commands require fresh output

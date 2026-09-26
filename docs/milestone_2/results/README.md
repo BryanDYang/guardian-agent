@@ -1,4 +1,4 @@
-# Initial extraction measurements - September 24, 2026
+# Initial extraction measurements - September 24-26, 2026
 
 Supplementary task-extraction evaluation. The primary audio baseline and
 split-data measurements are in the [CCB transcription report](../transcription_results.md).
@@ -13,17 +13,18 @@ not adjudicated semantic accuracy or held-out performance.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | First-person promise rules v1 | 11 / 16 / 15 | .688 / .733 / .710 | 9/9 | 1/2 | 10/11 | 2/16 | 16/16 | 9/11 |
 | Codex `gpt-5.6-sol`, prompt v2 | 13 / 14 / 15 | .929 / .867 / .897 | 12/12 | 0/1 | 5/13 | 1/14 | 31/31 | 11/11 |
-| Granite Code 8B Q4_0, prompt v2 | 9 / 11 / 15 | .818 / .600 / .692 | 7/7 | 0/2 | 6/9 | 0/11 | 21/21 | 10/11 |
+| Qwen3 8B Q4_K_M, prompt v2 | 14 / 15 / 15 | .933 / .933 / .933 | 12/12 | 0/2 | 13/14 | 1/15 | 27/27 | 11/11 |
 
 All three runs produced schema-valid outputs for 24/24 cases with no missing or
 failed attempts. Owner/deadline denominators contain matched tasks only; they do
 not compensate for missed tasks. Deadline agreement includes nulls. Every quote
-being valid does not mean every commitment is supported. Granite emits a negated
+being valid does not mean every commitment is supported. Rules emit a negated
 promise as a task despite quoting the transcript exactly.
 
-Mean extraction wall time over 24 attempts: Codex **5.280 s**, Granite **5.061 s**.
+Mean extraction wall time over 24 attempts: Codex **5.280 s** (September 24),
+Qwen **5.223 s** (September 26, run alone).
 Times include first-call overhead/warmup, have 1 ms stored resolution, and exclude
-audio and UI. The model runs overlapped on the host; this is a smoke timing sample,
+audio and UI. The Codex run overlapped another run on the host; this is a smoke timing sample,
 not a controlled speed comparison. Rule timings are below the stored resolution
 for 23/24 cases, so do not use their rounded mean as a microbenchmark. No monetary
 cost was measured. Token counts are retained where the runtime supplies them.
@@ -33,9 +34,9 @@ cost was measured. Token counts are retained where the runtime supplies them.
 [Scenario slices](slices.md) report all 24 cases in six disjoint groups, with
 pooled counts and explicit denominators. [Saved scoring evidence](slice_results.json)
 contains the original per-case scoring snapshots and source hashes. The
-[failure-review packet](../failure_review.md), [compact review log](../failure_review_log.md),
-and independent reviewer sheets are prepared for 28 flagged model/case outputs
-across 14 distinct inputs. Human inspection and agreement results remain pending.
+[human review packet](../human_review.md), [review log](../human_review_log.md),
+and one verified [review sheet](../human_review_reviewer_a.md) cover all 72 outputs
+(24 inputs for each method). A 12-output independent spot check is pending.
 
 ## Systems and settings
 
@@ -47,27 +48,29 @@ across 14 distinct inputs. Human inspection and agreement results remain pending
   history, user configuration ignored. Generation settings use CLI/model defaults;
   no custom temperature was specified. Requested model identity is recorded; the
   client does not capture an immutable hosted model checkpoint.
-- **Open-source reference:** Installed Ollama `granite-code:8b`, 8.1B parameters,
-  Q4_0, Ollama 0.6.8, model digest
-  `36c3c3b9683b411ee20ba5c6c6858df83a1d7bf3b65f9fd76a073791e98a18dd`.
-  IBM releases Granite Code under Apache 2.0. Its instruction-following model is
-  adapted to the same transcript/output contract with JSON Schema formatting,
-  temperature 0, seed 42, context 4096, and maximum generation 1536 tokens. It sees
-  the same extraction instructions plus a serialized output schema. See the
-  [official model card](https://huggingface.co/ibm-granite/granite-8b-code-instruct-4k)
-  and [Ollama structured output documentation](https://github.com/ollama/ollama/blob/main/docs/capabilities/structured-outputs.mdx).
-  It is a code-specialized model selected because it was already installed, not a
-  meeting-specialized system or evidence of the best attainable open-source result.
-  A general instruction model is an appropriate additional comparison next.
+- **Open-source reference:** Ollama `qwen3:8b`, 8.2B parameters, Q4_K_M,
+  Ollama 0.6.8, model digest
+  `500a1f067a9f782620b40bee6f7b0c89e17ae61f686b92c24933e4ca4b2b8b41`. Qwen3 is a
+  general-purpose instruction model released under Apache 2.0. It uses the same
+  transcript/output contract with JSON Schema formatting, temperature 0, seed 42,
+  context 4096, and maximum generation 1536 tokens, and sees the same extraction
+  instructions plus a serialized output schema. Schema-constrained output means no
+  separate thinking trace is produced. See the
+  [official model card](https://huggingface.co/Qwen/Qwen3-8B) and
+  [Ollama structured output documentation](https://github.com/ollama/ollama/blob/main/docs/capabilities/structured-outputs.mdx).
+  It replaces an earlier IBM Granite Code 8B run, which was code-specialized and
+  chosen only because it was already installed; those outputs remain local and are
+  not reported. Qwen3 8B is not evidence of the best attainable open-source result.
 
 Codex validates evidence before returning; Ollama saves raw structured output for
 scoring. These are system-level comparisons with different validation paths, not
-an isolated model ablation. Granite's `UNKNOWN` owner and capitalized `Tomorrow`
-would fail the production evidence/owner validator even though its JSON is valid.
+an isolated model ablation. Qwen's `UNKNOWN` owner (`unknown_owner`) and a deadline
+missing from its cited turn (`assignment`) would fail the production evidence/owner
+validator even though the JSON is valid.
 
 ## Observed errors and next verification
 
-Local reports in `artifacts/evaluation/{rules,codex,granite}-v1/` cover all
+Local reports in `artifacts/evaluation/{rules,codex,qwen}-v1/` cover all
 24 examples per baseline, retaining predictions, matches and error categories.
 The submission presents the measurements above and representative findings below;
 raw test artifacts remain local. These findings come from inspection of saved
@@ -75,23 +78,24 @@ outputs, not a completed human rubric exercise.
 
 | Case | Observed result | Interpretation and next verification |
 | --- | --- | --- |
-| `negated` | Rules and Granite extract a task from “I will not rerun the baseline this week.” Codex emits none. | Negation handling failure; add explicit negative examples in a future prompt version and verify on new cases. |
+| `negated` | Rules extract a task from “I will not rerun the baseline this week.” Codex emits nothing; Qwen files the sentence as a suggestion. | Regex lacks negation handling. Suggestions are unscored, so Qwen's misfiled suggestion is invisible to the proxy. |
 | `quoted_promise` | Rules treat a documentation example as a promise. Both models emit none. | Regex lacks discourse context; keep this baseline fixed and test quote handling in the model pipeline. |
-| `accepted_request` | Rules return “Yes, I will do that”; Granite emits none; Codex resolves “Upload the slides” and cites both turns. | Multi-turn action resolution is important; expand request/acceptance cases. |
-| `unknown_owner` | Codex omits the commitment; Granite assigns literal `UNKNOWN`; rules preserve null. | Prompt says unknown owners must be null, not that the obligation should disappear. Verify preservation of unknown-owner tasks after a separate prompt change. |
-| `two_owners` | Granite emits no commitments, missing both labels. | Likely multi-item extraction weakness; test on more independent two-owner meetings before attributing a cause. |
-| `two_actions` | Codex merges both actions into one record; Granite emits only review; rules merge both. | Define task granularity explicitly and retest atomic action splitting. |
-| `repeat`, `correction` | Rules create duplicate records and retain the outdated Friday deadline; models use one record with Monday for the correction. | Single-turn detection cannot reconcile within-meeting revisions. |
-| `joint` | Codex emits one task per owner; Granite and rules emit a Sam-owned task. Gold expects one null-owner obligation. | Contract/annotation ambiguity: multi-owner tasks do not fit a single nullable owner cleanly. Resolve with reviewers before counting this as a semantic model failure. |
-| `explicit`, other deadlines | Codex commonly says `by Friday` versus gold `Friday`; correction says `by Monday, not Friday`. | Exact-span mismatches explain the low deadline agreement; do not interpret 5/13 as calendar-date accuracy. Define a semantic date measure separately. |
-| `assignment` | Granite says “Preparing the demo”; frozen matcher expects prefix `prepare` or `create`, so the task is unmatched. | Known scorer false negative. Preserve v1 scores; human-adjudicate paraphrases or publish a separately versioned matcher before rerunning comparisons. |
+| `accepted_request` | Rules return “Yes, I will do that”; Codex resolves “Upload the slides” and cites both turns; Qwen resolves the task but cites only the acceptance. | Multi-turn action resolution is important; expand request/acceptance cases and check evidence completeness. |
+| `unknown_owner` | Codex omits the commitment; Qwen assigns literal `UNKNOWN`, which the production validator rejects; rules preserve null. | Prompt says unknown owners must be null, not that the obligation should disappear. Verify preservation of unknown-owner tasks after a separate prompt change. |
+| `two_actions` | All three methods keep both actions in one record (Codex and Qwen as a merged title, rules as the raw sentence). | Define task granularity explicitly and retest atomic action splitting. |
+| `repeat`, `correction` | Rules duplicate the repeated task. Rules and Qwen keep the retracted Friday record beside Monday; Codex keeps one record but writes `by Monday, not Friday`. | Within-meeting revisions need explicit handling; add correction tests that check for stale records. |
+| `joint` | Codex emits one task per owner; Qwen and rules emit a Sam-owned task. Gold expects one null-owner obligation. | Contract/annotation ambiguity: multi-owner tasks do not fit a single nullable owner cleanly. Resolve with reviewers before counting this as a semantic model failure. |
+| `assignment` | Qwen's deadline `Friday` comes from the assignment turn, but its commitment cites only the acceptance turn; the production validator rejects it. | Evidence must cover every field; apply the production validator in a versioned scorer. |
+| `explicit`, other deadlines | Codex commonly says `by Friday` versus gold `Friday`; correction says `by Monday, not Friday`. | Exact-span mismatches explain Codex's low deadline agreement; do not interpret 5/13 as calendar-date accuracy. Define a semantic date measure separately. |
+| `injection`, `declined`, `partial_progress` | No method creates a commitment, but Qwen records the injected instruction, a refusal, and an unrequested follow-up as suggestions. | Suggestions reach users but are not scored; add suggestion checks to a later scorer version. |
 
 The most common Codex error flag is exact deadline-span mismatch (8 matched
 items), largely an annotation/representation issue. It also misses the
-unknown-owner task and merges two actions. Granite has six unmatched labels under
-the proxy, including the known lexical false negative. The rule baseline exposes
-false positives from negation/quotation and repeated predictions. These small,
-constructed cases support targeted debugging, not a general ranking of models.
+unknown-owner task and merges two actions. Qwen has the highest proxy F1 but two
+outputs the product would reject, one stale correction record, and four
+incomplete-evidence flags. The rule baseline exposes false positives from
+negation/quotation and repeated predictions. These small, constructed cases
+support targeted debugging, not a general ranking of models.
 
 ## Reproduce and review
 
@@ -111,13 +115,13 @@ uv run --locked python -m labsync.evaluation score \
 uv run --locked python -m labsync.evaluation score \
   --directory artifacts/evaluation/codex-v1
 uv run --locked python -m labsync.evaluation score \
-  --directory artifacts/evaluation/granite-v1
+  --directory artifacts/evaluation/qwen-v1
 ```
 
 Complete inference runs remain local under ignored `artifacts/evaluation/`.
 The saved scoring evidence now includes all per-case commitment predictions,
-labels, flags, and counts used for this report. The failure-review packet also
-includes the flagged cases with source transcripts. A fresh checkout can
+labels, flags, and counts used for this report. The human review packet also
+includes every output with its source transcript. A fresh checkout can
 regenerate complete inference runs using the fixture protocol.
 Still required: human label/match review, two-reviewer qualitative scores, natural
 meeting evaluation, held-out splits, and state/reconciliation metrics. WER, DER,
