@@ -41,6 +41,7 @@ diarize = [
 ]
 server = [
     "fastapi>=0.141.1",
+    "psycopg[binary]>=3.3.6",
     "python-multipart>=0.0.32",
     "uvicorn>=0.53.0",
 ]
