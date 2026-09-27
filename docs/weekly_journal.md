@@ -106,3 +106,30 @@
 - **Evaluation evidence:** Proposed quality targets are not measured results. The harness, qualitative rubric, baseline runs, and error analysis must be completed before reporting performance.
 - **Coordination:** Confirm proposed task ownership, dataset coverage and split strategy, and the Milestone 2 TA check-in schedule.
 - **Recording consent:** Obtain written consent from all teammates and the professor before recording project meetings or using those recordings for development or evaluation.
+
+# Week 5 (September 21-27, 2026)
+
+## What got done
+
+- Implemented the initial meeting-processing backend with CCB transcription and structured Codex extraction. Added a SwiftUI iOS client and connected meeting uploads and project deletion to backend endpoints. Added Claude as an extraction provider and documented shared-backend setup. Native build and Simulator end-to-end verification remain outstanding.
+- Built the extraction evaluation harness with 24 synthetic development cases containing 15 labeled obligations. Compared a simple rule baseline, Codex, and an off-the-shelf Qwen3 8B baseline. Replaced the initial Granite Code comparison with Qwen3 because Granite Code is specialized for coding.
+- Recorded reproducible commands, model and prompt settings, saved outputs, and [baseline results](milestone_2/results/README.md). Task F1 proxies were 0.710 for rules, 0.897 for Codex, and 0.933 for Qwen3. These are development-set action-matching proxies, not held-out semantic accuracy or a general model ranking.
+- Added [scenario-level results](milestone_2/results/slices.md) with denominators for explicit promises, acceptance and assignment, negation and quotation, owner and multi-action cases, and repetition and correction. Separated model errors from exact-text scoring artifacts and unresolved annotation policies.
+- Measured Whisper tiny and base through CCB on disjoint AMI development and test splits using manual transcript references. Both configurations completed all 12 clips. Base reduced test WER by 4.26 percentage points compared with tiny on the small two-meeting test sample; no statistical significance or broad generalization is claimed.
+- Expanded the initial failure-only worksheet into a [human review packet](milestone_2/human_review.md) covering all 72 extraction outputs, including successful cases, complete outputs, evidence, and application-validation results. Bryan Yang verified and signed the AI-drafted [full review sheet](milestone_2/human_review_reviewer_a.md) on September 26. This is one human-verified review, not two independent reviews.
+- Prepared a separate 12-output [independent spot check](milestone_2/human_review_spot_check.md) for Will. Identified unsupported commitments from negated or quoted speech, missed or merged obligations, stale deadlines, ambiguous ownership, and evidence-validation failures as priorities for follow-up. Two Qwen outputs fail application validation despite being scored by the offline harness.
+- Updated the [Milestone 2 submission draft](milestone_2/submission_draft.md), dataset documentation, README examples, limitations, and next-milestone plan. Integrated the evaluation documentation into main alongside the team's backend and setup changes.
+
+## Planned next steps
+
+- **Bryan:** Summarize the independent spot-check results when available, report agreement and disagreements without replacing the original scores, and consolidate supported failure patterns into Milestone 3 changes. Version any scorer changes and apply application evidence validation consistently across methods.
+- **Will (proposed):** Complete the independent spot check without consulting the full review sheet, then complete a full second independent review for Milestone 3. Verify the native client and backend together end to end.
+- **Guadalupe, with Will reviewing (proposed):** Human-review the synthetic gold labels and resolve joint-owner, task-granularity, and deadline policies before creating a new label version. Expand coverage toward natural meeting transcripts and recurring-meeting sequences.
+- **Team:** Expand the audio pilot and conduct listening-based error review. Record specific TA feedback, confirm task ownership, and finalize the Milestone 2 submission PDF. Continue toward cross-meeting task reconciliation and proactive follow-through, which are not established by the current extraction results.
+
+## Current blockers and limitations
+
+- **Review reliability:** The full review started from AI-drafted judgments and has one human verifier. The independent spot-check sheet is still blank, so agreement statistics are not yet available. Output review does not substitute for independent review of the gold labels.
+- **Evaluation scope:** Extraction results cover 24 synthetic development inputs. Audio results cover a small AMI sample. Neither establishes diarization quality, cross-meeting state tracking, reminder delivery, or full application reliability.
+- **Scoring and contracts:** Lexical task matching and exact deadline comparison can differ from semantic correctness. Joint ownership and task granularity remain unresolved; the offline harness does not enforce application evidence validation uniformly across methods.
+- **Reproduction and integration:** Audio reproduction requires separately supplied CCB source. A completed native build and Simulator end-to-end verification are not established in the report. Saved baseline results should not be treated as measurements of every currently supported backend configuration.
