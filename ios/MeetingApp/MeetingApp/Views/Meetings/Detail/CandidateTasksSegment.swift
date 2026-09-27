@@ -4,24 +4,51 @@ import SwiftData
 // MeetingDetailView.tsx → activeSegment === 'tasks'
 struct CandidateTasksSegment: View {
     let meeting: Meeting
+    var loadError: String?
+    var retryLoad: () -> Void = {}
 
     @Environment(\.modelContext) private var context
     @Environment(MeetingNavigator.self) private var navigator
+    @Query(sort: \Project.createdAt) private var projects: [Project]
+    @Query private var meetings: [Meeting]
+
+    @State private var editingCandidate: CandidateTask?
+    @State private var workingID: String?
+    @State private var actionError: String?
 
     var body: some View {
-        if candidates.isEmpty {
-            ContentUnavailableView(
-                "No candidate tasks",
-                systemImage: "checklist",
-                description: Text("Nothing was extracted from this session.")
-            )
-            .padding(.top, 48)
-        } else {
-            VStack(spacing: 16) {
+        VStack(spacing: 16) {
+            if let loadError {
+                Button(loadError, action: retryLoad)
+                    .font(.footnote.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.red.opacity(0.1)))
+                    .foregroundStyle(.red)
+            }
+
+            if let actionError {
+                Text(actionError)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if candidates.isEmpty && loadError == nil {
+                ContentUnavailableView(
+                    "No candidate tasks",
+                    systemImage: "checklist",
+                    description: Text("Nothing was extracted from this session.")
+                )
+                .padding(.top, 48)
+            } else {
                 ForEach(candidates) { candidate in
                     card(for: candidate)
                 }
             }
+        }
+        .sheet(item: $editingCandidate) { candidate in
+            EditCandidateTaskSheet(candidate: candidate, meeting: meeting)
         }
     }
 
@@ -69,6 +96,15 @@ struct CandidateTasksSegment: View {
                     .background(
                         RoundedRectangle(cornerRadius: 8).fill(Color.red.opacity(0.1))
                     )
+                } else {
+                    Label("No due date", systemImage: "calendar.badge.exclamationmark")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray6))
+                        )
                 }
 
                 Button {
@@ -91,22 +127,41 @@ struct CandidateTasksSegment: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 8) {
+                let canApprove = candidate.dueDate != nil
+                let isWorking = workingID == candidate.id
+
                 Button {
-                    approve(candidate)
+                    Task { await approve(candidate) }
                 } label: {
                     Label("Approve", systemImage: "checkmark")
                         .font(.subheadline.weight(.medium))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                         .background(
-                            RoundedRectangle(cornerRadius: 8).fill(Color.blue.opacity(0.1))
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(canApprove ? Color.blue.opacity(0.1) : Color(.systemGray5))
                         )
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.blue)
+                .foregroundStyle(canApprove ? Color.blue : Color(.systemGray))
+                .disabled(!canApprove || isWorking)
 
                 Button {
-                    context.delete(candidate)
+                    editingCandidate = candidate
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                        .font(.subheadline.weight(.medium))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray6))
+                        )
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(.primary)
+
+                Button {
+                    Task { await dismiss(candidate) }
                 } label: {
                     Label("Dismiss", systemImage: "xmark")
                         .font(.subheadline.weight(.medium))
@@ -118,6 +173,13 @@ struct CandidateTasksSegment: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.red)
+                .disabled(isWorking)
+            }
+
+            if candidate.dueDate == nil {
+                Text("Add a due date with Edit to approve this task.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(16)
@@ -133,12 +195,17 @@ struct CandidateTasksSegment: View {
     }
 
     /// Turns the candidate into a real task, then removes it from the review list.
-    private func approve(_ candidate: CandidateTask) {
+    private func approve(_ candidate: CandidateTask) async {
+        guard let dueDate = candidate.dueDate else { return }
+        if isServerID(candidate.id) {
+            await review(candidate, action: "approve", dueDate: dueDate)
+            return
+        }
         let task = TaskItem(
             id: UUID().uuidString,
             title: candidate.taskDescription,
             state: .open,
-            dueDate: candidate.dueDate,
+            dueDate: dueDate,
             sourceMeetingTitle: meeting.title,
             sourceTimestamp: candidate.timestamp
         )
@@ -146,8 +213,55 @@ struct CandidateTasksSegment: View {
         task.assignee = candidate.assignee
         task.project = meeting.project
         task.sourceMeeting = meeting
-
         context.delete(candidate)
+    }
+
+    private func dismiss(_ candidate: CandidateTask) async {
+        if isServerID(candidate.id) {
+            await review(candidate, action: "dismiss", dueDate: nil)
+            return
+        }
+        context.delete(candidate)
+    }
+
+    private func review(_ candidate: CandidateTask, action: String, dueDate: Date?) async {
+        workingID = candidate.id
+        defer { workingID = nil }
+        do {
+            let response = try await MeetingAPIClient.shared.reviewTask(
+                id: candidate.id,
+                action: action,
+                title: candidate.taskDescription,
+                dueDate: dueDate,
+                assigneeID: serverAssigneeID(candidate.assignee)
+            )
+            if action == "approve" {
+                let task = try TaskSync.upsert(
+                    response.task,
+                    projects: projects,
+                    meetings: meetings,
+                    context: context
+                )
+                task.assignee = candidate.assignee
+                task.project = meeting.project
+                task.sourceMeeting = meeting
+                task.sourceMeetingTitle = meeting.title
+                task.sourceTimestamp = candidate.timestamp
+                if let eventKit = response.eventKit {
+                    await ReminderScheduler.addReminder(title: eventKit.title, dueDay: eventKit.dueDate)
+                }
+            }
+            context.delete(candidate)
+            try context.save()
+            actionError = nil
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
+    private func serverAssigneeID(_ attendee: Attendee?) -> String? {
+        guard let id = attendee?.id, isServerID(id) else { return nil }
+        return id
     }
 }
 

@@ -11,6 +11,7 @@ struct MeetingDetailView: View {
 
     @State private var showPrivacySettings = false
     @State private var showSessionSetup = false
+    @State private var taskLoadError: String?
 
     var body: some View {
         @Bindable var navigator = navigator
@@ -64,6 +65,7 @@ struct MeetingDetailView: View {
                 }
                 .task(id: meeting.id) {
                     await poll(meeting)
+                    await syncServerTasks(meeting)
                 }
             } else {
                 ContentUnavailableView("Meeting not found", systemImage: "waveform.slash")
@@ -81,7 +83,9 @@ struct MeetingDetailView: View {
         case .summary:
             SummarySegment(meeting: meeting)
         case .tasks:
-            CandidateTasksSegment(meeting: meeting)
+            CandidateTasksSegment(meeting: meeting, loadError: taskLoadError) {
+                Task { await syncServerTasks(meeting) }
+            }
         case .transcript:
             TranscriptSegment(meeting: meeting)
         case .storyline:
@@ -98,7 +102,12 @@ struct MeetingDetailView: View {
         while !Task.isCancelled && ["queued", "transcribing", "extracting"].contains(meeting.processingStatus ?? "completed") {
             do {
                 let remote = try await MeetingAPIClient.shared.meeting(id: meeting.id)
-                try RemoteMeetingApplier.apply(remote, to: meeting, context: context)
+                try RemoteMeetingApplier.apply(
+                    remote,
+                    to: meeting,
+                    context: context,
+                    updateCandidates: !isServerID(meeting.id)
+                )
                 if remote.status == "completed" || remote.status == "failed" {
                     return
                 }
@@ -113,11 +122,32 @@ struct MeetingDetailView: View {
     }
 
     @MainActor
+    private func syncServerTasks(_ meeting: Meeting) async {
+        guard isServerID(meeting.id) else { return }
+        guard (meeting.processingStatus ?? "completed") == "completed" else { return }
+        do {
+            let tasks = try await MeetingAPIClient.shared.storedTasks(meetingID: meeting.id)
+            try RemoteMeetingApplier.replacePendingTasks(tasks, on: meeting, context: context)
+            taskLoadError = nil
+        } catch is CancellationError {
+            return
+        } catch {
+            taskLoadError = "Connection lost. Tap to reconnect."
+        }
+    }
+
+    @MainActor
     private func retry(_ meeting: Meeting) async {
         do {
             let remote = try await MeetingAPIClient.shared.retry(id: meeting.id)
-            try RemoteMeetingApplier.apply(remote, to: meeting, context: context)
+            try RemoteMeetingApplier.apply(
+                remote,
+                to: meeting,
+                context: context,
+                updateCandidates: !isServerID(meeting.id)
+            )
             await poll(meeting)
+            await syncServerTasks(meeting)
         } catch {
             meeting.processingError = error.localizedDescription
         }

@@ -4,10 +4,17 @@ import json
 import os
 import time
 from hashlib import sha256
+from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from .extraction import PROMPT_VERSION, Extraction, Transcript, build_prompt
+from .extraction import (
+    PROMPT_VERSION,
+    Extraction,
+    Transcript,
+    build_prompt,
+    save_rejected,
+)
 
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
@@ -15,7 +22,13 @@ TOOL = "record_extraction"
 MAX_TOKENS = 8192
 
 
-def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
+def extract(
+    transcript: Transcript,
+    *,
+    model: str,
+    timeout: int = 180,
+    rejected: Path | None = None,
+) -> dict:
     """Run one independent meeting; the key is read from ANTHROPIC_API_KEY only."""
     if timeout <= 0:
         raise ValueError("timeout must be positive")
@@ -72,8 +85,16 @@ def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
     ]
     if len(calls) != 1:
         raise RuntimeError("Claude returned no structured output.")
-    extraction = Extraction.model_validate(calls[0]["input"])
-    extraction.check_evidence(transcript)
+    raw = calls[0]["input"]
+    try:
+        extraction, repairs = Extraction.model_validate(unwrap(raw)).repair_evidence(
+            transcript
+        )
+        extraction.check_evidence(transcript)
+    except ValueError:
+        if rejected is not None:
+            save_rejected(rejected, json.dumps(raw, indent=2) + "\n")
+        raise
     return {
         "project_id": transcript.project_id,
         "meeting_id": transcript.meeting_id,
@@ -88,8 +109,19 @@ def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
         ).hexdigest(),
         "elapsed_seconds": round(time.monotonic() - started, 3),
         "usage": message.get("usage"),
+        "evidence_repairs": repairs,
         "extraction": extraction.model_dump(),
     }
+
+
+def unwrap(raw):
+    """Claude sometimes nests the tool input under one placeholder key such as
+    "$parameter" or "$PARAMETER_NAME"."""
+    if isinstance(raw, dict) and len(raw) == 1:
+        ((key, value),) = raw.items()
+        if key.startswith("$") and isinstance(value, dict):
+            return value
+    return raw
 
 
 def describe(error: HTTPError) -> str:

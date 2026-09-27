@@ -11,6 +11,8 @@ struct MeetingAPIClient {
         )
     }()
 
+    private static let uploadTimeout: TimeInterval = 15 * 60
+
     let baseURL: URL
     private let token: String?
     private let session: URLSession
@@ -24,12 +26,15 @@ struct MeetingAPIClient {
     func upload(
         audioURL: URL,
         title: String,
-        project: String,
+        projectID: String,
         date: Date
     ) async throws -> RemoteMeeting {
         let boundary = UUID().uuidString
-        var request = URLRequest(url: baseURL.appending(path: "api/meetings"))
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/upload"))
         request.httpMethod = "POST"
+        // URLSession's idle timer only resets on response bytes, and Cloudflare buffers
+        // the whole body before replying, so the default 60s fails any slow upload.
+        request.timeoutInterval = Self.uploadTimeout
         request.setValue(
             "multipart/form-data; boundary=\(boundary)",
             forHTTPHeaderField: "Content-Type"
@@ -45,13 +50,13 @@ struct MeetingAPIClient {
         let audio = try Data(contentsOf: audioURL)
         var body = Data()
         body.appendFormField(name: "title", value: title, boundary: boundary)
-        body.appendFormField(name: "project", value: project, boundary: boundary)
+        body.appendFormField(name: "project_id", value: projectID, boundary: boundary)
         body.appendFormField(
             name: "meeting_date",
             value: date.formatted(.iso8601.year().month().day()),
             boundary: boundary
         )
-        body.appendFormField(name: "permission_confirmed", value: "true", boundary: boundary)
+        body.appendFormField(name: "consent_confirmed", value: "true", boundary: boundary)
         body.appendFile(
             name: "file",
             filename: audioURL.lastPathComponent,
@@ -62,6 +67,13 @@ struct MeetingAPIClient {
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         request.httpBody = body
+        return try await send(request)
+    }
+
+    func meetings(projectID: String) async throws -> [RemoteMeetingCard] {
+        let request = URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/meetings")
+        )
         return try await send(request)
     }
 
@@ -76,9 +88,21 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
-    func purgeProject(named project: String) async throws -> Int {
+    func createProject(name: String, imagePath: String? = nil) async throws -> RemoteProject {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var payload = ["name": name]
+        if let imagePath {
+            payload["image_path"] = imagePath
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        return try await send(request)
+    }
+
+    func purgeProject(_ projectID: String) async throws -> Int {
         var request = URLRequest(
-            url: baseURL.appending(path: "api/projects/\(project)/meetings")
+            url: baseURL.appending(path: "api/projects/\(projectID)/meetings")
         )
         request.httpMethod = "DELETE"
         let response: PurgeResponse = try await send(request)
@@ -87,6 +111,63 @@ struct MeetingAPIClient {
 
     func audioURL(id: String) -> URL {
         baseURL.appending(path: "api/meetings/\(id)/audio")
+    }
+
+    func storedTasks(meetingID: String) async throws -> [RemoteStoredTask] {
+        let request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(meetingID)"))
+        let detail: RemoteMeetingTasks = try await send(request)
+        return detail.tasks
+    }
+
+    func calendarTasks(projectID: String, start: Date, end: Date) async throws -> [RemoteTask] {
+        guard var components = URLComponents(
+            url: baseURL.appending(path: "api/v1/tasks"),
+            resolvingAgainstBaseURL: false
+        ) else {
+            throw MeetingAPIError.invalidResponse
+        }
+        components.queryItems = [
+            URLQueryItem(name: "project_id", value: projectID),
+            URLQueryItem(name: "start_date", value: LabSyncDate.string(from: start)),
+            URLQueryItem(name: "end_date", value: LabSyncDate.string(from: end)),
+        ]
+        guard let url = components.url else { throw MeetingAPIError.invalidResponse }
+        return try await send(URLRequest(url: url))
+    }
+
+    func reviewTask(
+        id: String,
+        action: String,
+        title: String? = nil,
+        dueDate: Date? = nil,
+        assigneeID: String? = nil
+    ) async throws -> TaskMutationResponse {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/review"))
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(
+            ReviewBody(
+                action: action,
+                title: title,
+                dueDate: dueDate.map(LabSyncDate.string(from:)),
+                assigneeID: assigneeID
+            )
+        )
+        return try await send(request)
+    }
+
+    func changeTaskState(id: String, state: String) async throws -> TaskMutationResponse {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/state"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(StateBody(state: state))
+        return try await send(request)
+    }
+
+    func revertTask(token: String) async throws -> TaskMutationResponse {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/revert/\(token)"))
+        request.httpMethod = "POST"
+        return try await send(request)
     }
 
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
@@ -131,6 +212,29 @@ enum MeetingAPIError: LocalizedError {
         case .server(let detail):
             detail
         }
+    }
+}
+
+struct RemoteMeetingCard: Decodable {
+    let id: String
+    let name: String
+    let meetingDate: String
+    let status: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, status
+        case meetingDate = "meeting_date"
+    }
+}
+
+struct RemoteProject: Decodable {
+    let id: String
+    let name: String
+    let imagePath: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case imagePath = "image_path"
     }
 }
 
@@ -195,6 +299,127 @@ struct RemoteEvidence: Decodable {
         case quote
         case transcriptID = "transcript_id"
     }
+}
+
+struct RemoteTask: Decodable {
+    let id: String
+    let projectID: String
+    let meetingID: String?
+    let title: String
+    let ownerLabel: String?
+    let dueDate: String?
+    let reviewStatus: String
+    let lifecycleStatus: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, title
+        case projectID = "project_id"
+        case meetingID = "meeting_id"
+        case ownerLabel = "owner_label"
+        case dueDate = "due_date"
+        case reviewStatus = "review_status"
+        case lifecycleStatus = "lifecycle_status"
+    }
+}
+
+struct TaskMutationResponse: Decodable {
+    let task: RemoteTask
+    let revertToken: String?
+    let eventKit: EventKitPayload?
+
+    enum CodingKeys: String, CodingKey {
+        case task
+        case revertToken = "revert_token"
+        case eventKit = "eventkit"
+    }
+}
+
+struct EventKitPayload: Decodable {
+    let title: String
+    let dueDate: String
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case dueDate = "due_date"
+    }
+}
+
+struct RemoteStoredTask: Decodable {
+    let id: String
+    let title: String
+    let ownerLabel: String?
+    let dueDate: String?
+    let reviewStatus: String
+    let evidence: [RemoteTaskEvidence]
+
+    enum CodingKeys: String, CodingKey {
+        case id, title, evidence
+        case ownerLabel = "owner_label"
+        case dueDate = "due_date"
+        case reviewStatus = "review_status"
+    }
+}
+
+struct RemoteTaskEvidence: Decodable {
+    let quote: String
+    let timestampMilliseconds: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case quote
+        case timestampMilliseconds = "timestamp_ms"
+    }
+}
+
+private struct RemoteMeetingTasks: Decodable {
+    let tasks: [RemoteStoredTask]
+}
+
+private struct ReviewBody: Encodable {
+    let action: String
+    let title: String?
+    let dueDate: String?
+    let assigneeID: String?
+
+    enum CodingKeys: String, CodingKey {
+        case action, title
+        case dueDate = "due_date"
+        case assigneeID = "assignee_id"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(action, forKey: .action)
+        try container.encodeIfPresent(title, forKey: .title)
+        // Null clears the due date. Omitting the key would leave the stored date in place.
+        try container.encode(dueDate, forKey: .dueDate)
+        try container.encodeIfPresent(assigneeID, forKey: .assigneeID)
+    }
+}
+
+private struct StateBody: Encodable {
+    let state: String
+}
+
+enum LabSyncDate {
+    static func day(from value: String) -> Date? {
+        let parts = value.split(separator: "-")
+        guard parts.count == 3,
+              let year = Int(parts[0]),
+              let month = Int(parts[1]),
+              let day = Int(parts[2]) else {
+            return nil
+        }
+        return Calendar.current.date(from: DateComponents(year: year, month: month, day: day))
+    }
+
+    static func string(from date: Date) -> String {
+        let parts = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+}
+
+func isServerID(_ value: String) -> Bool {
+    UUID(uuidString: value) != nil
 }
 
 private struct ErrorResponse: Decodable {

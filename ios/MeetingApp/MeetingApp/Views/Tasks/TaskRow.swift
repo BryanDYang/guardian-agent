@@ -9,7 +9,7 @@ struct TaskRow: View {
     var body: some View {
         HStack(spacing: 12) {
             AvatarView(
-                initials: task.assignee?.initials ?? "?",
+                initials: personInitials,
                 colorHex: task.assignee?.colorHex ?? "#9CA3AF",
                 isMuted: task.isCompleted
             )
@@ -22,7 +22,7 @@ struct TaskRow: View {
                     .lineLimit(1)
 
                 HStack(spacing: 6) {
-                    Text(task.assignee?.name ?? "Unassigned")
+                    Text(personName)
                         .fontWeight(.medium)
                     Circle().frame(width: 4, height: 4)
                     Text(task.project?.title ?? "")
@@ -70,5 +70,22 @@ struct TaskRow: View {
         )
         .shadow(color: .black.opacity(0.04), radius: 3, y: 1)
         .opacity(task.isCompleted ? 0.6 : 1)
+    }
+
+    private var personName: String {
+        if let name = task.assignee?.name, !name.isEmpty { return name }
+        if !task.ownerLabel.isEmpty { return task.ownerLabel }
+        return "Unassigned"
+    }
+
+    private var personInitials: String {
+        if let initials = task.assignee?.initials, !initials.isEmpty { return initials }
+        let letters = personName
+            .split(separator: " ")
+            .prefix(2)
+            .compactMap(\.first)
+            .map(String.init)
+            .joined()
+        return letters.isEmpty || personName == "Unassigned" ? "?" : letters.uppercased()
     }
 }

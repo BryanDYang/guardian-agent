@@ -125,7 +125,7 @@ struct AddMeetingSheet: View {
             let remote = try await MeetingAPIClient.shared.upload(
                 audioURL: audioURL,
                 title: trimmedTitle,
-                project: project.title,
+                projectID: project.id,
                 date: date
             )
             let meeting = Meeting(

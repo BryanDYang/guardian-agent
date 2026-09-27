@@ -8,6 +8,8 @@ struct MeetingsListView: View {
     @Query(sort: \Project.createdAt) private var projects: [Project]
     @Query(sort: \Meeting.date, order: .reverse) private var meetings: [Meeting]
 
+    @Environment(\.modelContext) private var context
+
     @State private var showAddProject = false
     @State private var showAddMeeting = false
 
@@ -39,11 +41,61 @@ struct MeetingsListView: View {
                 AddMeetingSheet(project: project)
             }
         }
+        .task(id: projectID) {
+            await refreshMeetings()
+        }
     }
 
     private var project: Project? {
         guard let projectID else { return nil }
         return projects.first { $0.id == projectID }
+    }
+
+    private func refreshMeetings() async {
+        guard let project, UUID(uuidString: project.id) != nil else { return }
+        do {
+            let remote = try await MeetingAPIClient.shared.meetings(projectID: project.id)
+            var changed = false
+            for item in remote where !meetings.contains(where: { $0.id == item.id }) {
+                let meeting = Meeting(
+                    id: item.id,
+                    title: item.name,
+                    date: meetingDate(item.meetingDate),
+                    duration: "Processing",
+                    summary: [],
+                    suggestions: [],
+                    decisions: [],
+                    transcript: [],
+                    processingStatus: item.status
+                )
+                context.insert(meeting)
+                meeting.project = project
+                changed = true
+            }
+            if changed {
+                try context.save()
+            }
+        } catch {
+            // Keep the on-device list when the backend cannot be reached.
+        }
+    }
+
+    private func meetingDate(_ value: String) -> Date {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: value) {
+            return date
+        }
+        formatter.formatOptions = [.withInternetDateTime]
+        if let date = formatter.date(from: value) {
+            return date
+        }
+        let day = DateFormatter()
+        day.calendar = Calendar(identifier: .iso8601)
+        day.locale = Locale(identifier: "en_US_POSIX")
+        day.timeZone = TimeZone(secondsFromGMT: 0)
+        day.dateFormat = "yyyy-MM-dd"
+        return day.date(from: String(value.prefix(10))) ?? .now
     }
 
     // MARK: Projects list

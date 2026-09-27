@@ -77,7 +77,7 @@ struct PrivacySettingsSheet: View {
         defer { isPurging = false }
 
         do {
-            _ = try await MeetingAPIClient.shared.purgeProject(named: project.title)
+            _ = try await MeetingAPIClient.shared.purgeProject(project.id)
 
             let meetings = project.meetings
             for task in project.tasks {

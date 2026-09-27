@@ -6,7 +6,8 @@ enum RemoteMeetingApplier {
     static func apply(
         _ remote: RemoteMeeting,
         to meeting: Meeting,
-        context: ModelContext
+        context: ModelContext,
+        updateCandidates: Bool = true
     ) throws {
         meeting.processingStatus = remote.status
         meeting.processingError = remote.error
@@ -16,10 +17,6 @@ enum RemoteMeetingApplier {
               let extraction = remote.extraction else {
             try context.save()
             return
-        }
-
-        for candidate in meeting.candidateTasks {
-            context.delete(candidate)
         }
 
         var attendeesBySpeaker: [String: Attendee] = [:]
@@ -61,23 +58,62 @@ enum RemoteMeetingApplier {
             Suggestion(id: "\(meeting.id)-suggestion-\(index)", text: suggestion.statement)
         }
 
-        for (index, commitment) in extraction.commitments.enumerated() {
+        if updateCandidates {
+            replaceCommitments(extraction.commitments, on: meeting, context: context)
+        }
+
+        try context.save()
+    }
+
+    /// Pending database tasks become the review cards. Approved and dismissed tasks do not.
+    static func replacePendingTasks(
+        _ tasks: [RemoteStoredTask],
+        on meeting: Meeting,
+        context: ModelContext
+    ) throws {
+        for candidate in meeting.candidateTasks {
+            context.delete(candidate)
+        }
+        for task in tasks where task.reviewStatus == "pending" {
+            let evidence = task.evidence.first
+            let candidate = CandidateTask(
+                id: task.id,
+                taskDescription: task.title,
+                quote: evidence?.quote ?? "",
+                timestamp: timestamp(evidence?.timestampMilliseconds ?? 0),
+                dueDate: task.dueDate.flatMap(LabSyncDate.day(from:))
+            )
+            context.insert(candidate)
+            candidate.meeting = meeting
+            candidate.assignee = attendee(named: task.ownerLabel, on: meeting)
+        }
+        try context.save()
+    }
+
+    private static func replaceCommitments(
+        _ commitments: [RemoteCommitment],
+        on meeting: Meeting,
+        context: ModelContext
+    ) {
+        for candidate in meeting.candidateTasks {
+            context.delete(candidate)
+        }
+        let turnsByID = Dictionary(
+            uniqueKeysWithValues: meeting.transcript.map { ($0.id, $0.startTime) }
+        )
+        for (index, commitment) in commitments.enumerated() {
             let evidence = commitment.evidence.first
             let candidate = CandidateTask(
                 id: "\(meeting.id)-commitment-\(index)",
                 taskDescription: commitment.title,
                 quote: evidence?.quote ?? "",
-                timestamp: evidenceTimestamp(commitment.evidence, turnsByID: turnsByID),
+                timestamp: evidence.flatMap { turnsByID[$0.transcriptID] } ?? "00:00",
                 dueDate: nil
             )
             context.insert(candidate)
             candidate.meeting = meeting
-            if let owner = commitment.owner {
-                candidate.assignee = attendeesBySpeaker[owner]
-            }
+            candidate.assignee = attendee(named: commitment.owner, on: meeting)
         }
-
-        try context.save()
     }
 
     private static func evidenceTimestamp(
@@ -94,6 +130,13 @@ enum RemoteMeetingApplier {
     private static func timestamp(_ milliseconds: Int) -> String {
         let totalSeconds = milliseconds / 1_000
         return String(format: "%02d:%02d", totalSeconds / 60, totalSeconds % 60)
+    }
+
+    private static func attendee(named owner: String?, on meeting: Meeting) -> Attendee? {
+        guard let owner else { return nil }
+        return meeting.attendees.first {
+            $0.name == owner || $0.name == displayName(for: owner) || $0.id.hasSuffix(":\(owner)")
+        }
     }
 
     private static func displayName(for speaker: String) -> String {

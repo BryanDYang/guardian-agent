@@ -62,6 +62,49 @@ def test_rejects_invented_evidence(transcript, prediction, field, value):
         Extraction.model_validate(prediction).check_evidence(transcript)
 
 
+def test_repair_moves_quote_to_its_only_turn(transcript, prediction):
+    prediction["commitments"][0]["evidence"][0]["transcript_id"] = "t1"
+    extraction, repairs = Extraction.model_validate(prediction).repair_evidence(
+        transcript
+    )
+    extraction.check_evidence(transcript)
+    assert extraction.commitments[0].evidence[0].transcript_id == "t2"
+    assert repairs == ["commitments[0]: moved quote from t1 to t2"]
+
+
+def test_repair_drops_unverifiable_evidence(transcript, prediction):
+    agreed = {"transcript_id": "t1", "quote": "We agree to use the public AMI"}
+    prediction["decisions"] = [
+        {
+            "statement": "Use AMI transcripts",
+            "evidence": [agreed, {"transcript_id": "t1", "quote": "invented"}],
+        },
+        {
+            "statement": "Across turns",
+            "evidence": [{"transcript_id": "t2", "quote": "test. I will prepare"}],
+        },
+    ]
+    extraction, repairs = Extraction.model_validate(prediction).repair_evidence(
+        transcript
+    )
+    extraction.check_evidence(transcript)
+    assert [item.statement for item in extraction.decisions] == ["Use AMI transcripts"]
+    assert extraction.decisions[0].evidence[0].model_dump() == agreed
+    assert len(extraction.decisions[0].evidence) == 1
+    assert repairs == [
+        "decisions[0]: dropped quote 'invented'",
+        "decisions[1]: dropped quote 'test. I will prepare'",
+        "decisions[1]: dropped item with no verifiable evidence",
+    ]
+
+
+def test_repair_leaves_valid_extraction_unchanged(transcript, prediction):
+    original = Extraction.model_validate(prediction)
+    extraction, repairs = original.repair_evidence(transcript)
+    assert extraction == original
+    assert repairs == []
+
+
 def test_unknown_owner(transcript, prediction):
     prediction["commitments"][0]["owner"] = "Invented Person"
     with pytest.raises(ValueError, match="Unknown commitment owner"):
@@ -103,8 +146,10 @@ def fake_codex(tmp_path, monkeypatch, prediction):
         "if mode == 'failure': sys.exit(1)\n"
         "path = pathlib.Path(sys.argv[sys.argv.index('--output-last-message') + 1])\n"
         f"prediction = json.loads({json.dumps(prediction)!r})\n"
+        "if mode == 'owner':\n"
+        "    prediction['commitments'][0]['owner'] = 'Invented Person'\n"
         "if mode == 'citation':\n"
-        "    prediction['commitments'][0]['evidence'][0]['quote'] = 'invented'\n"
+        "    prediction['commitments'][0]['evidence'][0]['transcript_id'] = 't1'\n"
         "path.write_text('not json' if mode == 'invalid' else json.dumps(prediction))\n"
         "if mode == 'tool':\n"
         "    print(json.dumps({'type':'item.completed',"
@@ -143,9 +188,36 @@ def test_cli_extract_process_boundary(fake_codex, tmp_path):
     assert output.read_bytes() == original
 
 
-@pytest.mark.parametrize(
-    "mode", ["failure", "invalid", "incomplete", "citation", "tool"]
-)
+def test_cli_reports_evidence_repairs(fake_codex, tmp_path, monkeypatch):
+    monkeypatch.setenv("FAKE_CODEX_MODE", "citation")
+    output = tmp_path / "result.json"
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "labsync",
+            "extract",
+            str(FIXTURE),
+            "--model",
+            "test-model",
+            "--output",
+            str(output),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "Repaired evidence: commitments[0]: moved quote from t1 to t2" in (
+        result.stdout
+    )
+    saved = json.loads(output.read_text())
+    assert saved["extraction"]["commitments"][0]["evidence"][0]["transcript_id"] == (
+        "t2"
+    )
+    assert saved["evidence_repairs"] == ["commitments[0]: moved quote from t1 to t2"]
+
+
+@pytest.mark.parametrize("mode", ["failure", "invalid", "incomplete", "owner", "tool"])
 def test_failed_run_does_not_save_output(fake_codex, tmp_path, monkeypatch, mode):
     monkeypatch.setenv("FAKE_CODEX_MODE", mode)
     output = tmp_path / "result.json"
@@ -167,6 +239,14 @@ def test_failed_run_does_not_save_output(fake_codex, tmp_path, monkeypatch, mode
     assert result.returncode == 1
     assert not output.exists()
     assert "Traceback" not in result.stderr
+    rejected = tmp_path / "extraction-rejected.json"
+    assert rejected.exists() == (mode in {"owner", "invalid"})
+    if mode == "owner":
+        assert "Unknown commitment owner" in result.stderr
+        saved = json.loads(rejected.read_text())
+        assert saved["commitments"][0]["owner"] == "Invented Person"
+    elif mode == "invalid":
+        assert rejected.read_text() == "not json"
 
 
 def test_timeout_is_actionable(transcript, monkeypatch):
@@ -217,10 +297,29 @@ def test_claude_extract(fake_claude, transcript):
     assert request["tool_choice"] == {"type": "tool", "name": claude_client.TOOL}
 
 
+@pytest.mark.parametrize("key", ["$parameter", "$PARAMETER_NAME"])
+def test_claude_unwraps_placeholder_envelope(fake_claude, transcript, prediction, key):
+    fake_claude["reply"]["content"][0]["input"] = {key: prediction}
+    result = claude_client.extract(transcript, model="test-model", timeout=1)
+    assert result["extraction"] == Extraction.model_validate(prediction).model_dump()
+    assert result["evidence_repairs"] == []
+
+
+def test_claude_repairs_evidence(fake_claude, transcript):
+    tool_input = fake_claude["reply"]["content"][0]["input"]
+    tool_input["commitments"][0]["evidence"][0]["transcript_id"] = "wrong"
+    result = claude_client.extract(transcript, model="test-model", timeout=1)
+    evidence = result["extraction"]["commitments"][0]["evidence"][0]
+    assert evidence["transcript_id"] == "t2"
+    assert result["evidence_repairs"] == [
+        "commitments[0]: moved quote from wrong to t2"
+    ]
+
+
 @pytest.mark.parametrize(
     "mode,error",
     [
-        ("citation", "Evidence does not match"),
+        ("owner", "Unknown commitment owner"),
         ("invalid", "validation error"),
         ("truncated", "truncated"),
         ("text", "no structured output"),
@@ -229,8 +328,8 @@ def test_claude_extract(fake_claude, transcript):
 def test_claude_rejects_unusable_reply(fake_claude, transcript, mode, error):
     reply = fake_claude["reply"]
     tool_input = reply["content"][0]["input"]
-    if mode == "citation":
-        tool_input["commitments"][0]["evidence"][0]["quote"] = "invented"
+    if mode == "owner":
+        tool_input["commitments"][0]["owner"] = "Invented Person"
     elif mode == "invalid":
         del tool_input["summary"]
     elif mode == "truncated":
@@ -239,6 +338,27 @@ def test_claude_rejects_unusable_reply(fake_claude, transcript, mode, error):
         reply["content"] = [{"type": "text", "text": "{}"}]
     with pytest.raises((ValueError, RuntimeError), match=error):
         claude_client.extract(transcript, model="test-model", timeout=1)
+
+
+@pytest.mark.parametrize("mode", ["owner", "invalid"])
+def test_claude_keeps_rejected_output(fake_claude, transcript, tmp_path, mode):
+    tool_input = fake_claude["reply"]["content"][0]["input"]
+    if mode == "owner":
+        tool_input["commitments"][0]["owner"] = "Invented Person"
+    else:
+        del tool_input["summary"]
+    rejected = tmp_path / "attempt-1" / "extraction-rejected.json"
+    with pytest.raises(ValueError):
+        claude_client.extract(
+            transcript, model="test-model", timeout=1, rejected=rejected
+        )
+    assert json.loads(rejected.read_text()) == tool_input
+
+
+def test_claude_success_writes_no_rejected_output(fake_claude, transcript, tmp_path):
+    rejected = tmp_path / "extraction-rejected.json"
+    claude_client.extract(transcript, model="test-model", timeout=1, rejected=rejected)
+    assert not rejected.exists()
 
 
 @pytest.mark.parametrize(

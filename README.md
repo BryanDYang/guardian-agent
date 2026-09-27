@@ -34,7 +34,7 @@ The script saves the key to the gitignored `LabSyncConfig.plist` and checks that
 brew install uv cloudflared
 git clone https://github.com/BryanDYang/guardian-agent.git
 cd guardian-agent
-uv sync --locked --extra dev --extra audio --extra server
+uv sync --locked --extra dev --extra audio --extra server --extra diarize
 ```
 
 ### 2. Add the transcriber
@@ -52,9 +52,36 @@ cp .env.example .env
 codex login        # if codex is missing: npm install -g @openai/codex
 ```
 
-Leave `API_SECRET_KEY` blank; step 4 fills it in. To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
+Leave `API_SECRET_KEY` blank; step 5 fills it in. To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
 
-### 4. Set up the Cloudflare tunnel (once per Mac)
+Speaker labels need a Hugging Face token. Accept the terms for `pyannote/speaker-diarization-3.1` and `pyannote/segmentation-3.0`, then set `HF_TOKEN` in `.env`.
+
+### 4. Connect the database
+
+Projects, meetings, and tasks are stored in Postgres on Supabase. The schema lives in `supabase/migrations/`.
+
+To use the team database, ask Will for the connection string privately and set `DATABASE_URL` in `.env`. Never commit it.
+
+To use your own Supabase project instead, create one at [supabase.com](https://supabase.com), then apply the schema:
+
+```bash
+brew install supabase/tap/supabase
+supabase login
+supabase link --project-ref <your-project-ref>
+supabase db push
+```
+
+In the Supabase dashboard, click **Connect**, copy the **Session pooler** connection string, fill in your database password, and set it as `DATABASE_URL` in `.env`.
+
+Check the connection:
+
+```bash
+uv run --locked --env-file .env --extra server python scripts/check_supabase.py
+```
+
+It should end with `Supabase connection OK`. Without `DATABASE_URL`, the backend still transcribes, but the project, meeting, and task endpoints return `503`.
+
+### 5. Set up the Cloudflare tunnel (once per Mac)
 
 Pick your own hostname and tunnel name:
 
@@ -64,21 +91,21 @@ scripts/setup_tunnel.sh api-yourname.guardianagent.dev labsync-yourname
 
 This logs you in to Cloudflare, creates the tunnel, generates `API_SECRET_KEY` in `.env`, and points the iOS app at `https://api-yourname.guardianagent.dev` with the same key.
 
-### 5. Start the backend (Terminal 1)
+### 6. Start the backend (Terminal 1)
 
 ```bash
-uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
+uv run --locked --env-file .env --extra audio --extra server --extra diarize labsync serve --whisper-backend mlx --whisper-model medium --diarize
 ```
 
 The first upload downloads the medium Whisper weights (about 1.5 GB), so it is slow once.
 
-### 6. Start the tunnel (Terminal 2)
+### 7. Start the tunnel (Terminal 2)
 
 ```bash
 cloudflared tunnel run labsync-yourname
 ```
 
-### 7. Check everything (Terminal 3)
+### 8. Check everything (Terminal 3)
 
 ```bash
 scripts/check_tunnel.sh api-yourname.guardianagent.dev
@@ -86,7 +113,7 @@ scripts/check_tunnel.sh api-yourname.guardianagent.dev
 
 Every line should say `PASS`. Each `FAIL` line tells you what to fix.
 
-### 8. Run the app
+### 9. Run the app
 
 ```bash
 open ios/MeetingApp/MeetingApp.xcodeproj
@@ -98,12 +125,12 @@ Build and run on your iPhone or the simulator. Upload `tests/fixtures/ami/TS3005
 
 ```bash
 git pull
-uv sync --locked --extra dev --extra audio --extra server
+uv sync --locked --extra dev --extra audio --extra server --extra diarize
 ```
 
-Then repeat steps 5 to 7. Rebuild the app in Xcode if iOS code changed. You do not need to redo steps 2 to 4.
+Then repeat steps 6 to 8. Rebuild the app in Xcode if iOS code changed. You do not need to redo steps 2 to 5. If the pull added files under `supabase/migrations/` and you use your own Supabase project, run `supabase db push` again.
 
-More: [RUN_UI.md](RUN_UI.md) covers speaker labels and troubleshooting.
+More: [RUN_UI.md](RUN_UI.md) covers troubleshooting.
 
 ## CLI without the server
 
@@ -184,6 +211,15 @@ This implements the extraction portion of [checklist Phase 5](docs/checklist.md)
 uv run --locked --extra dev ruff check src tests
 uv run --locked --extra dev ruff format --check src tests
 uv run --locked --extra dev pytest
+```
+
+The database API tests (`tests/test_api_*.py`) are skipped unless `TEST_DATABASE_URL` is set. Run them against a local Supabase database (needs Docker running), never the real project. `supabase start` applies the migrations:
+
+```bash
+supabase start
+TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
+  uv run --locked --extra dev pytest tests/test_api_*.py
+supabase stop
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [the CCB guide](docs/ccb-transcriber.md), [the integration guide](docs/codex-integration.md), and [the project proposal](docs/archive/milestone_1/project_proposal.md).

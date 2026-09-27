@@ -7,10 +7,22 @@ import time
 from hashlib import sha256
 from pathlib import Path
 
-from .extraction import PROMPT_VERSION, Extraction, Transcript, build_prompt
+from .extraction import (
+    PROMPT_VERSION,
+    Extraction,
+    Transcript,
+    build_prompt,
+    save_rejected,
+)
 
 
-def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
+def extract(
+    transcript: Transcript,
+    *,
+    model: str,
+    timeout: int = 180,
+    rejected: Path | None = None,
+) -> dict:
     """Run one independent meeting; never read or copy Codex credentials."""
     if timeout <= 0:
         raise ValueError("timeout must be positive")
@@ -74,8 +86,16 @@ def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
             raise RuntimeError("Codex used a tool during text-only extraction.")
         if not output.is_file():
             raise RuntimeError("Codex returned no structured output.")
-        extraction = Extraction.model_validate_json(output.read_text(encoding="utf-8"))
-        extraction.check_evidence(transcript)
+        raw = output.read_text(encoding="utf-8")
+        try:
+            extraction, repairs = Extraction.model_validate_json(raw).repair_evidence(
+                transcript
+            )
+            extraction.check_evidence(transcript)
+        except ValueError:
+            if rejected is not None:
+                save_rejected(rejected, raw)
+            raise
         version = subprocess.run(
             ["codex", "--version"],
             capture_output=True,
@@ -96,5 +116,6 @@ def extract(transcript: Transcript, *, model: str, timeout: int = 180) -> dict:
             ).hexdigest(),
             "elapsed_seconds": round(time.monotonic() - started, 3),
             "usage": completed[-1].get("usage"),
+            "evidence_repairs": repairs,
             "extraction": extraction.model_dump(),
         }

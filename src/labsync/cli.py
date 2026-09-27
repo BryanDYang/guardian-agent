@@ -125,6 +125,7 @@ def main(argv: list[str] | None = None) -> int:
                 whisper_backend=args.whisper_backend,
                 diarize=args.diarize,
                 token=token,
+                database_url=os.environ.get("DATABASE_URL") or None,
             ),
             host="127.0.0.1",
             port=args.port,
@@ -197,12 +198,15 @@ def main(argv: list[str] | None = None) -> int:
                 provider=args.provider,
                 model=args.model,
                 timeout=args.timeout,
+                rejected=args.output.with_name("extraction-rejected.json"),
             )
             args.output.parent.mkdir(parents=True, exist_ok=True)
             with args.output.open("x", encoding="utf-8") as destination:
                 destination.write(json.dumps(result, indent=2) + "\n")
         except (OSError, ValueError, RuntimeError, SubprocessError) as exc:
             parser.exit(1, f"labsync: {exc}\n")
+        for repair in result["evidence_repairs"]:
+            print(f"Repaired evidence: {repair}")
         print(f"Saved extraction to {args.output}")
         return 0
     state = {

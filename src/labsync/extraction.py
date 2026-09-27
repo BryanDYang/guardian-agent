@@ -1,5 +1,6 @@
 """Transcript-first extraction contract, independent of audio and persistence."""
 
+from pathlib import Path
 from typing import Annotated, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -60,6 +61,51 @@ class Extraction(Record):
     commitments: list[Commitment]
     suggestions: list[Decision]
 
+    def repair_evidence(self, transcript: Transcript) -> tuple[Self, list[str]]:
+        """Re-point quotes cited under the wrong turn and drop unverifiable ones.
+
+        A quote found verbatim in exactly one turn is moved to that turn. Other
+        unmatched quotes are dropped, then items left without evidence. The result
+        must still pass check_evidence.
+        """
+        turns = {turn.id: turn.content for turn in transcript.turns}
+        repairs = []
+
+        def repaired(kind, items):
+            kept = []
+            for index, item in enumerate(items):
+                label = f"{kind}[{index}]"
+                evidence = []
+                for cited in item.evidence:
+                    if cited.quote in turns.get(cited.transcript_id, ""):
+                        evidence.append(cited)
+                        continue
+                    matches = [id for id, text in turns.items() if cited.quote in text]
+                    if len(matches) == 1:
+                        repairs.append(
+                            f"{label}: moved quote from {cited.transcript_id} "
+                            f"to {matches[0]}"
+                        )
+                        evidence.append(
+                            cited.model_copy(update={"transcript_id": matches[0]})
+                        )
+                    else:
+                        repairs.append(f"{label}: dropped quote {cited.quote!r}")
+                if evidence:
+                    kept.append(item.model_copy(update={"evidence": evidence}))
+                else:
+                    repairs.append(f"{label}: dropped item with no verifiable evidence")
+            return kept
+
+        extraction = self.model_copy(
+            update={
+                "decisions": repaired("decisions", self.decisions),
+                "commitments": repaired("commitments", self.commitments),
+                "suggestions": repaired("suggestions", self.suggestions),
+            }
+        )
+        return extraction, repairs
+
     def check_evidence(self, transcript: Transcript) -> None:
         turns = {turn.id: turn for turn in transcript.turns}
         speakers = {turn.speaker for turn in transcript.turns}
@@ -68,7 +114,8 @@ class Extraction(Record):
                 turn = turns.get(evidence.transcript_id)
                 if turn is None or evidence.quote not in turn.content:
                     raise ValueError(
-                        f"Evidence does not match transcript: {evidence.transcript_id}"
+                        "Evidence does not match transcript: "
+                        f"{evidence.transcript_id} quote={evidence.quote!r}"
                     )
         for item in self.commitments:
             if item.owner is not None and (
@@ -101,3 +148,9 @@ Return the requested JSON only. Empty lists are valid.
 
 def build_prompt(transcript: Transcript) -> str:
     return INSTRUCTIONS + "\nTRANSCRIPT:\n" + transcript.model_dump_json()
+
+
+def save_rejected(path: Path, output: str) -> None:
+    """Keep model output that failed validation so the failure can be inspected."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(output, encoding="utf-8")

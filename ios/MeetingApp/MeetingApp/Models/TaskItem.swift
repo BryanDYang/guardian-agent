@@ -24,6 +24,10 @@ final class TaskItem {
     /// Persists TasksView's `completedTaskIds` set. Separate from `state`, as in the TS,
     /// so Undo restores the original state.
     var isCompleted: Bool = false
+    /// Raw diarizer owner when the task has no linked attendee yet.
+    var ownerLabel: String = ""
+    /// Latest audit token from a lifecycle change, used by Undo.
+    var revertToken: String?
 
     // Relationships — set after insert.
     var assignee: Attendee?

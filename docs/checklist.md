@@ -4,107 +4,101 @@ Source of truth: [Workflow.md](writeups/Workflow.md). User-facing behavior: [Sto
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
-**Current state:** Meetings upload/transcribe/extract works through FastAPI JSON-on-disk (`artifacts/server/`). iOS Meetings talks to that API and copies results into on-device SwiftData. PostgreSQL (`db/schema.sql`) is authored but unused. Tasks, Chat, real audio playback, EventKit, RAG, auth, and hybrid search are not end-to-end.
+**Current state:** Supabase Postgres is live (`db/schema.sql`, applied as `supabase/migrations/`). A v1 API creates projects, uploads meetings into a project UUID, and mirrors transcript, summary, decisions, evidence, and pending tasks into Postgres. The pipeline worker still keeps `artifacts/server/*/meeting.json` and polls that file for status. iOS uses `LabSyncConfig.plist` for the base URL and bearer token, creates projects on the server, uploads with consent, and reviews tasks through `/api/v1/tasks` (approve, edit, dismiss, open/done/dropped, undo). Approved tasks load onto the Tasks calendar and copy into Apple Reminders. Chat, audio playback, storylines, speaker identity, embeddings, hybrid search, and RAG are not end-to-end. `SeedData` still loads on launch.
 
 Legend: `[x]` done in the repo · `[ ]` still required for E2E.
 
 ---
 
-
-
 ## Phase 1 — Contract & Interface Freeze
 
-- [x] Author PostgreSQL 16 DDL for all 12 tables (`db/schema.sql`)
+- [x] Author PostgreSQL DDL (`db/schema.sql`, 13 tables including `item_evidence`) and apply it on Supabase
 - [x] Foreign keys with `ON DELETE CASCADE` / `SET NULL` as specified
 - [x] HNSW vector indexes (`vector_cosine_ops`) on attendees, transcripts, tasks
 - [x] GIN full-text index (`tsvector`) on transcripts
 - [x] Pydantic models for transcript turns, summary, decisions, commitments, suggestions, evidence (`src/labsync/extraction.py`)
+- [x] Multi-citation evidence in `item_evidence` (quote, `turn_key`, transcript UUID, timestamp), not a single `transcript_id` column on tasks or decisions
+- [x] Pydantic models for task review and lifecycle (`Review`, `StateChange` in `src/labsync/api/tasks.py`)
 - [ ] Pydantic models for attendee storylines (`what_they_want`, `what_they_see`, `what_they_discuss`)
-- [ ] Pydantic models for task review payloads (approve / edit / dismiss + lifecycle `open` / `done` / `dropped`)
 - [ ] Pydantic models for RAG query/response (answer, citations, grounded refusal)
-- [ ] Lock remaining contracts to the DDL (source IDs vs UUIDs, multi-citation evidence vs single `transcript_id` on tasks/decisions)
 - [ ] Golden fixture pack in `tests/fixtures/`: ~60s `.wav`, human-verified transcript, mock attendee calendar records
 
-**Owner hint:** Engineer 2 (schema) + Engineer 3 (extraction/RAG contracts). All three review before Phase 2.
+**Owner hint:** Engineer 2 (schema) + Engineer 3 (extraction/RAG contracts).
 
 ---
 
-
-
 ## Phase 2 — Persistence & Search Layer (System 8)
 
-Nothing in this phase is used at runtime yet. Backend still writes `meeting.json` files.
+Postgres is used for projects, meeting rows, and pipeline results. The worker still reads and writes `meeting.json`. Search is not implemented. The pool is `psycopg` + `psycopg_pool`, not SQLAlchemy.
 
-- [ ] Install/run local PostgreSQL 16 with `pgvector` (Homebrew or `docker-compose`)
-- [ ] Execute `db/schema.sql` (or Alembic) against a fresh database and confirm extensions, FKs, and indexes
-- [ ] SQLAlchemy 2.0 + `asyncpg` engine, connection pool, FastAPI session dependency
-- [ ] Repositories for all 12 tables: `projects`, `meetings`, `attendees`, `meeting_attendees`, `transcripts`, `meeting_summaries`, `meeting_decisions`, `attendee_storylines`, `tasks`, `task_audit_log`, `chat_conversations`, `chat_messages`
-- [ ] Every task mutation writes `task_audit_log` with a unique UUID `revert_token`
+- [x] Hosted Postgres with `pgvector` on Supabase; local tests use `supabase start` and `TEST_DATABASE_URL`
+- [x] Schema applied (`supabase db push` / `supabase/migrations/20260927033954_initial_schema.sql`)
+- [x] `psycopg_pool.ConnectionPool` and FastAPI `get_conn` (`src/labsync/db/connection.py`, `src/labsync/api/deps.py`)
+- [x] Repositories in use: `projects`, `meetings`, `transcripts`, `meeting_summaries`, `meeting_decisions`, `item_evidence`, `tasks`, `task_audit_log`
+- [ ] Repositories still unused for writes: `attendees`, `meeting_attendees`, `attendee_storylines` (detail reads return an empty list), `chat_conversations`, `chat_messages`
+- [x] Lifecycle changes (`open` / `done` / `dropped` and revert) append `task_audit_log` with a unique `revert_token`
+- [ ] Review edits (title, assignee, due date, approve, dismiss) are not written to `task_audit_log`
 - [ ] Hybrid search CTE: pgvector cosine + `tsvector` RRF at `k=60`, scoped by `WHERE project_id = :project_id`
-- [ ] Stop using `artifacts/server/*/meeting.json` as the source of truth (audio files may still live on disk; metadata must live in Postgres)
+- [ ] Stop using `artifacts/server/*/meeting.json` as the pipeline source of truth (audio files may still live on disk)
 
 **Owner hint:** Engineer 2.
 
 ---
 
-
-
 ## Phase 3 — Headless Audio & Extraction Pipeline (Systems 6 & 7)
 
-Partial: Whisper + optional pyannote via the CCB bridge, Codex extraction of summary/decisions/commitments. Results are not written to Postgres. Storylines and dedup are missing.
+Whisper, optional diarization, and Codex/Claude extraction run, and completed v1 uploads persist summary, decisions, transcript turns, and pending tasks. Storylines, embeddings, and dedup do not.
 
 - [x] Audio ingest + Whisper transcription with timestamps (`labsync transcribe`)
 - [x] Optional `pyannote.audio` diarization (`--diarize`)
+- [x] FFmpeg normalization to 16 kHz mono WAV before Whisper (`src/labsync/ccb.py`)
 - [x] LLM structured extraction for summary, decisions, commitments, suggestions with quote checks
-- [ ] FFmpeg normalization to 16 kHz mono WAV as a first-class pipeline stage
+- [x] Persist turns into `transcripts` (content, `speaker_label`, `turn_key`, `start_time_ms`, `end_time_ms`)
+- [x] Persist summaries into `meeting_summaries` and decisions into `meeting_decisions`, with evidence rows
+- [x] Insert extracted commitments and suggestions as `tasks` with `review_status = pending`
+- [x] Approval requires an explicit due date from the reviewer; `due_date_text` is stored verbatim and is not parsed into a date
+- [ ] Transcript `embedding` and `tsv` columns are not filled
 - [ ] Token-level timestamps suitable for sub-second `AVPlayer` seek
-- [ ] 512-d x-vector extraction and cosine match against `attendees.voice_embedding`
-- [ ] Map diarized speakers to named attendees / profile initials (calendar + voice profile)
-- [ ] Persist turns into `transcripts` (content, `start_time_ms`, `end_time_ms`, embedding, `tsv`)
+- [ ] Voice embedding extraction and cosine match against `attendees.voice_embedding`
+- [ ] Map diarized speakers to named attendees (calendar + voice profile). The app currently invents a local attendee per speaker label
 - [ ] Extract and persist attendee storylines into `attendee_storylines`
-- [ ] Persist summaries into `meeting_summaries` and decisions into `meeting_decisions`
-- [ ] Insert extracted commitments as `tasks` with `review_status = pending`
 - [ ] Task dedup: `sentence-transformers/all-MiniLM-L6-v2` embeddings, pgvector cosine vs open tasks, LLM arbitration above 0.80 similarity
-- [ ] Parse `due_date_text` into `tasks.due_date` during review (do not silently invent dates)
+- [ ] `meetings.duration_seconds` is never written
 
 **Owner hint:** Engineer 3 (pipeline) + Engineer 2 (writes into repositories).
 
 ---
 
-
-
 ## Phase 4 — Sequential Queue & API Gateway (Systems 4 & 5)
 
-Partial: FastAPI upload, poll, retry, audio file, project purge. Single-thread worker. No auth, no WebSocket, no 206, no tunnel, no task/chat/RAG routes.
+v1 project, meeting, and task routes talk to Postgres. Legacy `/api/meetings` routes still serve the JSON worker record, which is what the iOS poll uses. No WebSocket, summary edit, or chat/RAG routes.
 
 - [x] Sequential worker so only one meeting processes at a time
-- [x] `POST /api/meetings` upload with consent flag, title, project, date
-- [x] `GET /api/meetings/{id}` with transcript + extraction
-- [x] `POST /api/meetings/{id}/retry`
-- [x] `GET /api/meetings/{id}/audio` (full file, not byte-range)
-- [x] `DELETE /api/projects/{project}/meetings`
-- [ ] Swap JSON persistence for Postgres in all of the above
+- [x] `POST /api/v1/meetings/upload` with consent, title, `project_id` (UUID), and date. Legacy `POST /api/meetings` remains
+- [x] `GET /api/v1/projects` and `POST /api/v1/projects`
+- [x] `GET /api/v1/projects/{project_id}/meetings` and `GET /api/v1/meetings/{id}` (transcript, summary, decisions, tasks, storylines)
+- [x] `GET /api/meetings/{id}` JSON poll, `POST /api/meetings/{id}/retry`
+- [x] `GET /api/meetings/{id}/audio` supports `HTTP 206` Range requests (`FileResponse`)
+- [x] `DELETE /api/projects/{project}/meetings` removes JSON folders and, when the id is a UUID, Postgres meeting rows (tasks, transcripts, and decisions cascade)
 - [x] Bearer token guard (`Authorization: Bearer <API_SECRET_KEY>`) on every route
-- [ ] `project_id` scoping on reads/writes (UUID, not a free-text project name)
-- [ ] `GET /api/meetings` list (and project list) so clients can sync after relaunch
-- [ ] Task review API: approve / edit / dismiss; return payload for EventKit sync
-- [ ] Task lifecycle API: `open` / `done` / `dropped` with audit log + undo via `revert_token`
+- [x] v1 reads and writes are scoped by project UUID
+- [x] Task review API: `PATCH /api/v1/tasks/{id}/review` approve / edit / dismiss, with an EventKit payload on approve
+- [x] Task lifecycle API: `POST /api/v1/tasks/{id}/state` (`open` / `done` / `dropped`) and `POST /api/v1/tasks/revert/{revert_token}`
+- [x] Cloudflare Tunnel scripts (`scripts/setup_tunnel.sh`, `scripts/check_tunnel.sh`) and the shared-backend hostname
+- [ ] Point iOS status polling at the Postgres meeting detail (it still polls `/api/meetings/{id}`)
+- [ ] Drop the legacy free-text project name on `/api/meetings`
 - [ ] Summary edit/save API
 - [ ] Chat/RAG API: create conversation, list history (all vs project), query with citations or `"I don't know"`
 - [ ] `WS /ws/pipeline/{job_id}` for live stage cards (queued → transcribing → diarizing → extracting → complete)
-- [ ] `GET /meetings/{id}/audio` returns `HTTP 206 Partial Content` for Range requests
-- [ ] Cloudflare Tunnel or Tailscale to expose `localhost:8000` over HTTPS
-- [ ] Privacy: selective transcript exclusion/redaction, project-scoped purge that actually deletes Postgres rows + audio
+- [ ] Selective transcript exclusion/redaction (the Privacy sheet button is a no-op)
 
 **Owner hint:** Engineer 2.
 
 ---
 
-
-
 ## Phase 5 — Offline Evaluation Harness (System 9)
 
-Partial: [CCB transcription measurements](milestone_2/transcription_results.md) now cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
+Partial: [CCB transcription measurements](milestone_2/transcription_results.md) cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
 
 - [x] Offline pytest for extraction contract, CLI, and stubbed server workflow
 - [x] Transcript extraction development fixtures: 24 cases, 15 obligations, annotation and matching protocol (`tests/fixtures/evaluation/`)
@@ -125,105 +119,95 @@ Partial: [CCB transcription measurements](milestone_2/transcription_results.md) 
 
 ---
 
-
-
 ## Phase 6 — iOS Networking & Playback (Systems 2 & 3)
 
-Partial: Swift models, URLSession client, upload/poll/retry/purge. No bearer token, WebSocket, AVPlayer, or EventKit.
+The client uploads, polls, retries, purges, creates projects, and syncs tasks. Playback, WebSocket progress, calendar ingest, and a seed-free launch are still open.
 
-- [x] Swift models for meetings, transcript turns, decisions, commitments
-- [x] `MeetingAPIClient` upload / poll / retry / purge against `http://127.0.0.1:8000`
+- [x] Swift models for meetings, transcript turns, decisions, commitments, tasks
+- [x] `MeetingAPIClient` against the configured base URL: upload, poll, retry, purge, create project, list meetings, review tasks, change state, revert
 - [x] `RemoteMeetingApplier` mapping remote JSON → SwiftData
-- [ ] Configurable base URL (Simulator localhost vs device LAN vs tunnel)
-- [ ] Inject bearer token on every request
-- [ ] WebSocket listener for pipeline progress (replace 2s polling, or keep poll as fallback)
-- [ ] Sync projects/meetings/tasks from `GET` APIs on launch (do not rely on seed data)
-- [ ] `AVPlayer` + `AVAudioSession` playing `GET /meetings/{id}/audio`
+- [x] Base URL and bearer token from `LabSyncConfig.plist` (`BaseURL`, `APIToken`) on every request
+- [x] Refresh a UUID project's meetings from `GET /api/v1/projects/{id}/meetings`
+- [x] Load approved tasks from `GET /api/v1/tasks` into the calendar
+- [x] EventKit: export an approved task to Apple Reminders (`ReminderScheduler`). Failure does not undo the approval
+- [ ] `GET /api/v1/projects` on launch, so a reinstall sees projects created on the server
+- [ ] WebSocket listener for pipeline progress (2s polling of the JSON meeting route is still the status path)
+- [ ] `AVPlayer` + `AVAudioSession` playing `GET /meetings/{id}/audio` (`AudioDockView` is still a static mock)
 - [ ] Sub-second seek via `CMTime` from transcript, task, decision, and chat citation timestamps
 - [ ] Periodic time observer for active playhead highlighting
-- [ ] EventKit: read calendar event for attendees/date/project at ingest
-- [ ] EventKit: export approved tasks to Apple Reminders (+ Calendar when a due date exists)
+- [ ] EventKit: read a calendar event for attendees, date, and project at ingest (Session Setup still labels this "EventKit Match")
+- [ ] EventKit: also create a Calendar event when a due date exists
 - [ ] Remove or gate `SeedData` so production runs are not mixed with mock "AI Thesis" / "Robotics Lab" records
 
 **Owner hint:** Engineer 1.
 
 ---
 
-
-
 ## Phase 7 — Native Presentation (System 1)
 
-Screens exist. Only the Meetings upload/review path is live, and it is local-cache-backed. Tasks/Chat/storyline/audio are UI shells.
+Meetings upload, review, and purge are live for server projects. The Tasks calendar follows approved server tasks. Chat, storylines, and audio are still shells. Seeded local projects still use the old SwiftData-only path.
 
 ### Meetings
 
 - [x] Tab bar: Meetings (default), Tasks, Chat
-- [x] Project list + add project (local SwiftData only)
-- [x] Meeting list per project + add meeting with consent toggle
+- [x] Add project writes `projects` and stores the returned UUID locally
+- [x] Meeting list per project + add meeting with consent required on upload
 - [x] Upload audio and show queued / transcribing / extracting / failed + retry
-- [x] Render backend summary, decisions, transcript, candidate tasks after completion
-- [ ] Projects and meetings listed from Postgres after relaunch (no seed-only dashboard)
-- [ ] Project image + name stored on `projects`
-- [ ] Meeting row shows real duration from audio, not `"Processing"` leftover or mock waveform
-- [ ] Consent modal actually gates ingest (already required on upload; EventKit match still fake)
-- [ ] Diarized transcript with speaker name, initials, and playhead highlight
-- [ ] Timestamp chip seeks audio (today it only switches to the transcript tab)
-- [ ] Task review: Approve, **Edit**, Dismiss — persist to server, not only SwiftData
-- [ ] Approve creates an `open` task that appears on the Tasks calendar for that due date
-- [ ] Approve writes EventKit reminder/calendar
-- [ ] Storylines from `attendee_storylines` (today the three perspective cards are hardcoded)
+- [x] Render backend summary, decisions, transcript, and candidate tasks after completion
+- [x] Transcript rows show the diarized speaker label and initials
+- [x] Task review: Approve, Edit, Dismiss persist through `/api/v1/tasks/{id}/review` when the candidate id is a server UUID
+- [x] Approve requires a due date, then the task is `approved` / `open` and shows on the Tasks calendar
+- [x] Approve writes an EventKit reminder
+- [x] Purge deletes Postgres meetings (cascade) and the local SwiftData cache for that project
+- [ ] Project list reloads from Postgres after relaunch (it is whatever SwiftData already has, including seed rows)
+- [ ] Project image stored on `projects.image_url` and shown on the row (the row uses initials)
+- [ ] Meeting row duration comes from audio. After a completed poll it is the last transcript timestamp; rows inserted from the meeting list stay `"Processing"` until that poll, and the waveform is random
+- [ ] Named attendees from calendar or voice profiles
+- [ ] Playhead highlight on the active transcript turn
+- [ ] Timestamp chip seeks audio (it only switches to the transcript tab)
+- [ ] Storylines from `attendee_storylines` (the three perspective cards are hardcoded)
 - [ ] Manual summary notes edit + save
-- [ ] Share formatted notes + action items (ShareLink exists; payload is title + summary only)
+- [ ] Share formatted notes + action items (ShareLink payload is title + summary only)
 - [ ] Redaction tool (button is a no-op)
-- [ ] Purge deletes Postgres + local cache (today: JSON folders + SwiftData)
-
-
 
 ### Tasks
 
 - [x] Year/month calendar UI and project filter
-- [x] Local check (complete) and trash (delete) on SwiftData rows
-- [ ] Calendar populated from **approved** server tasks, not seed data
-- [ ] 3-state lifecycle: leftover = `open`, check = `done`, trash = `dropped` (today: `isCompleted` / delete; extra states `In-Progress` / `Blocked` are unused)
-- [ ] Filter by project from Postgres `project_id`
-- [ ] Edit assignee, description, due date, status — persist + audit log
-- [ ] Reminders / approaching-deadline highlighting (bell button is a no-op; push notifications are out of scope)
-- [ ] Show a "Connection lost, tap to reconnect" state whenever there's an error, instead of the spinner.
-
-
+- [x] Approved server tasks with a due date fill the calendar for UUID projects
+- [x] Server tasks use `open` / `done` / `dropped`, and Undo calls the revert token
+- [x] "Connection lost. Tap to reconnect." when the calendar or meeting task fetch fails
+- [ ] Seeded local tasks still use `isCompleted` and delete. `In-Progress` and `Blocked` are unused
+- [ ] Edit an already-approved task (assignee, description, due date) with an audit row. Edit today applies only while `review_status` is `pending`
+- [ ] Reminders / approaching-deadline highlighting (the bell button is a no-op; a reminder is created only at approval)
 
 ### Chat
 
 - [x] Chat chrome: history drawer, project picker, new-chat button, input bar
-- [ ] Send a query to the RAG API (send button is inert)
+- [ ] Send a query to the RAG API (the thread is `SeedData.mockChat`; send does not call the backend)
 - [ ] Grounded answer with meeting name + timestamp citation badges
 - [ ] Citation tap seeks `AVPlayer` to that offset
 - [ ] Render `"I don't know"` when retrieval has no support
 - [ ] Persist threads in `chat_conversations` / `chat_messages`
-- [ ] History filter: All vs a target project; open a new conversation
+- [ ] History filter: All vs a target project; open a saved conversation
 
-**Owner hint:** Engineer 1, blocked on Phase 4 APIs.
+**Owner hint:** Engineer 1, blocked on the chat/RAG API and on playback.
 
 ---
-
-
 
 ## End-to-end user journeys (definition of done)
 
-Check these only after the phases above land. Each must work on a real recording (or the golden fixture) with the backend running and Postgres populated.
+Check these only when the whole journey works on a real recording (or the golden fixture) with the backend running and Postgres populated. Pieces of ingest, review, and remote access work today; none of these boxes are complete.
 
-- [ ] **Ingest:** Pick a project → confirm consent → upload MP3/WAV → see live pipeline status → meeting appears under that project after relaunch
+- [ ] **Ingest:** Pick a project → confirm consent → upload MP3/WAV → see live pipeline status → meeting appears under that project after relaunch, including on a second device
 - [ ] **Read:** Open the meeting → summary + decisions + diarized transcript + per-attendee storylines all come from the database, with citation timestamps
 - [ ] **Play:** Play audio; tap a transcript/task/decision timestamp; playhead jumps and the active turn highlights
 - [ ] **Review:** Approve / edit / dismiss candidates; approved items show on the Tasks calendar; duplicates of open tasks are flagged, not double-created
-- [ ] **Operate:** Mark a task done or dropped; undo via audit `revert_token`; optional Reminders/Calendar copy exists on device
+- [ ] **Operate:** Mark a task done or dropped; undo via audit `revert_token`; Reminders copy exists on device; Calendar copy exists when there is a due date
 - [ ] **Ask:** Chat within a project (and All) returns cited answers or `"I don't know"`; history survives relaunch
-- [ ] **Scope/privacy:** Queries never leak another project; purge removes that project's meetings, audio, tasks, and chat from Postgres and the phone
-- [ ] **Remote:** Phone on cellular/Wi-Fi reaches the Mac backend through the tunnel with the bearer token
+- [ ] **Scope/privacy:** Queries never leak another project; purge removes that project's meetings, audio, tasks, and chat from Postgres and the phone; redaction removes selected turns
+- [ ] **Remote:** Phone on cellular/Wi-Fi reaches the Mac backend through the tunnel with the bearer token, and status does not depend on the JSON file
 
 ---
-
-
 
 ## Out of scope (do not put on the sprint board)
 
@@ -231,17 +215,12 @@ From the Story Writeup: transcript encryption, push/SMS notification infrastruct
 
 ---
 
-
-
 ## Suggested build order
 
-Do not jump to more SwiftUI until persistence exists. Workflow order still applies:
+1. Finish the Phase 1 storyline and RAG contracts, plus the golden fixture
+2. Phase 2–3 leftovers: write `duration_seconds`, transcript `tsv`/embeddings, storylines, speaker identity, and task dedup; make Postgres the worker's source of truth
+3. Phase 4 leftovers: poll the v1 meeting route, summary edit, chat/RAG, WebSocket or keep poll as the documented fallback, redaction
+4. Phase 5: human review, then DER and RAGAS once those pipelines exist
+5. Phase 6–7: drop `SeedData` on real launches, list projects from the API, AVPlayer seek, EventKit calendar read, live Chat
 
-1. Finish Phase 1 missing contracts + golden fixture
-2. Phase 2: Postgres up, migrate, repositories, hybrid search
-3. Phase 3: write pipeline output into those tables (including storylines + dedup)
-4. Phase 4: replace JSON API with Postgres + task/chat/RAG/auth/206/WS
-5. Phase 5: run the full evaluation gate on fixtures. The transcript-only extraction subset can run now using the Phase 1 contract and Phase 3 extractor; it does not depend on Postgres.
-6. Phase 6–7: point iOS at the real APIs; AVPlayer, EventKit, live Tasks/Chat
-
-)
+The transcript-only extraction subset in Phase 5 can keep running without Postgres.

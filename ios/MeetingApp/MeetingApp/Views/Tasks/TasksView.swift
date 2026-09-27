@@ -6,11 +6,15 @@ struct TasksView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \TaskItem.id) private var allTasks: [TaskItem]
     @Query(sort: \Project.createdAt) private var projects: [Project]
+    @Query private var meetings: [Meeting]
 
     @State private var selectedDate = Calendar.current.startOfDay(for: .now)
     @State private var displayedMonth = Date()
     /// nil = "All"
     @State private var selectedProjectID: String?
+    @State private var pendingTaskID: String?
+    @State private var loadError: String?
+    @State private var actionError: String?
 
     private let calendar = Calendar.current
 
@@ -30,7 +34,29 @@ struct TasksView: View {
             selectedDayBar
             Divider()
 
+            if let loadError {
+                Button(loadError) { Task { await refreshCalendar() } }
+                    .font(.footnote.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 16)
+                    .background(Color.red.opacity(0.08))
+                    .foregroundStyle(.red)
+            }
+
+            if let actionError {
+                Text(actionError)
+                    .font(.footnote)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+            }
+
             taskList
+        }
+        .task(id: calendarRequestID) {
+            await refreshCalendar()
         }
     }
 
@@ -112,9 +138,10 @@ struct TasksView: View {
                 ForEach(pendingTasks) { task in
                     TaskRow(
                         task: task,
-                        onToggleComplete: { task.isCompleted = true },
-                        onDelete: { context.delete(task) }
+                        onToggleComplete: { Task { await markDone(task) } },
+                        onDelete: { Task { await drop(task) } }
                     )
+                    .disabled(pendingTaskID == task.id)
                 }
 
                 if !completedTasks.isEmpty {
@@ -130,9 +157,10 @@ struct TasksView: View {
                     ForEach(completedTasks) { task in
                         TaskRow(
                             task: task,
-                            onToggleComplete: { task.isCompleted = false },
+                            onToggleComplete: { Task { await undo(task) } },
                             onDelete: { }
                         )
+                        .disabled(pendingTaskID == task.id)
                     }
                 }
             }
@@ -143,7 +171,17 @@ struct TasksView: View {
     // MARK: Filtering
 
     private var tasksForSelectedProject: [TaskItem] {
-        allTasks.inProject(selectedProjectID)
+        allTasks.filter { $0.state != .dropped }.inProject(selectedProjectID)
+    }
+
+    private var calendarRequestID: String {
+        let month = Self.isoFormatter.string(from: displayedMonth)
+        return "\(selectedProjectID ?? "all")|\(month)"
+    }
+
+    private var serverProjectIDs: [String] {
+        let ids = selectedProjectID.map { [$0] } ?? projects.map(\.id)
+        return ids.filter(isServerID)
     }
 
     private var tasksOnSelectedDate: [TaskItem] {
@@ -176,6 +214,97 @@ struct TasksView: View {
                 }
             }
         )
+    }
+
+    private func refreshCalendar() async {
+        guard !serverProjectIDs.isEmpty else {
+            loadError = nil
+            return
+        }
+        guard let interval = calendar.dateInterval(of: .month, for: displayedMonth),
+              let end = calendar.date(byAdding: .day, value: -1, to: interval.end) else {
+            return
+        }
+        do {
+            var loaded: [RemoteTask] = []
+            for projectID in serverProjectIDs {
+                let page = try await MeetingAPIClient.shared.calendarTasks(
+                    projectID: projectID,
+                    start: interval.start,
+                    end: end
+                )
+                loaded.append(contentsOf: page)
+            }
+            for remote in loaded {
+                try TaskSync.upsert(
+                    remote,
+                    projects: projects,
+                    meetings: meetings,
+                    context: context
+                )
+            }
+            try context.save()
+            loadError = nil
+        } catch is CancellationError {
+            return
+        } catch {
+            loadError = "Connection lost. Tap to reconnect."
+        }
+    }
+
+    private func markDone(_ task: TaskItem) async {
+        guard isServerID(task.id) else {
+            task.isCompleted = true
+            return
+        }
+        await mutate(task) {
+            try await MeetingAPIClient.shared.changeTaskState(id: task.id, state: "done")
+        }
+    }
+
+    private func drop(_ task: TaskItem) async {
+        guard isServerID(task.id) else {
+            context.delete(task)
+            return
+        }
+        await mutate(task) {
+            try await MeetingAPIClient.shared.changeTaskState(id: task.id, state: "dropped")
+        }
+    }
+
+    private func undo(_ task: TaskItem) async {
+        guard isServerID(task.id) else {
+            task.isCompleted = false
+            return
+        }
+        await mutate(task) {
+            if let token = task.revertToken {
+                return try await MeetingAPIClient.shared.revertTask(token: token)
+            }
+            return try await MeetingAPIClient.shared.changeTaskState(id: task.id, state: "open")
+        }
+    }
+
+    private func mutate(
+        _ task: TaskItem,
+        _ send: () async throws -> TaskMutationResponse
+    ) async {
+        pendingTaskID = task.id
+        defer { pendingTaskID = nil }
+        do {
+            let response = try await send()
+            try TaskSync.upsert(
+                response.task,
+                revertToken: response.revertToken,
+                projects: projects,
+                meetings: meetings,
+                context: context
+            )
+            try context.save()
+            actionError = nil
+        } catch {
+            actionError = error.localizedDescription
+        }
     }
 
     private static let isoFormatter: DateFormatter = {

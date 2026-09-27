@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from pathlib import Path
 
 from .extraction import Transcript
 
@@ -25,7 +26,12 @@ def setup_error(provider: str) -> str | None:
 
 
 def extract(
-    transcript: Transcript, *, provider: str, model: str | None = None, timeout: int
+    transcript: Transcript,
+    *,
+    provider: str,
+    model: str | None = None,
+    timeout: int,
+    rejected: Path | None = None,
 ) -> dict:
     if provider == "codex":
         from .codex_client import extract as run
@@ -33,4 +39,9 @@ def extract(
         from .claude_client import extract as run
     else:
         raise ValueError(f"Unknown extraction provider: {provider}")
-    return run(transcript, model=model or DEFAULT_MODELS[provider], timeout=timeout)
+    return run(
+        transcript,
+        model=model or DEFAULT_MODELS[provider],
+        timeout=timeout,
+        rejected=rejected,
+    )

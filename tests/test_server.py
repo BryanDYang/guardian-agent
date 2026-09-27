@@ -198,6 +198,21 @@ def test_interrupted_job_and_origin_check(tmp_path, fake_process):
         )
 
 
+def test_tasks_router_is_mounted(tmp_path):
+    """The tasks router answers even before Postgres is configured."""
+    with TestClient(create_app(tmp_path)) as client:
+        response = client.get(
+            "/api/v1/tasks",
+            params={
+                "project_id": "00000000-0000-0000-0000-000000000000",
+                "start_date": "2026-10-01",
+                "end_date": "2026-10-31",
+            },
+        )
+    assert response.status_code == 503
+    assert "DATABASE_URL" in response.json()["detail"]
+
+
 def test_bearer_token_required(tmp_path):
     with TestClient(create_app(tmp_path, token="secret")) as client:
         for headers in [

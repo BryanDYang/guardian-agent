@@ -17,6 +17,11 @@ from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from .api.meetings import router as meetings_router
+from .api.projects import router as projects_router
+from .api.tasks import router as tasks_router
+from .db import meetings as meeting_store
+from .db.connection import create_pool
 from .extraction import Extraction, Transcript
 from .providers import DEFAULT_MODELS
 
@@ -35,6 +40,7 @@ def create_app(
     whisper_backend: str = "openai",
     diarize: bool = False,
     token: str | None = None,
+    database_url: str | None = None,
 ) -> FastAPI:
     if provider not in DEFAULT_MODELS:
         raise ValueError(f"Unknown extraction provider: {provider}")
@@ -68,13 +74,50 @@ def create_app(
             record.update(fields)
             save(record)
 
+    def transcription_metadata(work: Path) -> dict:
+        path = work / "ccb-transcript.json"
+        if not path.is_file():
+            return {}
+        metadata = json.loads(path.read_text()).get("metadata")
+        return metadata if isinstance(metadata, dict) else {}
+
+    def sync_database(
+        meeting_id,
+        status,
+        attempt,
+        error,
+        *,
+        transcript=None,
+        result=None,
+        transcription=None,
+    ):
+        """Mirror pipeline state into Postgres when this meeting has a row."""
+        pool = app.state.pool
+        if pool is None:
+            return
+        with pool.connection() as conn:
+            if (
+                conn.execute(
+                    "SELECT 1 FROM meetings WHERE id = %s", (meeting_id,)
+                ).fetchone()
+                is None
+            ):
+                return
+            if transcript is not None and result is not None:
+                meeting_store.save_results(
+                    conn, meeting_id, transcript, result, transcription or {}
+                )
+            meeting_store.update_status(conn, meeting_id, status, attempt, error)
+
     def process(meeting_id):
         record = read(meeting_id)
         directory = folder(meeting_id)
-        work = directory / f"attempt-{record['attempt']}"
+        attempt = record["attempt"]
+        work = directory / f"attempt-{attempt}"
         stage = "transcribing"
         try:
             update(meeting_id, status=stage)
+            sync_database(meeting_id, stage, attempt, None)
             with (directory / "processing.log").open("a") as log:
                 command = [
                     sys.executable,
@@ -106,6 +149,7 @@ def create_app(
                 update(meeting_id, transcript_path=str(work / "transcript.json"))
                 stage = "extracting"
                 update(meeting_id, status=stage)
+                sync_database(meeting_id, stage, attempt, None)
                 subprocess.run(
                     [
                         sys.executable,
@@ -131,6 +175,15 @@ def create_app(
                 Extraction.model_validate(result["extraction"]).check_evidence(
                     transcript
                 )
+                sync_database(
+                    meeting_id,
+                    "completed",
+                    attempt,
+                    None,
+                    transcript=transcript,
+                    result=result,
+                    transcription=transcription_metadata(work),
+                )
                 update(
                     meeting_id,
                     status="completed",
@@ -138,32 +191,47 @@ def create_app(
                     error=None,
                 )
         except Exception:
-            update(
-                meeting_id,
-                status="failed",
-                error=(
-                    f"{stage.capitalize()} failed. Check the backend processing log, "
-                    "resolve the problem, then retry."
-                ),
+            error = (
+                f"{stage.capitalize()} failed. Check the backend processing log, "
+                "resolve the problem, then retry."
             )
+            update(meeting_id, status="failed", error=error)
+            sync_database(meeting_id, "failed", attempt, error)
 
     @asynccontextmanager
     async def lifespan(app):
         storage.mkdir(parents=True, exist_ok=True)
-        for path in storage.glob("*/meeting.json"):
-            record = json.loads(path.read_text())
-            if record["status"] in ACTIVE:
-                record.update(
-                    status="failed",
-                    error="Processing was interrupted. Retry this meeting.",
-                )
-                save(record)
         app.state.executor = ThreadPoolExecutor(max_workers=1)
         app.state.process = process
-        yield
-        app.state.executor.shutdown(wait=True)
+        app.state.pool = None
+        try:
+            if database_url:
+                app.state.pool = create_pool(database_url)
+            for path in storage.glob("*/meeting.json"):
+                record = json.loads(path.read_text())
+                if record["status"] in ACTIVE:
+                    record.update(
+                        status="failed",
+                        error="Processing was interrupted. Retry this meeting.",
+                    )
+                    save(record)
+                    sync_database(
+                        record["id"],
+                        "failed",
+                        record["attempt"],
+                        record["error"],
+                    )
+            yield
+        finally:
+            app.state.executor.shutdown(wait=True)
+            if app.state.pool is not None:
+                app.state.pool.close()
 
     app = FastAPI(title="LabSync local backend", lifespan=lifespan)
+    app.state.pool = None
+    app.include_router(projects_router)
+    app.include_router(meetings_router)
+    app.include_router(tasks_router)
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]
     )
@@ -283,6 +351,78 @@ def create_app(
         finally:
             file.file.close()
 
+    @app.post("/api/v1/meetings/upload", status_code=202)
+    def upload_to_project(
+        file: UploadFile,
+        title: Annotated[str, Form()],
+        project_id: Annotated[UUID, Form()],
+        meeting_date: Annotated[date, Form()],
+        consent_confirmed: Annotated[bool, Form()],
+    ):
+        if not consent_confirmed:
+            raise HTTPException(400, "Confirm permission to process this recording")
+        name = title.strip()
+        if not name or len(name) > 255:
+            raise HTTPException(400, "Provide a title within the length limits")
+        if app.state.pool is None:
+            raise HTTPException(503, "Database is not configured; set DATABASE_URL")
+        with app.state.pool.connection() as conn:
+            if not meeting_store.project_exists(conn, project_id):
+                raise HTTPException(404, "Project not found")
+        extension = Path(file.filename or "").suffix.lower()
+        if extension not in EXTENSIONS:
+            raise HTTPException(415, "Choose a supported audio or video file")
+        meeting_id = str(uuid4())
+        directory = folder(meeting_id)
+        directory.mkdir()
+        filename = "recording" + extension
+        try:
+            total = 0
+            with (directory / filename).open("xb") as destination:
+                while chunk := file.file.read(1024 * 1024):
+                    total += len(chunk)
+                    if total > MAX_UPLOAD_BYTES:
+                        raise HTTPException(413, "Recording exceeds the 512 MB limit")
+                    destination.write(chunk)
+            if not total:
+                raise HTTPException(400, "Recording is empty")
+            record = {
+                "id": meeting_id,
+                "title": name,
+                "project": str(project_id),
+                "date": meeting_date.isoformat(),
+                "filename": filename,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "permission_confirmed": True,
+                "status": "queued",
+                "attempt": 1,
+                "diarization": diarize,
+                "error": None,
+            }
+            with lock:
+                save(record)
+            with app.state.pool.connection() as conn:
+                meeting_store.create_meeting(
+                    conn,
+                    meeting_id=meeting_id,
+                    project_id=project_id,
+                    name=name,
+                    meeting_date=meeting_date,
+                    audio_file_path=str(directory / filename),
+                )
+            app.state.executor.submit(app.state.process, meeting_id)
+            return public(record) | {"job_id": meeting_id}
+        except Exception:
+            shutil.rmtree(directory, ignore_errors=True)
+            try:
+                with app.state.pool.connection() as conn:
+                    conn.execute("DELETE FROM meetings WHERE id = %s", (meeting_id,))
+            except Exception:
+                pass
+            raise
+        finally:
+            file.file.close()
+
     @app.delete("/api/projects/{project}/meetings")
     def purge_project(project: str):
         with lock:
@@ -296,7 +436,17 @@ def create_app(
                 )
             for record in matching:
                 shutil.rmtree(folder(record["id"]))
-        return {"deleted": len(matching)}
+        removed = len(matching)
+        try:
+            project_id = UUID(project)
+        except ValueError:
+            project_id = None
+        if project_id is not None and app.state.pool is not None:
+            with app.state.pool.connection() as conn:
+                removed = max(
+                    removed, meeting_store.delete_project_meetings(conn, project_id)
+                )
+        return {"deleted": removed}
 
     @app.get("/api/meetings/{meeting_id}")
     def detail(meeting_id: str):
@@ -331,6 +481,7 @@ def create_app(
             record.pop("transcript_path", None)
             record.pop("extraction_path", None)
             save(record)
+        sync_database(meeting_id, "queued", record["attempt"], None)
         app.state.executor.submit(app.state.process, meeting_id)
         return public(record)
 

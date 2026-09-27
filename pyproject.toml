@@ -24,6 +24,7 @@ dev = [
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
     "jiwer>=4,<5",
+    "psycopg[binary,pool]>=3.3.6",
     "pytest>=8",
     "python-multipart>=0.0.32",
     "ruff>=0.11",
@@ -41,7 +42,7 @@ diarize = [
 ]
 server = [
     "fastapi>=0.141.1",
-    "psycopg[binary]>=3.3.6",
+    "psycopg[binary,pool]>=3.3.6",
     "python-multipart>=0.0.32",
     "uvicorn>=0.53.0",
 ]
