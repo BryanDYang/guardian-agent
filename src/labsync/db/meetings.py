@@ -8,7 +8,7 @@ from psycopg.types.json import Jsonb
 
 from ..extraction import Evidence, Extraction, Transcript
 
-RESULT_TABLES = ("tasks", "meeting_decisions", "meeting_summaries", "transcripts")
+RESULT_TABLES = ("tasks", "meeting_decisions", "meeting_summaries", "meeting_transcripts")
 
 
 def project_exists(conn: Connection, project_id: UUID) -> bool:
@@ -56,7 +56,7 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
         """
         SELECT speaker_label AS speaker, turn_key, start_time_ms, end_time_ms,
                content, turn_order
-        FROM transcripts
+        FROM meeting_transcripts
         WHERE meeting_id = %s
         ORDER BY turn_order
         """,
@@ -83,7 +83,7 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
     storylines = conn.execute(
         """
         SELECT id, attendee_id, what_they_want, what_they_see, what_they_discuss
-        FROM attendee_storylines
+        FROM meeting_attendee_storylines
         WHERE meeting_id = %s
         ORDER BY created_at, id
         """,
@@ -167,7 +167,7 @@ def save_results(
     with conn.cursor() as cursor:
         cursor.executemany(
             """
-            INSERT INTO transcripts (meeting_id, speaker_label, turn_key, start_time_ms,
+            INSERT INTO meeting_transcripts (meeting_id, speaker_label, turn_key, start_time_ms,
                                      end_time_ms, content, turn_order)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
@@ -187,7 +187,7 @@ def save_results(
     turns = {
         row["turn_key"]: row
         for row in conn.execute(
-            "SELECT id, turn_key, start_time_ms FROM transcripts WHERE meeting_id = %s",
+            "SELECT id, turn_key, start_time_ms FROM meeting_transcripts WHERE meeting_id = %s",
             (meeting_id,),
         )
     }

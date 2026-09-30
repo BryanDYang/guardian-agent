@@ -1,0 +1,7 @@
+ALTER TABLE transcripts RENAME TO meeting_transcripts;
+ALTER TABLE attendee_storylines RENAME TO meeting_attendee_storylines;
+ALTER INDEX idx_transcripts_meeting_id RENAME TO idx_meeting_transcripts_meeting_id;
+ALTER INDEX idx_transcripts_meeting_turn_order RENAME TO idx_meeting_transcripts_meeting_turn_order;
+ALTER INDEX idx_transcripts_embedding_hnsw RENAME TO idx_meeting_transcripts_embedding_hnsw;
+ALTER INDEX idx_transcripts_tsv_gin RENAME TO idx_meeting_transcripts_tsv_gin;
+ALTER INDEX idx_attendee_storylines_meeting_id RENAME TO idx_meeting_attendee_storylines_meeting_id;

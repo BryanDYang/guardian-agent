@@ -99,6 +99,9 @@ struct MeetingAPIClient {
         request.httpBody = try JSONSerialization.data(withJSONObject: payload)
         return try await send(request)
     }
+    func projects() async throws -> [RemoteProject] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/projects")))
+    }
 
     func purgeProject(_ projectID: String) async throws -> Int {
         var request = URLRequest(
@@ -113,10 +116,9 @@ struct MeetingAPIClient {
         baseURL.appending(path: "api/meetings/\(id)/audio")
     }
 
-    func storedTasks(meetingID: String) async throws -> [RemoteStoredTask] {
+    func storedDetail(meetingID: String) async throws -> RemoteStoredMeeting {
         let request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(meetingID)"))
-        let detail: RemoteMeetingTasks = try await send(request)
-        return detail.tasks
+        return try await send(request)
     }
 
     func calendarTasks(projectID: String, start: Date, end: Date) async throws -> [RemoteTask] {
@@ -370,8 +372,41 @@ struct RemoteTaskEvidence: Decodable {
     }
 }
 
-private struct RemoteMeetingTasks: Decodable {
+struct RemoteStoredMeeting: Decodable {
+    let summary: RemoteStoredSummary?
     let tasks: [RemoteStoredTask]
+    let transcript: [RemoteStoredTurn]
+    let decisions: [RemoteStoredDecision]
+}
+
+struct RemoteStoredDecision: Decodable {
+    let id: String
+    let statement: String
+    let timestampMilliseconds: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case id, statement
+        case timestampMilliseconds = "timestamp_ms"
+    }
+}
+
+struct RemoteStoredTurn: Decodable {
+    let turnKey: String
+    let speaker: String?
+    let startTimeMilliseconds: Int
+    let endTimeMilliseconds: Int
+    let content: String
+
+    enum CodingKeys: String, CodingKey {
+        case speaker, content
+        case turnKey = "turn_key"
+        case startTimeMilliseconds = "start_time_ms"
+        case endTimeMilliseconds = "end_time_ms"
+    }
+}
+
+struct RemoteStoredSummary: Decodable {
+    let overview: String?
 }
 
 private struct ReviewBody: Encodable {

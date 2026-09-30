@@ -42,6 +42,7 @@ struct MeetingsListView: View {
             }
         }
         .task(id: projectID) {
+            if projectID == nil { await refreshProjects() }
             await refreshMeetings()
         }
     }
@@ -77,6 +78,21 @@ struct MeetingsListView: View {
             }
         } catch {
             // Keep the on-device list when the backend cannot be reached.
+        }
+    }
+
+    private func refreshProjects() async {
+        do {
+            let remote = try await MeetingAPIClient.shared.projects()
+            var changed = false
+            for item in remote where !projects.contains(where: { $0.id == item.id }) {
+                context.insert(Project(id: item.id, title: item.name, colorHex: "#5E5CE6",
+                                    iconSystemName: "folder", createdAt: .now))
+                changed = true
+            }
+            if changed { try context.save() }
+        } catch {
+            print("Project refresh failed: \(error)")
         }
     }
 

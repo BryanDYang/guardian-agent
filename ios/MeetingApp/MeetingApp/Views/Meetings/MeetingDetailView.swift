@@ -126,8 +126,13 @@ struct MeetingDetailView: View {
         guard isServerID(meeting.id) else { return }
         guard (meeting.processingStatus ?? "completed") == "completed" else { return }
         do {
-            let tasks = try await MeetingAPIClient.shared.storedTasks(meetingID: meeting.id)
-            try RemoteMeetingApplier.replacePendingTasks(tasks, on: meeting, context: context)
+        let detail = try await MeetingAPIClient.shared.storedDetail(meetingID: meeting.id)
+        if let overview = detail.summary?.overview, !overview.isEmpty {
+            meeting.summary = [overview]
+        }
+        RemoteMeetingApplier.applyStoredTranscript(detail.transcript, to: meeting, context: context)
+        RemoteMeetingApplier.applyStoredDecisions(detail.decisions, to: meeting)
+        try RemoteMeetingApplier.replacePendingTasks(detail.tasks, on: meeting, context: context)
             taskLoadError = nil
         } catch is CancellationError {
             return

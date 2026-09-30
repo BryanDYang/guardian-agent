@@ -65,6 +65,53 @@ enum RemoteMeetingApplier {
         try context.save()
     }
 
+    /// Fills in a meeting loaded from the database with its stored transcript turns.
+    static func applyStoredTranscript(
+        _ turns: [RemoteStoredTurn],
+        to meeting: Meeting,
+        context: ModelContext
+    ) {
+        guard meeting.transcript.isEmpty, !turns.isEmpty else { return }
+
+        var attendeesBySpeaker: [String: Attendee] = [:]
+        for speaker in Set(turns.map { $0.speaker ?? "UNKNOWN" }) {
+            let attendee = Attendee(
+                id: "\(meeting.id):\(speaker)",
+                name: displayName(for: speaker),
+                initials: initials(for: speaker),
+                email: "",
+                colorHex: "#6B7280"
+            )
+            context.insert(attendee)
+            attendee.meetings = [meeting]
+            attendeesBySpeaker[speaker] = attendee
+        }
+        meeting.attendees = Array(attendeesBySpeaker.values)
+
+        meeting.transcript = turns.map { turn in
+            let speaker = turn.speaker ?? "UNKNOWN"
+            return TranscriptTurn(
+                id: turn.turnKey,
+                speakerID: attendeesBySpeaker[speaker]?.id ?? speaker,
+                text: turn.content,
+                startTime: timestamp(turn.startTimeMilliseconds),
+                endTime: timestamp(turn.endTimeMilliseconds)
+            )
+        }
+        meeting.duration = timestamp(turns.map(\.endTimeMilliseconds).max() ?? 0)
+    }
+
+    /// Replaces a meeting's decisions with the ones stored in the database.
+    static func applyStoredDecisions(_ decisions: [RemoteStoredDecision], to meeting: Meeting) {
+        meeting.decisions = decisions.map { decision in
+            Decision(
+                id: decision.id,
+                text: decision.statement,
+                timestamp: timestamp(decision.timestampMilliseconds ?? 0)
+            )
+        }
+    }
+
     /// Pending database tasks become the review cards. Approved and dismissed tasks do not.
     static func replacePendingTasks(
         _ tasks: [RemoteStoredTask],
