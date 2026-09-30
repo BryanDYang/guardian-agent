@@ -108,6 +108,7 @@ struct CandidateTasksSegment: View {
                 }
 
                 Button {
+                    navigator.pendingSeekMilliseconds = TranscriptTurn.seconds(from: candidate.timestamp) * 1000
                     navigator.activeSegment = .transcript
                 } label: {
                     Text("[\(candidate.timestamp)]")

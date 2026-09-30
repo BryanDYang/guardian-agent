@@ -37,9 +37,16 @@ struct MeetingDetailView: View {
                         .padding(.horizontal, 16)
                     }
 
-                    ScrollView {
-                        segmentContent(for: meeting)
-                            .padding(16)
+                    ScrollViewReader { proxy in
+                        ScrollView {
+                            segmentContent(for: meeting)
+                                .padding(16)
+                        }
+                        .onAppear { scrollToPendingSeek(in: meeting, proxy: proxy) }
+                        // Tapping another citation while this meeting is already open
+                        .onChange(of: navigator.pendingSeekMilliseconds) { scrollToPendingSeek(in: meeting, proxy: proxy) }
+                        // Transcript arrives later from syncServerTasks
+                        .onChange(of: meeting.transcript.count) { scrollToPendingSeek(in: meeting, proxy: proxy) }
                     }
 
                     AudioDockView()
@@ -95,6 +102,20 @@ struct MeetingDetailView: View {
 
     private func shareText(for meeting: Meeting) -> String {
         ([meeting.title] + meeting.summary).joined(separator: "\n")
+    }
+
+    private func scrollToPendingSeek(in meeting: Meeting, proxy: ScrollViewProxy) {
+        guard navigator.activeSegment == .transcript,
+              let ms = navigator.pendingSeekMilliseconds,
+              let first = meeting.transcript.first else { return }
+
+        let target = ms / 1000
+        let turn = meeting.transcript.last { $0.startSeconds <= target } ?? first
+        navigator.pendingSeekMilliseconds = nil
+
+        DispatchQueue.main.async {
+            withAnimation { proxy.scrollTo(turn.id, anchor: .top) }
+        }
     }
 
     @MainActor

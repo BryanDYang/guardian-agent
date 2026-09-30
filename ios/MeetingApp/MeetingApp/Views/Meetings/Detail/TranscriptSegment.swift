@@ -17,6 +17,7 @@ struct TranscriptSegment: View {
             VStack(alignment: .leading, spacing: 16) {
                 ForEach(meeting.transcript) { turn in
                     turnRow(turn)
+                        .id(turn.id)
                 }
             }
         }
@@ -54,6 +55,17 @@ struct TranscriptSegment: View {
 
             Spacer(minLength: 0)
         }
+    }
+}
+
+extension TranscriptTurn {
+    /// "mm:ss" or "h:mm:ss" → seconds.
+    var startSeconds: Int {
+        Self.seconds(from: startTime)
+    }
+
+    static func seconds(from timestamp: String) -> Int {
+        timestamp.split(separator: ":").reduce(0) { $0 * 60 + (Int($1) ?? 0) }
     }
 }
 
