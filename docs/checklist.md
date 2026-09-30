@@ -20,7 +20,7 @@ Legend: `[x]` done in the repo · `[ ]` still required for E2E.
 - [x] Multi-citation evidence in `item_evidence` (quote, `turn_key`, transcript UUID, timestamp), not a single `transcript_id` column on tasks or decisions
 - [x] Pydantic models for task review and lifecycle (`Review`, `StateChange` in `src/labsync/api/tasks.py`)
 - [ ] Pydantic models for attendee storylines (`what_they_want`, `what_they_see`, `what_they_discuss`)
-- [ ] Pydantic models for RAG query/response (answer, citations, grounded refusal)
+- [x] Pydantic models for RAG query/response (answer, citations, grounded refusal)
 - [ ] Golden fixture pack in `tests/fixtures/`: ~60s `.wav`, human-verified transcript, mock attendee calendar records
 
 **Owner hint:** Engineer 2 (schema) + Engineer 3 (extraction/RAG contracts).
@@ -34,11 +34,11 @@ Postgres is used for projects, meeting rows, and pipeline results. The worker st
 - [x] Hosted Postgres with `pgvector` on Supabase; local tests use `supabase start` and `TEST_DATABASE_URL`
 - [x] Schema applied (`supabase db push` / `supabase/migrations/20260927033954_initial_schema.sql`)
 - [x] `psycopg_pool.ConnectionPool` and FastAPI `get_conn` (`src/labsync/db/connection.py`, `src/labsync/api/deps.py`)
-- [x] Repositories in use: `projects`, `meetings`, `transcripts`, `meeting_summaries`, `meeting_decisions`, `item_evidence`, `tasks`, `task_audit_log`
-- [ ] Repositories still unused for writes: `attendees`, `meeting_attendees`, `attendee_storylines` (detail reads return an empty list), `chat_conversations`, `chat_messages`
+- [x] Repositories in use: `projects`, `meetings`, `transcripts`, `meeting_summaries`, `meeting_decisions`, `item_evidence`, `tasks`, `task_audit_log`, `chat_conversations`, `chat_messages`, `rag_chunks`
+- [ ] Repositories still unused for writes: `attendees`, `meeting_attendees`, `attendee_storylines` (detail reads return an empty list)
 - [x] Lifecycle changes (`open` / `done` / `dropped` and revert) append `task_audit_log` with a unique `revert_token`
 - [ ] Review edits (title, assignee, due date, approve, dismiss) are not written to `task_audit_log`
-- [ ] Hybrid search CTE: pgvector cosine + `tsvector` RRF at `k=60`, scoped by `WHERE project_id = :project_id`
+- [x] Hybrid search CTE: pgvector cosine + `tsvector` RRF at `k=60`, scoped by `WHERE project_id = :project_id`
 - [ ] Stop using `artifacts/server/*/meeting.json` as the pipeline source of truth (audio files may still live on disk)
 
 **Owner hint:** Engineer 2.
@@ -57,7 +57,8 @@ Whisper, optional diarization, and Codex/Claude extraction run, and completed v1
 - [x] Persist summaries into `meeting_summaries` and decisions into `meeting_decisions`, with evidence rows
 - [x] Insert extracted commitments and suggestions as `tasks` with `review_status = pending`
 - [x] Approval requires an explicit due date from the reviewer; `due_date_text` is stored verbatim and is not parsed into a date
-- [ ] Transcript `embedding` and `tsv` columns are not filled
+- [x] Passage embeddings (OpenAI text-embedding-3-small, 1536-d) and tsv stored in rag_chunks; 
+- [ ] meeting_transcripts.embedding is used (check and confirm)
 - [ ] Token-level timestamps suitable for sub-second `AVPlayer` seek
 - [ ] Voice embedding extraction and cosine match against `attendees.voice_embedding`
 - [ ] Map diarized speakers to named attendees (calendar + voice profile). The app currently invents a local attendee per speaker label
@@ -78,7 +79,7 @@ v1 project, meeting, and task routes talk to Postgres. Legacy `/api/meetings` ro
 - [x] `GET /api/v1/projects` and `POST /api/v1/projects`
 - [x] `GET /api/v1/projects/{project_id}/meetings` and `GET /api/v1/meetings/{id}` (transcript, summary, decisions, tasks, storylines)
 - [x] `GET /api/meetings/{id}` JSON poll, `POST /api/meetings/{id}/retry`
-- [x] `GET /api/meetings/{id}/audio` supports `HTTP 206` Range requests (`FileResponse`)
+- [x] `GET /api/meetings/{id}/audio` supports `HTTP 206` Range requests (`FileResponse`) and that project's chat conversations
 - [x] `DELETE /api/projects/{project}/meetings` removes JSON folders and, when the id is a UUID, Postgres meeting rows (tasks, transcripts, and decisions cascade)
 - [x] Bearer token guard (`Authorization: Bearer <API_SECRET_KEY>`) on every route
 - [x] v1 reads and writes are scoped by project UUID
@@ -88,7 +89,7 @@ v1 project, meeting, and task routes talk to Postgres. Legacy `/api/meetings` ro
 - [ ] Point iOS status polling at the Postgres meeting detail (it still polls `/api/meetings/{id}`)
 - [ ] Drop the legacy free-text project name on `/api/meetings`
 - [ ] Summary edit/save API
-- [ ] Chat/RAG API: create conversation, list history (all vs project), query with citations or `"I don't know"`
+- [x] Chat/RAG API: create conversation, list history (all vs project), query with citations or `"I don't know"`
 - [ ] `WS /ws/pipeline/{job_id}` for live stage cards (queued → transcribing → diarizing → extracting → complete)
 - [ ] Selective transcript exclusion/redaction (the Privacy sheet button is a no-op)
 
@@ -123,7 +124,7 @@ Partial: [CCB transcription measurements](milestone_2/transcription_results.md) 
 
 The client uploads, polls, retries, purges, creates projects, and syncs tasks. Playback, WebSocket progress, calendar ingest, and a seed-free launch are still open.
 
-- [x] Swift models for meetings, transcript turns, decisions, commitments, tasks
+- [x] Swift models for meetings, transcript turns, decisions, commitments, tasks, , chat (create conversation, ask, history)
 - [x] `MeetingAPIClient` against the configured base URL: upload, poll, retry, purge, create project, list meetings, review tasks, change state, revert
 - [x] `RemoteMeetingApplier` mapping remote JSON → SwiftData
 - [x] Base URL and bearer token from `LabSyncConfig.plist` (`BaseURL`, `APIToken`) on every request
@@ -183,12 +184,12 @@ Meetings upload, review, and purge are live for server projects. The Tasks calen
 ### Chat
 
 - [x] Chat chrome: history drawer, project picker, new-chat button, input bar
-- [ ] Send a query to the RAG API (the thread is `SeedData.mockChat`; send does not call the backend)
-- [ ] Grounded answer with meeting name + timestamp citation badges
+- [x] Send a query to the RAG API (the thread is `SeedData.mockChat`; send does not call the backend)
+- [x] Grounded answer with meeting name + timestamp citation badges
 - [ ] Citation tap seeks `AVPlayer` to that offset
-- [ ] Render `"I don't know"` when retrieval has no support
-- [ ] Persist threads in `chat_conversations` / `chat_messages`
-- [ ] History filter: All vs a target project; open a saved conversation
+- [x] Render `"I don't know"` when retrieval has no support
+- [x] Persist threads in `chat_conversations` / `chat_messages`
+- [x] History filter: All vs a target project; open a saved conversation
 
 **Owner hint:** Engineer 1, blocked on the chat/RAG API and on playback.
 
