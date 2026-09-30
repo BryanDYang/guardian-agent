@@ -27,11 +27,14 @@ final class MeetingNavigator {
     /// nil = the meetings list is showing.
     var selectedMeetingID: String?
     var activeSegment: MeetingSegment = .summary
+    var pendingSeekMilliseconds: Int?
+
 
     /// events.ts → navigate(). Also switches to the Meetings tab, which App.tsx did on every event.
-    func open(meetingID: String, segment: MeetingSegment = .summary) {
+    func open(meetingID: String, segment: MeetingSegment = .summary, seekMilliseconds: Int? = nil) {
         selectedMeetingID = meetingID
         activeSegment = segment
+        pendingSeekMilliseconds = seekMilliseconds
         activeTab = .meetings
     }
 

@@ -21,11 +21,15 @@ struct MessageBubble: View {
                         .fill(isUser ? Color.blue : Color(.systemGray6))
                 )
 
-            ForEach(message.citations) { citation in
+            ForEach(Array(message.citations.enumerated()), id: \.element.id) { index, citation in
                 Button {
-                    navigator.open(meetingID: citation.meetingId, segment: .transcript)
+                    navigator.open(
+                        meetingID: citation.meetingId,
+                        segment: .transcript,
+                        seekMilliseconds: citation.startTimeMilliseconds
+                    )
                 } label: {
-                    Text("\(citation.meetingTitle) @ \(citation.timestamp)")
+                    Text(chipLabel(citation, number: index + 1))
                         .font(.caption.weight(.semibold))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
@@ -41,6 +45,13 @@ struct MessageBubble: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: isUser ? .trailing : .leading)
+    }
+
+    private func chipLabel(_ citation: Citation, number: Int) -> String {
+        let place = citation.timestamp.isEmpty
+            ? citation.meetingTitle
+            : "\(citation.meetingTitle) @ \(citation.timestamp)"
+        return "[\(number)] \(place)"
     }
 }
 

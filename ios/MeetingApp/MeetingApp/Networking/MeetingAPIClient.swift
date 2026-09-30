@@ -12,6 +12,7 @@ struct MeetingAPIClient {
     }()
 
     private static let uploadTimeout: TimeInterval = 15 * 60
+    private static let answerTimeout: TimeInterval = 100
 
     let baseURL: URL
     private let token: String?
@@ -169,6 +170,48 @@ struct MeetingAPIClient {
     func revertTask(token: String) async throws -> TaskMutationResponse {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/revert/\(token)"))
         request.httpMethod = "POST"
+        return try await send(request)
+    }
+
+    func createConversation(projectID: String, meetingID: String?) async throws -> RemoteConversation {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/conversations"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var payload = ["project_id": projectID]
+        if let meetingID {
+            payload["meeting_id"] = meetingID
+        }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        return try await send(request)
+    }
+
+    /// nil lists every project's conversations.
+    func conversations(projectID: String?) async throws -> [RemoteConversation] {
+        guard var components = URLComponents(
+            url: baseURL.appending(path: "api/v1/conversations"),
+            resolvingAgainstBaseURL: false
+        ) else {
+            throw MeetingAPIError.invalidResponse
+        }
+        if let projectID {
+            components.queryItems = [URLQueryItem(name: "project_id", value: projectID)]
+        }
+        guard let url = components.url else { throw MeetingAPIError.invalidResponse }
+        return try await send(URLRequest(url: url))
+    }
+
+    func conversation(id: String) async throws -> RemoteConversationThread {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/conversations/\(id)")))
+    }
+
+    func ask(conversationID: String, question: String) async throws -> RemoteExchange {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/conversations/\(conversationID)/messages")
+        )
+        request.httpMethod = "POST"
+        request.timeoutInterval = Self.answerTimeout
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["content": question])
         return try await send(request)
     }
 
@@ -407,6 +450,75 @@ struct RemoteStoredTurn: Decodable {
 
 struct RemoteStoredSummary: Decodable {
     let overview: String?
+}
+
+struct RemoteConversation: Decodable, Identifiable {
+    let id: String
+    let projectID: String
+    /// Set when the conversation searches only this meeting.
+    let meetingID: String?
+    let meetingName: String?
+    let title: String?
+    let updatedAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, title
+        case projectID = "project_id"
+        case meetingID = "meeting_id"
+        case meetingName = "meeting_name"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct RemoteConversationThread: Decodable {
+    let id: String
+    let projectID: String
+    let meetingID: String?
+    let messages: [RemoteChatMessage]
+
+    enum CodingKeys: String, CodingKey {
+        case id, messages
+        case projectID = "project_id"
+        case meetingID = "meeting_id"
+    }
+}
+
+struct RemoteChatMessage: Decodable {
+    let id: String
+    let role: String
+    let content: String
+    /// Null on user messages.
+    let citations: [RemoteCitation]?
+}
+
+struct RemoteCitation: Decodable {
+    let number: Int
+    let kind: String
+    let meetingID: String
+    let meetingName: String
+    let turnKey: String?
+    let speaker: String?
+    /// Null for a summary citation.
+    let startTimeMilliseconds: Int?
+    let quote: String
+
+    enum CodingKeys: String, CodingKey {
+        case number, kind, speaker, quote
+        case meetingID = "meeting_id"
+        case meetingName = "meeting_name"
+        case turnKey = "turn_key"
+        case startTimeMilliseconds = "start_time_ms"
+    }
+}
+
+struct RemoteExchange: Decodable {
+    let userMessage: RemoteChatMessage
+    let assistantMessage: RemoteChatMessage
+
+    enum CodingKeys: String, CodingKey {
+        case userMessage = "user_message"
+        case assistantMessage = "assistant_message"
+    }
 }
 
 private struct ReviewBody: Encodable {

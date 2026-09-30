@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from labsync.embeddings import OpenAIEmbedder
 from labsync.providers import DEFAULT_MODELS
 from labsync.server import create_app
 
@@ -73,6 +74,14 @@ def wait_for(client, meeting_id, status):
             return result
         time.sleep(0.01)
     pytest.fail(f"Meeting did not reach {status}: {result}")
+
+
+def test_embedder_defaults_and_can_be_injected(tmp_path):
+    app = create_app(tmp_path)
+    assert isinstance(app.state.embedder, OpenAIEmbedder)
+    sentinel = object()
+    app = create_app(tmp_path, embedder=sentinel)
+    assert app.state.embedder is sentinel
 
 
 def test_upload_results_audio_and_restart(tmp_path, fake_process):

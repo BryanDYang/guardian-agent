@@ -45,3 +45,15 @@ def extract(
         timeout=timeout,
         rejected=rejected,
     )
+
+def structured(
+    prompt: str, schema: dict, *, provider: str, model: str | None, timeout: int
+) -> dict:
+    """One schema-constrained JSON reply from the selected provider."""
+    if provider == "codex":
+        from .codex_client import structured as run
+    elif provider == "claude":
+        from .claude_client import structured as run
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+    return run(prompt, schema, model=model or DEFAULT_MODELS[provider], timeout=timeout)

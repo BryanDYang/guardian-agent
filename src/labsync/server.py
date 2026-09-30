@@ -17,11 +17,14 @@ from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from .api.chat import router as chat_router
 from .api.meetings import router as meetings_router
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
 from .db import meetings as meeting_store
+from .db import rag
 from .db.connection import create_pool
+from .embeddings import OpenAIEmbedder
 from .extraction import Extraction, Transcript
 from .providers import DEFAULT_MODELS
 
@@ -41,6 +44,7 @@ def create_app(
     diarize: bool = False,
     token: str | None = None,
     database_url: str | None = None,
+    embedder: rag.Embedder | None = None,
 ) -> FastAPI:
     if provider not in DEFAULT_MODELS:
         raise ValueError(f"Unknown extraction provider: {provider}")
@@ -107,6 +111,7 @@ def create_app(
                 meeting_store.save_results(
                     conn, meeting_id, transcript, result, transcription or {}
                 )
+                rag.index_meeting(conn, meeting_id, app.state.embedder)
             meeting_store.update_status(conn, meeting_id, status, attempt, error)
 
     def process(meeting_id):
@@ -229,9 +234,14 @@ def create_app(
 
     app = FastAPI(title="LabSync local backend", lifespan=lifespan)
     app.state.pool = None
+    app.state.embedder = embedder or OpenAIEmbedder()
+
+    app.state.chat = {"provider": provider, "model": model}   
     app.include_router(projects_router)
     app.include_router(meetings_router)
     app.include_router(tasks_router)
+    app.include_router(chat_router) 
+
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]
     )

@@ -100,9 +100,15 @@ def project_id():
 
 
 @pytest.fixture
-def client(tmp_path, monkeypatch):
+def client(tmp_path, monkeypatch, embedder):
     monkeypatch.setattr(labsync.server.subprocess, "run", fake_pipeline)
-    app = create_app(tmp_path, tmp_path, token="test-token", database_url=DATABASE_URL)
+    app = create_app(
+        tmp_path,
+        tmp_path,
+        token="test-token",
+        database_url=DATABASE_URL,
+        embedder=embedder,
+    )
     with TestClient(app) as client:
         yield client
 
@@ -176,6 +182,19 @@ def test_upload_processes_and_saves_results(client, project_id):
     )
     assert decision == [{"timestamp_ms": 1000, "quote": "keep this time"}]
 
+    chunks = query(
+        "SELECT kind, start_time_ms, content FROM rag_chunks "
+        "WHERE meeting_id = %s ORDER BY kind, content",
+        meeting_id,
+    )
+    assert [(c["kind"], c["start_time_ms"]) for c in chunks] == [
+        ("decision", 1000),
+        ("summary", None),
+        ("task", 0),
+        ("task", 2000),
+        ("transcript", 0),
+    ]
+
 
 def test_retry_replaces_results_and_mirrors_attempt(client, project_id, tmp_path):
     meeting_id = upload(client, project_id).json()["job_id"]
@@ -192,11 +211,13 @@ def test_retry_replaces_results_and_mirrors_attempt(client, project_id, tmp_path
     assert meeting["processing_attempt"] == 2
     counts = query(
         "SELECT (SELECT count(*) FROM meeting_transcripts WHERE meeting_id = %s) AS turns, "
-        "(SELECT count(*) FROM tasks WHERE meeting_id = %s) AS tasks",
+        "(SELECT count(*) FROM tasks WHERE meeting_id = %s) AS tasks, "
+        "(SELECT count(*) FROM rag_chunks WHERE meeting_id = %s) AS chunks",
+        meeting_id,
         meeting_id,
         meeting_id,
     )
-    assert counts == [{"turns": 3, "tasks": 2}]
+    assert counts == [{"turns": 3, "tasks": 2, "chunks": 5}]
 
 
 @pytest.mark.parametrize(

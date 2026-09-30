@@ -43,3 +43,9 @@ Thumbs.db
 
 # Local recordings, transcripts, and generated processing outputs
 /artifacts/
+.env.local
+
+
+# Local-only
+backup_*.sql
+Claude outputs/

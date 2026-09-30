@@ -83,6 +83,12 @@ def main(argv: list[str] | None = None) -> int:
     audio.add_argument(
         "--diarize", action="store_true", help="Requires pyannote and HF_TOKEN"
     )
+    index = commands.add_parser(
+        "index", help="Rebuild the chat search index from stored meeting results"
+    )
+    index.add_argument(
+        "--meeting-id", help="Only this meeting (default: every completed meeting)"
+    )
     server = commands.add_parser("serve", help="Start the local UI backend")
     server.add_argument("--port", type=int, default=8000)
     server.add_argument("--storage", type=Path, default=Path("artifacts/server"))
@@ -109,12 +115,15 @@ def main(argv: list[str] | None = None) -> int:
             parser.exit(1, "Set API_SECRET_KEY before starting the server\n")
         if problem := setup_error(args.provider):
             parser.exit(1, problem + "\n")
+        from .embeddings import OpenAIEmbedder
+
         try:
             import uvicorn
 
             from .server import create_app
         except ImportError:
             parser.exit(1, "Install the server extra: uv sync --extra server\n")
+        embedder = OpenAIEmbedder()
         uvicorn.run(
             create_app(
                 args.storage,
@@ -126,6 +135,7 @@ def main(argv: list[str] | None = None) -> int:
                 diarize=args.diarize,
                 token=token,
                 database_url=os.environ.get("DATABASE_URL") or None,
+                embedder=embedder,
             ),
             host="127.0.0.1",
             port=args.port,
@@ -169,6 +179,37 @@ def main(argv: list[str] | None = None) -> int:
                     f"{len(transcript.turns)} turns to {args.output}"
                 )
         except (OSError, ValueError, RuntimeError, ImportError, SubprocessError) as exc:
+            parser.exit(1, f"labsync: {exc}\n")
+        return 0
+    if args.command == "index":
+        database_url = os.environ.get("DATABASE_URL")
+        if not database_url:
+            parser.exit(1, "Set DATABASE_URL to the backend database\n")
+        import psycopg
+        from psycopg.rows import dict_row
+
+        from .db import rag
+        from .embeddings import OpenAIEmbedder
+
+        embedder = OpenAIEmbedder()
+        try:
+            with psycopg.connect(database_url, row_factory=dict_row) as conn:
+                meeting_ids = (
+                    [args.meeting_id]
+                    if args.meeting_id
+                    else [
+                        row["id"]
+                        for row in conn.execute(
+                            "SELECT id FROM meetings WHERE status = 'completed' "
+                            "ORDER BY meeting_date, created_at"
+                        )
+                    ]
+                )
+                for meeting_id in meeting_ids:
+                    count = rag.index_meeting(conn, meeting_id, embedder)
+                    conn.commit()
+                    print(f"Indexed {count} chunks for meeting {meeting_id}")
+        except (ValueError, RuntimeError, psycopg.Error) as exc:
             parser.exit(1, f"labsync: {exc}\n")
         return 0
     if args.command == "import-ami":

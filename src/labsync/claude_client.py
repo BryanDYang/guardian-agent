@@ -19,6 +19,7 @@ from .extraction import (
 API_URL = "https://api.anthropic.com/v1/messages"
 API_VERSION = "2023-06-01"
 TOOL = "record_extraction"
+CHAT_TOOL = "record_answer"
 MAX_TOKENS = 8192
 
 
@@ -36,56 +37,17 @@ def extract(
     if not key:
         raise RuntimeError("Set ANTHROPIC_API_KEY to use the Claude provider.")
     prompt = build_prompt(transcript)
-    payload = {
-        "model": model,
-        "max_tokens": MAX_TOKENS,
-        # The shared instructions forbid tools. This forced tool is only the API's
-        # schema-constrained output channel, so name it explicitly.
-        "system": f"Return the requested JSON as the input to the {TOOL} tool.",
-        "messages": [{"role": "user", "content": prompt}],
-        "tools": [
-            {
-                "name": TOOL,
-                "description": "Record the meeting extraction.",
-                "input_schema": Extraction.model_json_schema(),
-            }
-        ],
-        "tool_choice": {"type": "tool", "name": TOOL},
-    }
-    request = Request(
-        API_URL,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "content-type": "application/json",
-            "x-api-key": key,
-            "anthropic-version": API_VERSION,
-        },
-    )
     started = time.monotonic()
-    try:
-        with urlopen(request, timeout=timeout) as response:
-            message = json.load(response)
-    except HTTPError as exc:
-        raise RuntimeError(describe(exc)) from exc
-    except (TimeoutError, URLError) as exc:
-        if isinstance(exc, TimeoutError) or isinstance(exc.reason, TimeoutError):
-            raise RuntimeError(
-                f"Claude extraction timed out after {timeout}s."
-            ) from exc
-        raise RuntimeError(
-            "Could not reach the Anthropic API. Check network access; "
-            "no extraction was saved."
-        ) from exc
-    if message.get("stop_reason") == "max_tokens":
-        raise RuntimeError("Claude output was truncated; no extraction was saved.")
-    calls = [
-        block
-        for block in message.get("content", [])
-        if block.get("type") == "tool_use" and block.get("name") == TOOL
-    ]
-    if len(calls) != 1:
-        raise RuntimeError("Claude returned no structured output.")
-    raw = calls[0]["input"]
+    raw, message = call_tool(
+        prompt,
+        Extraction.model_json_schema(),
+        model=model,
+        timeout=timeout,
+        key=key,
+        tool=TOOL,
+        description="Record the meeting extraction.",
+        task="extraction",
+    )
     try:
         extraction, repairs = Extraction.model_validate(unwrap(raw)).repair_evidence(
             transcript
@@ -114,6 +76,80 @@ def extract(
     }
 
 
+def structured(prompt: str, schema: dict, *, model: str, timeout: int) -> dict:
+    """One schema-constrained reply for chat; the key is read from ANTHROPIC_API_KEY."""
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        raise RuntimeError("Set ANTHROPIC_API_KEY to use the Claude provider.")
+    raw, _ = call_tool(
+        prompt,
+        schema,
+        model=model,
+        timeout=timeout,
+        key=key,
+        tool=CHAT_TOOL,
+        description="Record the grounded answer.",
+        task="chat",
+    )
+    return unwrap(raw)
+
+
+def call_tool(
+    prompt: str,
+    schema: dict,
+    *,
+    model: str,
+    timeout: int,
+    key: str,
+    tool: str,
+    description: str,
+    task: str,
+) -> tuple[dict, dict]:
+    """Send one prompt and force the reply through `tool`. Returns the tool
+    input and the whole API message."""
+    payload = {
+        "model": model,
+        "max_tokens": MAX_TOKENS,
+        # The shared instructions forbid tools. This forced tool is only the API's
+        # schema-constrained output channel, so name it explicitly.
+        "system": f"Return the requested JSON as the input to the {tool} tool.",
+        "messages": [{"role": "user", "content": prompt}],
+        "tools": [{"name": tool, "description": description, "input_schema": schema}],
+        "tool_choice": {"type": "tool", "name": tool},
+    }
+    request = Request(
+        API_URL,
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "content-type": "application/json",
+            "x-api-key": key,
+            "anthropic-version": API_VERSION,
+        },
+    )
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            message = json.load(response)
+    except HTTPError as exc:
+        raise RuntimeError(describe(exc, task)) from exc
+    except (TimeoutError, URLError) as exc:
+        if isinstance(exc, TimeoutError) or isinstance(exc.reason, TimeoutError):
+            raise RuntimeError(f"Claude {task} timed out after {timeout}s.") from exc
+        raise RuntimeError(
+            f"Could not reach the Anthropic API. Check network access; "
+            f"no {task} was saved."
+        ) from exc
+    if message.get("stop_reason") == "max_tokens":
+        raise RuntimeError(f"Claude output was truncated; no {task} was saved.")
+    calls = [
+        block
+        for block in message.get("content", [])
+        if block.get("type") == "tool_use" and block.get("name") == tool
+    ]
+    if len(calls) != 1:
+        raise RuntimeError("Claude returned no structured output.")
+    return calls[0]["input"], message
+
+
 def unwrap(raw):
     """Claude sometimes nests the tool input under one placeholder key such as
     "$parameter" or "$PARAMETER_NAME"."""
@@ -124,10 +160,10 @@ def unwrap(raw):
     return raw
 
 
-def describe(error: HTTPError) -> str:
+def describe(error: HTTPError, task: str = "extraction") -> str:
     try:
         detail = json.load(error)["error"]["message"]
     except (OSError, ValueError, KeyError, TypeError):
         detail = error.reason
     hint = " Check ANTHROPIC_API_KEY." if error.code in {401, 403} else ""
-    return f"Claude extraction failed (HTTP {error.code}): {detail.rstrip('.')}.{hint}"
+    return f"Claude {task} failed (HTTP {error.code}): {detail.rstrip('.')}.{hint}"

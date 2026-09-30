@@ -3,10 +3,20 @@ import SwiftData
 
 // ChatView.tsx → the slide-out chat history, as a sheet.
 struct ChatHistoryDrawer: View {
-    @Environment(\.dismiss) private var dismiss
-    @Query(sort: \Project.createdAt) private var projects: [Project]
+    let onSelect: (RemoteConversation) -> Void
 
-    @State private var activeFilter = "All"
+    @Environment(\.dismiss) private var dismiss
+    @Query(sort: \Project.createdAt) private var allProjects: [Project]
+
+    /// nil = All.
+    @State private var activeProjectID: String?
+    @State private var conversations: [RemoteConversation] = []
+    @State private var isLoading = true
+    @State private var loadError: String?
+
+    private var projects: [Project] {
+        allProjects.filter { isServerID($0.id) }
+    }
 
     var body: some View {
         NavigationStack {
@@ -16,21 +26,20 @@ struct ChatHistoryDrawer: View {
                 List {
                     if !recent.isEmpty {
                         Section("Recent") {
-                            ForEach(recent) { item in
-                                Button(item.title) { }
-                                    .foregroundStyle(.primary)
-                            }
+                            ForEach(recent) { row($0) }
                         }
                     }
-                    if !previousWeek.isEmpty {
-                        Section("Previous 7 Days") {
-                            ForEach(previousWeek) { item in
-                                Button(item.title) { }
-                                    .foregroundStyle(.primary)
-                            }
+                    if !older.isEmpty {
+                        Section("Older") {
+                            ForEach(older) { row($0) }
                         }
                     }
-                    if recent.isEmpty && previousWeek.isEmpty {
+                    if isLoading {
+                        ProgressView()
+                    } else if let loadError {
+                        Text(loadError)
+                            .foregroundStyle(.red)
+                    } else if conversations.isEmpty {
                         Text("No chat history found.")
                             .foregroundStyle(.secondary)
                     }
@@ -43,26 +52,31 @@ struct ChatHistoryDrawer: View {
                     Button("Done") { dismiss() }
                 }
             }
+            .task(id: activeProjectID) { await load() }
         }
+    }
+
+    private func row(_ conversation: RemoteConversation) -> some View {
+        Button { onSelect(conversation) } label: {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(conversation.title ?? "Untitled chat")
+                    .lineLimit(1)
+                if let meetingName = conversation.meetingName {
+                    Text(meetingName)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .foregroundStyle(.primary)
     }
 
     private var filterPills: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                ForEach(["All"] + projects.map(\.title), id: \.self) { title in
-                    Button {
-                        activeFilter = title
-                    } label: {
-                        Text(title)
-                            .font(.subheadline.weight(.medium))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule().fill(activeFilter == title ? Color.primary : Color(.systemGray6))
-                            )
-                            .foregroundStyle(activeFilter == title ? Color(.systemBackground) : .secondary)
-                    }
-                    .buttonStyle(.plain)
+                pill("All", id: nil)
+                ForEach(projects) { project in
+                    pill(project.title, id: project.id)
                 }
             }
             .padding(.horizontal, 16)
@@ -70,31 +84,52 @@ struct ChatHistoryDrawer: View {
         }
     }
 
-    private var filtered: [HistoryItem] {
-        Self.items.filter { activeFilter == "All" || $0.project == activeFilter }
+    private func pill(_ title: String, id: String?) -> some View {
+        Button {
+            activeProjectID = id
+        } label: {
+            Text(title)
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule().fill(activeProjectID == id ? Color.primary : Color(.systemGray6))
+                )
+                .foregroundStyle(activeProjectID == id ? Color(.systemBackground) : .secondary)
+        }
+        .buttonStyle(.plain)
     }
 
-    private var recent: [HistoryItem] { filtered.filter(\.isRecent) }
-    private var previousWeek: [HistoryItem] { filtered.filter { !$0.isRecent } }
+    private func load() async {
+        isLoading = true
+        loadError = nil
+        do {
+            conversations = try await MeetingAPIClient.shared.conversations(projectID: activeProjectID)
+        } catch {
+            conversations = []
+            loadError = error.localizedDescription
+        }
+        isLoading = false
+    }
 
-    // ChatView.tsx → mockHistoryItems (hardcoded there too; chats aren't persisted)
-    private static let items: [HistoryItem] = [
-        HistoryItem(id: "h1", title: "Thesis research notes", project: "AI Thesis", isRecent: true),
-        HistoryItem(id: "h2", title: "Literature review summary", project: "AI Thesis", isRecent: true),
-        HistoryItem(id: "h3", title: "Robotics integration ideas", project: "Robotics Lab", isRecent: false),
-        HistoryItem(id: "h4", title: "Hardware specs meeting", project: "Robotics Lab", isRecent: false),
-        HistoryItem(id: "h5", title: "Capstone presentation prep", project: "Capstone", isRecent: true)
-    ]
-}
+    // The server sorts newest first; split at seven days ago.
+    private var recent: [RemoteConversation] { conversations.filter(isRecent) }
+    private var older: [RemoteConversation] { conversations.filter { !isRecent($0) } }
 
-struct HistoryItem: Identifiable {
-    let id: String
-    let title: String
-    let project: String
-    let isRecent: Bool
+    private func isRecent(_ conversation: RemoteConversation) -> Bool {
+        guard let updated = Self.timestamp.date(from: conversation.updatedAt) else { return true }
+        return updated > Date.now.addingTimeInterval(-7 * 24 * 60 * 60)
+    }
+
+    /// Postgres timestamptz as FastAPI sends it, e.g. 2026-09-29T20:44:18.077475-07:00.
+    private static let timestamp: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
 }
 
 #Preview {
-    ChatHistoryDrawer()
+    ChatHistoryDrawer { _ in }
         .modelContainer(PreviewContainer.shared)
 }

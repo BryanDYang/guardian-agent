@@ -124,10 +124,13 @@ def create_meeting(
 
 
 def delete_project_meetings(conn: Connection, project_id: UUID) -> int:
+    # Project-wide chats quote the purged meetings, so they go too.
+    conn.execute(
+        "DELETE FROM chat_conversations WHERE project_id = %s", (project_id,)
+    )
     return conn.execute(
         "DELETE FROM meetings WHERE project_id = %s", (project_id,)
     ).rowcount
-
 
 def update_status(
     conn: Connection, meeting_id: str, status: str, attempt: int, error: str | None
@@ -282,3 +285,5 @@ def _add_evidence(
                 turn["start_time_ms"],
             ),
         )
+
+
