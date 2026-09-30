@@ -56,6 +56,8 @@ codex login        # if codex is missing: npm install -g @openai/codex
 
 Leave `API_SECRET_KEY` blank; step 5 fills it in. To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
 
+Set `OPENAI_API_KEY` in `.env`.
+
 Speaker labels need a Hugging Face token. Accept the terms for `pyannote/speaker-diarization-3.1` and `pyannote/segmentation-3.0`, then set `HF_TOKEN` in `.env`.
 
 ### 4. Connect the database
@@ -82,6 +84,12 @@ uv run --locked --env-file .env --extra server python scripts/check_supabase.py
 ```
 
 It should end with `Supabase connection OK`. Without `DATABASE_URL`, the backend still transcribes, but the project, meeting, and task endpoints return `503`.
+
+Index existing meetings for chat:
+
+```bash
+uv run --locked --env-file .env --extra server labsync index
+```
 
 ### 5. Set up the Cloudflare tunnel (once per Mac)
 
@@ -215,12 +223,12 @@ uv run --locked --extra dev ruff format --check src tests
 uv run --locked --extra dev pytest
 ```
 
-The database API tests (`tests/test_api_*.py`) are skipped unless `TEST_DATABASE_URL` is set. Run them against a local Supabase database (needs Docker running), never the real project. `supabase start` applies the migrations:
+The database tests are skipped unless `TEST_DATABASE_URL` is set. Run them against a local Supabase database (needs Docker running), never the real project. `supabase start` applies the migrations:
 
 ```bash
 supabase start
 TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
-  uv run --locked --extra dev pytest tests/test_api_*.py
+  uv run --locked --extra dev --extra server pytest
 supabase stop
 ```
 
