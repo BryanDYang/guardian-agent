@@ -236,11 +236,11 @@ def create_app(
     app.state.pool = None
     app.state.embedder = embedder or OpenAIEmbedder()
 
-    app.state.chat = {"provider": provider, "model": model}   
+    app.state.chat = {"provider": provider, "model": model}
     app.include_router(projects_router)
     app.include_router(meetings_router)
     app.include_router(tasks_router)
-    app.include_router(chat_router) 
+    app.include_router(chat_router)
 
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]

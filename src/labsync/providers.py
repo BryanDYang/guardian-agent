@@ -46,6 +46,7 @@ def extract(
         rejected=rejected,
     )
 
+
 def structured(
     prompt: str, schema: dict, *, provider: str, model: str | None, timeout: int
 ) -> dict:

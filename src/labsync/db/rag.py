@@ -11,6 +11,7 @@ from ..embeddings import to_pgvector
 RRF_K = 60  # Reciprocal Rank Fusion smoothing constant
 LEG_DEPTH = 40  # candidates each leg contributes before fusion
 
+
 class Embedder(Protocol):
     name: str
 
@@ -124,7 +125,6 @@ def index_meeting(conn: Connection, meeting_id: str | UUID, embedder: Embedder) 
     return len(rows)
 
 
-
 def search(
     conn: Connection,
     *,
@@ -198,8 +198,10 @@ def search(
         },
     ).fetchall()
 
+
 # Live rows behind search hits. Chat reads these instead of the chunk text so
 # answers reflect current names, review status, and lifecycle state.
+
 
 def turns(conn: Connection, meeting_id: UUID, first: int, last: int) -> list[dict]:
     return conn.execute(

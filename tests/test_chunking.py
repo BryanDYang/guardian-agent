@@ -21,7 +21,11 @@ def test_packs_whole_turns_up_to_the_word_limit():
 def test_long_turn_is_cut_into_pieces_that_point_at_it():
     result = windows([turn(0, 2), turn(1, 25), turn(2, 2)], max_words=10)
     assert [(w.first_order, w.last_order) for w in result] == [
-        (0, 0), (1, 1), (1, 1), (1, 1), (2, 2),
+        (0, 0),
+        (1, 1),
+        (1, 1),
+        (1, 1),
+        (2, 2),
     ]
     pieces = [w.content.removeprefix("SPEAKER_01: ") for w in result[1:4]]
     assert " ".join(pieces) == turn(1, 25).content  # nothing lost or duplicated

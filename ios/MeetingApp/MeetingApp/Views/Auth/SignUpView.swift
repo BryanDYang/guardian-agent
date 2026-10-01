@@ -48,7 +48,7 @@ struct SignUpView: View {
                         AuthField(
                             "Full name",
                             icon: "person",
-                            placeholder: "e.g. Willie Liu",
+                            placeholder: "e.g. John Doe",
                             text: $fullName,
                             contentType: .name
                         )
