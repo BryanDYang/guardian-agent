@@ -4,9 +4,9 @@ Source of truth: [Workflow.md](writeups/Workflow.md). User-facing behavior: [Sto
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
-**Current state:** Supabase Postgres is live (`db/schema.sql`, applied as `supabase/migrations/`). A v1 API creates projects, uploads meetings into a project UUID, and mirrors transcript, summary, decisions, evidence, and pending tasks into Postgres. The pipeline worker still keeps `artifacts/server/*/meeting.json` and polls that file for status. iOS uses `LabSyncConfig.plist` for the base URL and bearer token, creates projects on the server, uploads with consent, and reviews tasks through `/api/v1/tasks` (approve, edit, dismiss, open/done/dropped, undo). Approved tasks load onto the Tasks calendar and copy into Apple Reminders. Chat, audio playback, storylines, speaker identity, embeddings, hybrid search, and RAG are not end-to-end. `SeedData` still loads on launch.
+**Current state:** The repository contains backend and iOS implementations for upload, review, tasks, and cited project chat. This is an implementation inventory, not a claim that the connected UI works end to end. Seeded sample projects are local-only; auth and voice enrollment remain placeholders. Playback, storylines, account isolation, and other incomplete paths must not be presented as working features.
 
-Legend: `[x]` done in the repo · `[ ]` still required for E2E.
+Legend: `[x]` implementation exists in the repo · `[ ]` implementation still required. A checked item is not acceptance evidence. Use the [UI demo walkthrough](demo_walkthrough.md) to record the build, backend, observed behavior, and remaining gaps before claiming a user journey works.
 
 ---
 
@@ -146,7 +146,7 @@ The client uploads, polls, retries, purges, creates projects, and syncs tasks. P
 
 ## Phase 7 — Native Presentation (System 1)
 
-Meetings upload, review, and purge are live for server projects. The Tasks calendar follows approved server tasks. Chat, storylines, and audio are still shells. Seeded local projects still use the old SwiftData-only path.
+Meetings, task review, the calendar, and project chat have connected code paths that require UI acceptance testing. Storylines and audio playback remain placeholders. Seeded local projects use SwiftData and are unavailable to backend chat.
 
 ### Meetings
 
@@ -184,7 +184,7 @@ Meetings upload, review, and purge are live for server projects. The Tasks calen
 ### Chat
 
 - [x] Chat chrome: history drawer, project picker, new-chat button, input bar
-- [x] Send a query to the RAG API (the thread is `SeedData.mockChat`; send does not call the backend)
+- [x] Send a query to the RAG API via `MeetingAPIClient`; verify answers and scope using the demo walkthrough
 - [x] Grounded answer with meeting name + timestamp citation badges
 - [ ] Citation tap seeks `AVPlayer` to that offset
 - [x] Render `"I don't know"` when retrieval has no support
@@ -204,7 +204,7 @@ Check these only when the whole journey works on a real recording (or the golden
 - [ ] **Play:** Play audio; tap a transcript/task/decision timestamp; playhead jumps and the active turn highlights
 - [ ] **Review:** Approve / edit / dismiss candidates; approved items show on the Tasks calendar; duplicates of open tasks are flagged, not double-created
 - [ ] **Operate:** Mark a task done or dropped; undo via audit `revert_token`; Reminders copy exists on device; Calendar copy exists when there is a due date
-- [ ] **Ask:** Chat within a project (and All) returns cited answers or `"I don't know"`; history survives relaunch
+- [ ] **Ask:** Chat within a selected project, across its completed meetings or one selected meeting, returns cited answers or `"I don't know"`; history survives relaunch
 - [ ] **Scope/privacy:** Queries never leak another project; purge removes that project's meetings, audio, tasks, and chat from Postgres and the phone; redaction removes selected turns
 - [ ] **Remote:** Phone on cellular/Wi-Fi reaches the Mac backend through the tunnel with the bearer token, and status does not depend on the JSON file
 

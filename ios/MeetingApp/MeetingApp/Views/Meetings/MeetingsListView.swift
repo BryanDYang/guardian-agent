@@ -53,29 +53,11 @@ struct MeetingsListView: View {
     }
 
     private func refreshMeetings() async {
-        guard let project, UUID(uuidString: project.id) != nil else { return }
+        guard let project else { return }
         do {
-            let remote = try await MeetingAPIClient.shared.meetings(projectID: project.id)
-            var changed = false
-            for item in remote where !meetings.contains(where: { $0.id == item.id }) {
-                let meeting = Meeting(
-                    id: item.id,
-                    title: item.name,
-                    date: meetingDate(item.meetingDate),
-                    duration: "Processing",
-                    summary: [],
-                    suggestions: [],
-                    decisions: [],
-                    transcript: [],
-                    processingStatus: item.status
-                )
-                context.insert(meeting)
-                meeting.project = project
-                changed = true
-            }
-            if changed {
-                try context.save()
-            }
+            try await ProjectSync.refreshMeetings(
+                project: project, context: context, api: .shared
+            )
         } catch {
             // Keep the on-device list when the backend cannot be reached.
         }
@@ -83,35 +65,10 @@ struct MeetingsListView: View {
 
     private func refreshProjects() async {
         do {
-            let remote = try await MeetingAPIClient.shared.projects()
-            var changed = false
-            for item in remote where !projects.contains(where: { $0.id == item.id }) {
-                context.insert(Project(id: item.id, title: item.name, colorHex: "#5E5CE6",
-                                    iconSystemName: "folder", createdAt: .now))
-                changed = true
-            }
-            if changed { try context.save() }
+            try await ProjectSync.refreshProjects(context: context, api: .shared)
         } catch {
             print("Project refresh failed: \(error)")
         }
-    }
-
-    private func meetingDate(_ value: String) -> Date {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = formatter.date(from: value) {
-            return date
-        }
-        formatter.formatOptions = [.withInternetDateTime]
-        if let date = formatter.date(from: value) {
-            return date
-        }
-        let day = DateFormatter()
-        day.calendar = Calendar(identifier: .iso8601)
-        day.locale = Locale(identifier: "en_US_POSIX")
-        day.timeZone = TimeZone(secondsFromGMT: 0)
-        day.dateFormat = "yyyy-MM-dd"
-        return day.date(from: String(value.prefix(10))) ?? .now
     }
 
     // MARK: Projects list
@@ -143,9 +100,16 @@ struct MeetingsListView: View {
                         .strokeBorder(Color(hex: project.colorHex).opacity(0.25))
                 )
 
-            Text(project.title)
-                .font(.body.bold())
-                .foregroundStyle(.primary)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(project.title)
+                    .font(.body.bold())
+                    .foregroundStyle(.primary)
+                if !isServerID(project.id) {
+                    Text("Sample project · unavailable in Chat")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             Spacer(minLength: 0)
 

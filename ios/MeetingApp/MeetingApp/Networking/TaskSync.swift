@@ -12,7 +12,7 @@ enum TaskSync {
         context: ModelContext
     ) throws -> TaskItem {
         let taskID = remote.id
-        var descriptor = FetchDescriptor<TaskItem>(predicate: #Predicate { $0.id == taskID })
+        let descriptor = FetchDescriptor<TaskItem>(predicate: #Predicate { $0.id == taskID })
         let task = try context.fetch(descriptor).first ?? insert(remote, meetings: meetings, context: context)
         task.title = remote.title
         task.dueDate = remote.dueDate.flatMap(LabSyncDate.day(from:))

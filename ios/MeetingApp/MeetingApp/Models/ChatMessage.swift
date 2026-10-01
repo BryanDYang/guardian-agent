@@ -45,7 +45,7 @@ extension ChatMessage {
     }
 
     /// Same format as the backend prompt: "mm:ss", or "h:mm:ss" past an hour.
-    static func clock(_ milliseconds: Int) -> String {
+    nonisolated static func clock(_ milliseconds: Int) -> String {
         let seconds = milliseconds / 1000
         let (hours, minutes, rest) = (seconds / 3600, seconds % 3600 / 60, seconds % 60)
         return hours > 0

@@ -3,6 +3,7 @@ import SwiftData
 
 // ChatView.tsx
 struct ChatView: View {
+    @Environment(\.modelContext) private var context
     @Query(sort: \Project.createdAt) private var allProjects: [Project]
 
     @State private var messages: [ChatMessage] = [ChatView.greeting]
@@ -15,6 +16,12 @@ struct ChatView: View {
     @State private var conversationID: String?
     @State private var isSending = false
     @State private var errorMessage: String?
+
+    @State private var isRefreshing = false
+    @State private var projectsError: String?
+    @State private var meetingsError: String?
+
+    private var scopeError: String? { projectsError ?? meetingsError }
 
     private let api = MeetingAPIClient.shared
 
@@ -35,7 +42,7 @@ struct ChatView: View {
 
     private var searchableMeetings: [Meeting] {
         (selectedProject?.meetings ?? [])
-            .filter { isServerID($0.id) && ($0.processingStatus ?? "completed") == "completed" }
+            .filter { isServerID($0.id) && $0.processingStatus == "completed" }
             .sorted { $0.date > $1.date }
     }
 
@@ -52,6 +59,7 @@ struct ChatView: View {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 24) {
+                        scopeStatus
                         ForEach(messages) { message in
                             MessageBubble(message: message)
                                 .id(message.id)
@@ -115,10 +123,22 @@ struct ChatView: View {
             } message: {
                 Text(errorMessage ?? "")
             }
-            .onAppear {
+            .task {
+                await refreshProjects()
+            }
+            .task(id: selectedProjectID) {
+                await refreshMeetings()
+            }
+            .onChange(of: projects.map(\.id)) {
                 if selectedProject == nil {
                     selectedProjectID = projects.first?.id ?? ""
+                    selectedMeetingID = nil
+                    newChat()
                 }
+            }
+            .refreshable {
+                await refreshProjects()
+                await refreshMeetings()
             }
         }
     }
@@ -127,28 +147,51 @@ struct ChatView: View {
     /// the scope it was created with.
     private var scopeMenu: some View {
         Menu {
-            Picker("Project", selection: Binding(
-                get: { selectedProjectID },
-                set: { id in
-                    selectedProjectID = id
-                    selectedMeetingID = nil
-                    newChat()
-                }
-            )) {
-                ForEach(projects) { project in
-                    Text(project.title).tag(project.id)
+            Section("Projects") {
+                ForEach(allProjects) { project in
+                    Button {
+                        guard isServerID(project.id) else { return }
+                        selectedProjectID = project.id
+                        selectedMeetingID = nil
+                        newChat()
+                    } label: {
+                        if selectedProjectID == project.id {
+                            Label(project.title, systemImage: "checkmark")
+                        } else {
+                            Text(isServerID(project.id)
+                                 ? project.title : "\(project.title) (local sample)")
+                        }
+                    }
+                    .disabled(!isServerID(project.id))
                 }
             }
-            Picker("Search", selection: Binding(
-                get: { selectedMeetingID },
-                set: { id in
-                    selectedMeetingID = id
+            Section("Meetings") {
+                Button {
+                    selectedMeetingID = nil
                     newChat()
+                } label: {
+                    if selectedMeetingID == nil {
+                        Label("All", systemImage: "checkmark")
+                    } else {
+                        Text("All")
+                    }
                 }
-            )) {
-                Text("All meetings").tag(String?.none)
-                ForEach(searchableMeetings) { meeting in
-                    Text(meeting.title).tag(Optional(meeting.id))
+                .disabled(selectedProject == nil)
+                ForEach((selectedProject?.meetings ?? []).filter { isServerID($0.id) }
+                    .sorted { $0.date > $1.date }) { meeting in
+                    Button {
+                        guard meeting.processingStatus == "completed" else { return }
+                        selectedMeetingID = meeting.id
+                        newChat()
+                    } label: {
+                        if selectedMeetingID == meeting.id {
+                            Label(meeting.title, systemImage: "checkmark")
+                        } else {
+                            Text(meeting.processingStatus == "completed"
+                                 ? meeting.title : "\(meeting.title) (not ready)")
+                        }
+                    }
+                    .disabled(meeting.processingStatus != "completed")
                 }
             }
         } label: {
@@ -168,7 +211,8 @@ struct ChatView: View {
     }
 
     private var canSend: Bool {
-        !isSending && selectedProject != nil
+        !isSending && !isRefreshing && selectedProject != nil
+            && !searchableMeetings.isEmpty
             && !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
@@ -196,6 +240,77 @@ struct ChatView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(.bar)
+    }
+
+    @ViewBuilder
+    private var scopeStatus: some View {
+        if let scopeError {
+            Button("\(scopeError) Tap to retry.") {
+                Task {
+                    await refreshProjects()
+                    await refreshMeetings()
+                }
+            }
+            .font(.footnote)
+            .foregroundStyle(.red)
+        } else if isRefreshing {
+            ProgressView("Loading meetings...")
+        } else if selectedProject == nil {
+            Text("Create a project in Meetings to start a chat. Sample projects are not searchable.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        } else if searchableMeetings.isEmpty {
+            Text("No completed meetings in this project. Upload a recording in Meetings and wait for processing to finish.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        } else {
+            Text("Searches completed meetings in \(selectedProject?.title ?? "this project").")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private func refreshProjects() async {
+        do {
+            try await ProjectSync.refreshProjects(context: context, api: api)
+            if selectedProject == nil {
+                let loaded = try context.fetch(FetchDescriptor<Project>())
+                    .filter { isServerID($0.id) }.sorted { $0.createdAt < $1.createdAt }
+                selectedProjectID = loaded.first?.id ?? ""
+            }
+            projectsError = nil
+        } catch is CancellationError {
+            return
+        } catch {
+            guard !Task.isCancelled else { return }
+            projectsError = "Could not refresh projects."
+        }
+    }
+
+    private func refreshMeetings() async {
+        guard let project = try? context.fetch(FetchDescriptor<Project>())
+            .first(where: { $0.id == selectedProjectID }) else { return }
+        let projectID = project.id
+        isRefreshing = true
+        defer {
+            if selectedProjectID == projectID { isRefreshing = false }
+        }
+        do {
+            try await ProjectSync.refreshMeetings(project: project, context: context, api: api)
+            meetingsError = nil
+            if let selectedMeetingID,
+               !project.meetings.contains(where: {
+                   $0.id == selectedMeetingID && $0.processingStatus == "completed"
+               }) {
+                self.selectedMeetingID = nil
+                newChat()
+            }
+        } catch is CancellationError {
+            return
+        } catch {
+            guard !Task.isCancelled else { return }
+            meetingsError = "Could not refresh meetings."
+        }
     }
 
     private func newChat() {
