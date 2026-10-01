@@ -1,6 +1,7 @@
 """Single-user local HTTP API for the meeting UI and CLI pipeline."""
 
 import json
+import re
 import secrets
 import shutil
 import subprocess
@@ -18,6 +19,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .api.chat import router as chat_router
+from .api.deps import Conn, User, require_member
 from .api.me import router as me_router
 from .api.meetings import router as meetings_router
 from .api.projects import router as projects_router
@@ -34,6 +36,10 @@ from .providers import DEFAULT_MODELS
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024
 ACTIVE = {"queued", "transcribing", "extracting"}
 EXTENSIONS = {".wav", ".mp3", ".mp4", ".m4a", ".flac", ".ogg", ".webm", ".mov"}
+
+# Routes that check Supabase access tokens themselves, so the shared-token
+# middleware skips them. Phase 2b widens this one route group at a time.
+SUPABASE_ROUTES = re.compile(r"/api/v1/(me|projects(/[^/]+)?)")
 
 
 def create_app(
@@ -267,9 +273,7 @@ def create_app(
 
     @app.middleware("http")
     async def require_token(request: Request, call_next):
-        # /api/v1/me already uses Supabase tokens. Every route moves to them in
-        # Phase 2b, and this shared-token check is removed in Phase 3.
-        if token and not request.url.path.startswith("/api/v1/me"):
+        if token and not SUPABASE_ROUTES.fullmatch(request.url.path):
             supplied = request.headers.get("authorization", "")
             if not secrets.compare_digest(
                 supplied.encode(), f"Bearer {token}".encode()
@@ -443,9 +447,8 @@ def create_app(
             file.file.close()
 
     @app.delete("/api/v1/projects/{project_id}")
-    def delete_project(project_id: UUID):
-        if app.state.pool is None:
-            raise HTTPException(503, "Database is not configured; set DATABASE_URL")
+    def delete_project(project_id: UUID, user: User, conn: Conn):
+        require_member(conn, user, project_id)
         with lock:
             records = [
                 json.loads(path.read_text()) for path in storage.glob("*/meeting.json")

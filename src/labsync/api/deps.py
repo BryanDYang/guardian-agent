@@ -9,7 +9,7 @@ from fastapi import Depends, HTTPException, Request
 from psycopg import Connection
 
 from ..auth import InvalidToken
-from ..db import profiles
+from ..db import access, profiles
 
 
 def get_conn(request: Request) -> Iterator[Connection]:
@@ -58,3 +58,9 @@ def current_user(request: Request, conn: Conn) -> CurrentUser:
 
 
 User = Annotated[CurrentUser, Depends(current_user)]
+
+
+def require_member(conn: Connection, user: CurrentUser, project_id: UUID) -> None:
+    """404 rather than 403, so non-members can't tell the project exists."""
+    if not access.is_member(conn, user.id, project_id):
+        raise HTTPException(404, "Project not found")

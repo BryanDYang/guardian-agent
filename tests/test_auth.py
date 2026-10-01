@@ -13,9 +13,9 @@ from types import SimpleNamespace
 import jwt
 import psycopg
 import pytest
+from conftest import JWT_SECRET, SUPABASE_URL, make_token
 from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi.testclient import TestClient
-from psycopg.types.json import Jsonb
 
 from labsync.auth import InvalidToken, TokenVerifier
 from labsync.server import create_app
@@ -23,20 +23,8 @@ from labsync.server import create_app
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 needs_db = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
 
-SUPABASE_URL = "http://127.0.0.1:54321"
 ISSUER = SUPABASE_URL + "/auth/v1"
-SECRET = "pytest-jwt-secret-with-at-least-32-characters"
-
-
-def make_token(sub, *, key=SECRET, algorithm="HS256", headers=None, **overrides):
-    claims = {
-        "sub": str(sub),
-        "aud": "authenticated",
-        "iss": ISSUER,
-        "exp": int(time.time()) + 3600,
-        "role": "authenticated",
-    } | overrides
-    return jwt.encode(claims, key, algorithm=algorithm, headers=headers)
+SECRET = JWT_SECRET
 
 
 # ---------------------------------------------------------------- token checks
@@ -118,29 +106,6 @@ def client(tmp_path):
         yield client
 
 
-@pytest.fixture
-def make_user():
-    """Create auth users the way Supabase Auth does; the trigger adds profiles."""
-    created = []
-
-    def make(name="Pytest User"):
-        user_id = uuid.uuid4()
-        email = f"pytest-{user_id}@example.com"
-        with psycopg.connect(DATABASE_URL) as conn:
-            conn.execute(
-                "INSERT INTO auth.users (id, email, raw_user_meta_data, "
-                "raw_app_meta_data) VALUES (%s, %s, %s, %s)",
-                (user_id, email, Jsonb({"full_name": name}), Jsonb({})),
-            )
-        created.append(user_id)
-        return user_id, {"Authorization": f"Bearer {make_token(user_id)}"}
-
-    yield make
-    with psycopg.connect(DATABASE_URL) as conn:
-        conn.execute("DELETE FROM projects WHERE name = 'pytest auth'")
-        conn.execute("DELETE FROM auth.users WHERE id = ANY(%s)", (created,))
-
-
 @needs_db
 def test_me_requires_a_supabase_token(client):
     assert client.get("/api/v1/me").status_code == 401
@@ -207,9 +172,12 @@ def test_pending_invitations_are_counted(client, make_user):
             "expires_at) VALUES (%s, %s, %s, now() + interval '7 days')",
             (project_id, f"pytest-{user_id}@example.com", os.urandom(32)),
         )
-    assert client.get("/api/v1/me", headers=auth).json()[
-        "pending_invitation_count"
-    ] == (1)
+    try:
+        body = client.get("/api/v1/me", headers=auth).json()
+        assert body["pending_invitation_count"] == 1
+    finally:
+        with psycopg.connect(DATABASE_URL) as conn:
+            conn.execute("DELETE FROM projects WHERE id = %s", (project_id,))
 
 
 @needs_db

@@ -11,6 +11,7 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 
+from labsync.api.deps import CurrentUser, current_user
 from labsync.embeddings import OpenAIEmbedder
 from labsync.providers import DEFAULT_MODELS
 from labsync.server import create_app
@@ -77,6 +78,14 @@ def wait_for(client, meeting_id, status):
             return result
         time.sleep(0.01)
     pytest.fail(f"Meeting did not reach {status}: {result}")
+
+
+def signed_in_member(app, monkeypatch):
+    """Skip token and membership checks for tests that fake the database."""
+    app.dependency_overrides[current_user] = lambda: CurrentUser(
+        id=uuid4(), email="member@example.com", profile={}
+    )
+    monkeypatch.setattr("labsync.db.access.is_member", lambda *args: True)
 
 
 def test_embedder_defaults_and_can_be_injected(tmp_path):
@@ -269,6 +278,7 @@ def test_delete_project_removes_recordings_only_after_database_success(
         return True
 
     monkeypatch.setattr("labsync.server.project_store.delete_project", delete_project)
+    signed_in_member(app, monkeypatch)
     with TestClient(app) as client:
         directory.mkdir()
         (directory / "recording.wav").write_bytes(b"audio")
@@ -278,10 +288,7 @@ def test_delete_project_removes_recordings_only_after_database_success(
             )
         )
         app.state.pool = SimpleNamespace(connection=lambda: nullcontext(object()))
-        response = client.delete(
-            f"/api/v1/projects/{project_id}",
-            headers={"Authorization": "Bearer secret"},
-        )
+        response = client.delete(f"/api/v1/projects/{project_id}")
         app.state.pool = None
         if status == "queued":
             assert response.status_code == 409
@@ -294,14 +301,9 @@ def test_delete_project_removes_recordings_only_after_database_success(
             assert deleted == [project_id]
 
 
-def test_delete_project_requires_auth_and_database(tmp_path):
+def test_delete_project_requires_database(tmp_path):
     with TestClient(create_app(tmp_path, tmp_path, token="secret")) as client:
-        url = f"/api/v1/projects/{uuid4()}"
-        assert client.delete(url).status_code == 401
-        assert (
-            client.delete(url, headers={"Authorization": "Bearer secret"}).status_code
-            == 503
-        )
+        assert client.delete(f"/api/v1/projects/{uuid4()}").status_code == 503
 
 
 @pytest.mark.parametrize("busy", [False, True])
@@ -319,6 +321,7 @@ def test_delete_project_preserves_recordings_when_database_rejects(
         return False
 
     monkeypatch.setattr("labsync.server.project_store.delete_project", reject)
+    signed_in_member(app, monkeypatch)
     with TestClient(app) as client:
         directory = tmp_path / str(meeting_id)
         directory.mkdir()

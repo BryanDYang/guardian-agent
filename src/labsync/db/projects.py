@@ -12,26 +12,37 @@ class ProjectBusyError(Exception):
 COLUMNS = "p.id, p.name, p.image_url AS image_path, p.created_at, p.updated_at"
 
 
-def list_projects(conn: Connection) -> list[dict]:
+def list_projects(conn: Connection, user_id: UUID) -> list[dict]:
+    """Only projects this user is a member of."""
     return conn.execute(
         f"""
         SELECT {COLUMNS}, count(m.id) AS meeting_count
         FROM projects p
+        JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = %s
         LEFT JOIN meetings m ON m.project_id = p.id
         GROUP BY p.id
         ORDER BY p.created_at DESC
-        """
+        """,
+        (user_id,),
     ).fetchall()
 
 
-def create_project(conn: Connection, name: str, image_path: str | None) -> dict:
+def create_project(
+    conn: Connection, name: str, image_path: str | None, created_by: UUID
+) -> dict:
+    """The creator becomes the first member, in the same transaction."""
     row = conn.execute(
         f"""
-        INSERT INTO projects AS p (name, image_url) VALUES (%s, %s)
+        INSERT INTO projects AS p (name, image_url, created_by) VALUES (%s, %s, %s)
         RETURNING {COLUMNS}
         """,
-        (name, image_path),
+        (name, image_path, created_by),
     ).fetchone()
+    conn.execute(
+        "INSERT INTO project_members (project_id, user_id, role) "
+        "VALUES (%s, %s, 'owner')",
+        (row["id"], created_by),
+    )
     return row | {"meeting_count": 0}
 
 
