@@ -158,7 +158,7 @@ Each `transcribe` run needs a new `--output-dir`.
 
 ### Transcription
 
-[CCB baseline results](docs/milestone_2/transcription_results.md) measure actual
+[CCB baseline results](docs/archive/milestone_2/transcription_results.md) measure actual
 Whisper tiny/base transcription against AMI manual references on 12 one-minute
 clips with separate development, validation and test meeting series. Test WER
 is 28.79% for tiny and 24.54% for base in this pilot. JiWER scores the outputs;
@@ -176,8 +176,8 @@ model credentials, or audio downloads. Use a fresh output directory for each run
 
 ### Task extraction
 
-[Initial measured results](docs/milestone_2/results/README.md) compare rules,
-Codex and local Granite Code 8B on 24 synthetic development cases. Run the
+[Initial measured results](docs/archive/milestone_2/results/README.md) compare rules,
+Codex and local Qwen3 8B on 24 synthetic development cases. Run the
 offline scorer tests and a fresh rule baseline:
 
 ```bash
@@ -204,11 +204,11 @@ Scorer: action-terms-v1.
 Failed/missing cases: 0.
 ```
 
-[Saved scoring evidence](docs/milestone_2/results/slice_results.json) includes
+[Saved scoring evidence](docs/archive/milestone_2/results/slice_results.json) includes
 all three v1 scoring reports and per-case counts, so inspecting these results
-does not require credentials or live inference. [Scenario slices](docs/milestone_2/results/slices.md)
-include exact membership and denominators. The [human review packet](docs/milestone_2/failure_review.md)
-and [compact log](docs/milestone_2/failure_review_log.md) are prepared; human ratings remain pending.
+does not require credentials or live inference. [Scenario slices](docs/archive/milestone_2/results/slices.md)
+include exact membership and denominators. The [human review packet](docs/archive/milestone_2/human_review.md)
+and [review log](docs/archive/milestone_2/human_review_log.md) cover all 72 outputs with one verified review; a 12-output spot check is pending.
 
 See the [fixture protocol](tests/fixtures/evaluation/README.md) for live inference,
 annotation rules, matching and metric definitions. Labels are AI-authored pending
