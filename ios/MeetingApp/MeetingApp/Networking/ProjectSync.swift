@@ -4,18 +4,68 @@ import SwiftData
 /// Shared cache refresh for the Meetings and Chat project selectors.
 @MainActor
 enum ProjectSync {
+    static func prepareCache(context: ModelContext) throws {
+        for project in try context.fetch(FetchDescriptor<Project>()) {
+            if ["p1", "p2", "p3"].contains(project.id) {
+                removeCachedProject(project, context: context)
+            } else if isServerID(project.id) {
+                project.title = displayName(project.title)
+                if let color = sampleColor(project.title) { project.colorHex = color }
+            }
+        }
+        try context.save()
+    }
+
     static func refreshProjects(context: ModelContext, api: MeetingAPIClient) async throws {
         let remote = try await api.projects()
         try Task.checkCancellation()
         let existing = try context.fetch(FetchDescriptor<Project>())
+        let remoteIDs = Set(remote.map(\.id))
+        for project in existing {
+            if ["p1", "p2", "p3"].contains(project.id) ||
+                (isServerID(project.id) && !remoteIDs.contains(project.id)) {
+                removeCachedProject(project, context: context)
+            }
+        }
         for item in remote {
+            let name = displayName(item.name)
             if let project = existing.first(where: { $0.id == item.id }) {
-                project.title = item.name
+                project.title = name
+                if let color = sampleColor(name) { project.colorHex = color }
             } else {
-                context.insert(Project(id: item.id, title: item.name, colorHex: "#5E5CE6",
+                context.insert(Project(id: item.id, title: name,
+                                       colorHex: sampleColor(name) ?? "#5E5CE6",
                                        iconSystemName: "folder", createdAt: .now))
             }
         }
+        try context.save()
+    }
+
+    static func displayName(_ name: String) -> String {
+        name.replacingOccurrences(of: #"\s*\(demo\)\s*$"#, with: "",
+                                  options: [.regularExpression, .caseInsensitive])
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func sampleColor(_ name: String) -> String? {
+        switch displayName(name).lowercased() {
+        case "ai thesis": "#5E5CE6"
+        case "robotics lab": "#34C759"
+        case "capstone": "#FF9500"
+        default: nil
+        }
+    }
+
+    static func removeCachedProject(_ project: Project, context: ModelContext) {
+        for task in project.tasks { context.delete(task) }
+        for meeting in project.meetings { context.delete(meeting) }
+        context.delete(project)
+    }
+
+    static func deleteProject(_ project: Project, context: ModelContext,
+                              api: MeetingAPIClient) async throws {
+        if isServerID(project.id) { try await api.deleteProject(project.id) }
+        removeCachedProject(project, context: context)
         try context.save()
     }
 

@@ -73,8 +73,8 @@ struct AddProjectSheet: View {
             let remote = try await MeetingAPIClient.shared.createProject(name: trimmedName)
             let project = Project(
                 id: remote.id,
-                title: remote.name,
-                colorHex: Self.palette.randomElement() ?? "#5E5CE6",
+                title: ProjectSync.displayName(remote.name),
+                colorHex: ProjectSync.sampleColor(remote.name) ?? Self.palette.randomElement() ?? "#5E5CE6",
                 iconSystemName: "folder",
                 createdAt: .now
             )

@@ -1,6 +1,13 @@
 """SQL for projects. No HTTP concerns here."""
 
+from uuid import UUID
+
 from psycopg import Connection
+
+
+class ProjectBusyError(Exception):
+    """A project still has meetings being processed."""
+
 
 COLUMNS = "p.id, p.name, p.image_url AS image_path, p.created_at, p.updated_at"
 
@@ -26,3 +33,23 @@ def create_project(conn: Connection, name: str, image_path: str | None) -> dict:
         (name, image_path),
     ).fetchone()
     return row | {"meeting_count": 0}
+
+
+def delete_project(conn: Connection, project_id: UUID) -> bool:
+    # Lock the parent before checking children so concurrent inserts cannot slip in.
+    if not conn.execute(
+        "SELECT id FROM projects WHERE id = %s FOR UPDATE", (project_id,)
+    ).fetchone():
+        return False
+    if conn.execute(
+        "SELECT id FROM meetings WHERE project_id = %s "
+        "AND status IN ('queued', 'transcribing', 'diarizing', 'extracting') LIMIT 1",
+        (project_id,),
+    ).fetchone():
+        raise ProjectBusyError
+    return (
+        conn.execute(
+            "DELETE FROM projects WHERE id = %s RETURNING id", (project_id,)
+        ).fetchone()
+        is not None
+    )

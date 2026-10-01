@@ -256,7 +256,7 @@ struct ChatView: View {
         } else if isRefreshing {
             ProgressView("Loading meetings...")
         } else if selectedProject == nil {
-            Text("Create a project in Meetings to start a chat. Sample projects are not searchable.")
+            Text("Create a project in Meetings to start a chat.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         } else if searchableMeetings.isEmpty {

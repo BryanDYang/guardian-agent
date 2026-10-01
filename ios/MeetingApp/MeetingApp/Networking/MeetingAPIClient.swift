@@ -104,6 +104,12 @@ struct MeetingAPIClient {
         try await send(URLRequest(url: baseURL.appending(path: "api/v1/projects")))
     }
 
+    func deleteProject(_ projectID: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)"))
+        request.httpMethod = "DELETE"
+        let _: PurgeResponse = try await send(request)
+    }
+
     func purgeProject(_ projectID: String) async throws -> Int {
         var request = URLRequest(
             url: baseURL.appending(path: "api/projects/\(projectID)/meetings")

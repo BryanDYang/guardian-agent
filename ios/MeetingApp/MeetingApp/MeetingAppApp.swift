@@ -13,7 +13,7 @@ struct MeetingAppApp: App {
             container = try ModelContainer(
                 for: Project.self, Meeting.self, Attendee.self, TaskItem.self, CandidateTask.self
             )
-            try SeedData.seedIfNeeded(container.mainContext)
+            try ProjectSync.prepareCache(context: container.mainContext)
         } catch {
             fatalError("Failed to set up the model container: \(error)")
         }

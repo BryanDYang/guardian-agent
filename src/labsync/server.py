@@ -22,6 +22,7 @@ from .api.meetings import router as meetings_router
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
 from .db import meetings as meeting_store
+from .db import projects as project_store
 from .db import rag
 from .db.connection import create_pool
 from .embeddings import OpenAIEmbedder
@@ -432,6 +433,32 @@ def create_app(
             raise
         finally:
             file.file.close()
+
+    @app.delete("/api/v1/projects/{project_id}")
+    def delete_project(project_id: UUID):
+        if app.state.pool is None:
+            raise HTTPException(503, "Database is not configured; set DATABASE_URL")
+        with lock:
+            records = [
+                json.loads(path.read_text()) for path in storage.glob("*/meeting.json")
+            ]
+            matching = [r for r in records if r["project"] == str(project_id)]
+            if any(r["status"] in ACTIVE for r in matching):
+                raise HTTPException(
+                    409, "Wait for active meetings to finish before deleting"
+                )
+            with app.state.pool.connection() as conn:
+                try:
+                    deleted = project_store.delete_project(conn, project_id)
+                except project_store.ProjectBusyError as exc:
+                    raise HTTPException(
+                        409, "Wait for active meetings to finish before deleting"
+                    ) from exc
+                if not deleted:
+                    raise HTTPException(404, "Project not found")
+            for record in matching:
+                shutil.rmtree(folder(record["id"]), ignore_errors=True)
+        return {"deleted": 1}
 
     @app.delete("/api/projects/{project}/meetings")
     def purge_project(project: str):

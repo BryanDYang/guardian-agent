@@ -9,7 +9,14 @@ struct MeetingsListView: View {
     @Query(sort: \Meeting.date, order: .reverse) private var meetings: [Meeting]
 
     @Environment(\.modelContext) private var context
+    @Environment(\.dismiss) private var dismiss
 
+    @State private var isSelecting = false
+    @State private var selectedIDs: Set<String> = []
+    @State private var pendingDeletion: [Project] = []
+    @State private var showDeleteConfirmation = false
+    @State private var isDeleting = false
+    @State private var errorMessage: String?
     @State private var showAddProject = false
     @State private var showAddMeeting = false
 
@@ -25,12 +32,46 @@ struct MeetingsListView: View {
         .navigationTitle(project?.title ?? "Projects")
         .navigationBarTitleDisplayMode(projectID == nil ? .large : .inline)
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                if projectID == nil && !projects.isEmpty {
+                    Button(isSelecting ? "Done" : "Select") {
+                        isSelecting.toggle()
+                        selectedIDs.removeAll()
+                    }
+                    .disabled(isDeleting)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if isSelecting {
+                    Button(role: .destructive) {
+                        pendingDeletion = projects.filter { selectedIDs.contains($0.id) }
+                        showDeleteConfirmation = true
+                    } label: {
+                        if isDeleting { ProgressView() }
+                        else { Image(systemName: "trash") }
+                    }
+                    .accessibilityLabel("Delete selected projects")
+                    .disabled(selectedIDs.isEmpty || isDeleting)
+                } else if let project {
+                    Menu {
+                        Button("Delete Project", systemImage: "trash", role: .destructive) {
+                            pendingDeletion = [project]
+                            showDeleteConfirmation = true
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .accessibilityLabel("Project actions")
+                    .disabled(isDeleting)
+                }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     if project == nil { showAddProject = true } else { showAddMeeting = true }
                 } label: {
                     Image(systemName: "plus")
                 }
+                .disabled(isSelecting || isDeleting)
             }
         }
         .sheet(isPresented: $showAddProject) {
@@ -40,6 +81,25 @@ struct MeetingsListView: View {
             if let project {
                 AddMeetingSheet(project: project)
             }
+        }
+        .confirmationDialog(
+            pendingDeletion.count == 1 ? "Delete this project?" : "Delete these projects?",
+            isPresented: $showDeleteConfirmation, titleVisibility: .visible
+        ) {
+            Button(pendingDeletion.count == 1 ? "Delete Project" : "Delete \(pendingDeletion.count) Projects",
+                   role: .destructive) {
+                Task { await deleteProjects() }
+            }
+        } message: {
+            Text("Projects and their meetings, tasks, and chats will be permanently deleted.")
+        }
+        .alert("Couldn’t delete projects", isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
+            Button("OK", role: .cancel) { errorMessage = nil }
+        } message: {
+            Text(errorMessage ?? "")
         }
         .task(id: projectID) {
             if projectID == nil { await refreshProjects() }
@@ -75,14 +135,64 @@ struct MeetingsListView: View {
 
     private var projectsList: some View {
         LazyVStack(spacing: 12) {
+            if projects.isEmpty {
+                ContentUnavailableView(
+                    "No projects yet", systemImage: "folder",
+                    description: Text("Tap + to create a workspace for your meetings.")
+                )
+                .padding(.top, 40)
+            }
             ForEach(projects) { project in
-                NavigationLink(value: MeetingsRoute.project(project.id)) {
-                    projectRow(project)
+                if isSelecting {
+                    Button {
+                        if selectedIDs.contains(project.id) { selectedIDs.remove(project.id) }
+                        else { selectedIDs.insert(project.id) }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: selectedIDs.contains(project.id)
+                                  ? "checkmark.circle.fill" : "circle")
+                                .font(.title2)
+                                .foregroundStyle(selectedIDs.contains(project.id) ? Color.accentColor : .secondary)
+                            projectRow(project)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(project.title)
+                    .accessibilityAddTraits(selectedIDs.contains(project.id) ? .isSelected : [])
+                    .disabled(isDeleting)
+                } else {
+                    NavigationLink(value: MeetingsRoute.project(project.id)) {
+                        projectRow(project)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
         }
         .padding(16)
+    }
+
+    @MainActor
+    private func deleteProjects() async {
+        isDeleting = true
+        defer { isDeleting = false }
+        var failures: [String] = []
+        for project in pendingDeletion {
+            let id = project.id
+            let title = project.title
+            do {
+                try await ProjectSync.deleteProject(project, context: context, api: .shared)
+                selectedIDs.remove(id)
+                if projectID == id { dismiss() }
+            } catch {
+                failures.append("\(title): \(error.localizedDescription)")
+            }
+        }
+        pendingDeletion = []
+        if failures.isEmpty {
+            isSelecting = false
+        } else {
+            errorMessage = failures.joined(separator: "\n")
+        }
     }
 
     private func projectRow(_ project: Project) -> some View {
@@ -113,9 +223,11 @@ struct MeetingsListView: View {
 
             Spacer(minLength: 0)
 
-            Image(systemName: "chevron.right")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.tertiary)
+            if !isSelecting {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+            }
         }
         .padding(16)
         .background(card)

@@ -3,7 +3,10 @@
 import json
 import subprocess
 import time
+from contextlib import nullcontext
 from pathlib import Path
+from types import SimpleNamespace
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -249,3 +252,87 @@ def test_purge_project_meetings(tmp_path, fake_process):
         assert response.json() == {"deleted": 1}
         assert client.get("/api/meetings").json() == []
         assert not (tmp_path / meeting_id).exists()
+
+
+@pytest.mark.parametrize("status", ["completed", "queued"])
+def test_delete_project_removes_recordings_only_after_database_success(
+    tmp_path, monkeypatch, status
+):
+    project_id, meeting_id = uuid4(), uuid4()
+    storage = tmp_path / "storage"
+    directory = storage / str(meeting_id)
+    app = create_app(storage, tmp_path, token="secret")
+    deleted = []
+
+    def delete_project(conn, value):
+        deleted.append(value)
+        return True
+
+    monkeypatch.setattr("labsync.server.project_store.delete_project", delete_project)
+    with TestClient(app) as client:
+        directory.mkdir()
+        (directory / "recording.wav").write_bytes(b"audio")
+        (directory / "meeting.json").write_text(
+            json.dumps(
+                {"id": str(meeting_id), "project": str(project_id), "status": status}
+            )
+        )
+        app.state.pool = SimpleNamespace(connection=lambda: nullcontext(object()))
+        response = client.delete(
+            f"/api/v1/projects/{project_id}",
+            headers={"Authorization": "Bearer secret"},
+        )
+        app.state.pool = None
+        if status == "queued":
+            assert response.status_code == 409
+            assert directory.exists()
+            assert deleted == []
+        else:
+            assert response.status_code == 200
+            assert response.json() == {"deleted": 1}
+            assert not directory.exists()
+            assert deleted == [project_id]
+
+
+def test_delete_project_requires_auth_and_database(tmp_path):
+    with TestClient(create_app(tmp_path, tmp_path, token="secret")) as client:
+        url = f"/api/v1/projects/{uuid4()}"
+        assert client.delete(url).status_code == 401
+        assert (
+            client.delete(url, headers={"Authorization": "Bearer secret"}).status_code
+            == 503
+        )
+
+
+@pytest.mark.parametrize("busy", [False, True])
+def test_delete_project_preserves_recordings_when_database_rejects(
+    tmp_path, monkeypatch, busy
+):
+    from labsync.db.projects import ProjectBusyError
+
+    project_id, meeting_id = uuid4(), uuid4()
+    app = create_app(tmp_path, tmp_path)
+
+    def reject(conn, value):
+        if busy:
+            raise ProjectBusyError
+        return False
+
+    monkeypatch.setattr("labsync.server.project_store.delete_project", reject)
+    with TestClient(app) as client:
+        directory = tmp_path / str(meeting_id)
+        directory.mkdir()
+        (directory / "meeting.json").write_text(
+            json.dumps(
+                {
+                    "id": str(meeting_id),
+                    "project": str(project_id),
+                    "status": "completed",
+                }
+            )
+        )
+        app.state.pool = SimpleNamespace(connection=lambda: nullcontext(object()))
+        response = client.delete(f"/api/v1/projects/{project_id}")
+        app.state.pool = None
+        assert response.status_code == (409 if busy else 404)
+        assert directory.exists()
