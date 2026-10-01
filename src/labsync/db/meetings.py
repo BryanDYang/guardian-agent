@@ -115,16 +115,17 @@ def create_meeting(
     name: str,
     meeting_date: date,
     audio_file_path: str,
+    uploaded_by: UUID | None = None,
 ) -> dict:
     return conn.execute(
         """
-        INSERT INTO meetings
-            (id, project_id, name, meeting_date, audio_file_path, consent_given)
-        VALUES (%s, %s, %s, %s, %s, true)
+        INSERT INTO meetings (id, project_id, name, meeting_date, audio_file_path,
+                              consent_given, uploaded_by)
+        VALUES (%s, %s, %s, %s, %s, true, %s)
         RETURNING id, project_id, name, meeting_date, status, processing_attempt,
                   created_at
         """,
-        (meeting_id, project_id, name, meeting_date, audio_file_path),
+        (meeting_id, project_id, name, meeting_date, audio_file_path, uploaded_by),
     ).fetchone()
 
 

@@ -13,3 +13,16 @@ def is_member(conn: Connection, user_id: UUID, project_id: UUID) -> bool:
         (user_id, project_id),
     ).fetchone()
     return row is not None
+
+
+def can_see_meeting(conn: Connection, user_id: UUID, meeting_id: UUID) -> bool:
+    """A meeting is visible to the members of its project."""
+    row = conn.execute(
+        """
+        SELECT 1 FROM meetings m
+        JOIN project_members pm ON pm.project_id = m.project_id
+        WHERE m.id = %s AND pm.user_id = %s
+        """,
+        (meeting_id, user_id),
+    ).fetchone()
+    return row is not None

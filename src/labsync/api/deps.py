@@ -64,3 +64,8 @@ def require_member(conn: Connection, user: CurrentUser, project_id: UUID) -> Non
     """404 rather than 403, so non-members can't tell the project exists."""
     if not access.is_member(conn, user.id, project_id):
         raise HTTPException(404, "Project not found")
+
+
+def require_meeting(conn: Connection, user: CurrentUser, meeting_id: UUID) -> None:
+    if not access.can_see_meeting(conn, user.id, meeting_id):
+        raise HTTPException(404, "Meeting not found")

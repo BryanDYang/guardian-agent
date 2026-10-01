@@ -39,7 +39,9 @@ EXTENSIONS = {".wav", ".mp3", ".mp4", ".m4a", ".flac", ".ogg", ".webm", ".mov"}
 
 # Routes that check Supabase access tokens themselves, so the shared-token
 # middleware skips them. Phase 2b widens this one route group at a time.
-SUPABASE_ROUTES = re.compile(r"/api/v1/(me|projects(/[^/]+)?)")
+SUPABASE_ROUTES = re.compile(
+    r"/api/v1/(me|projects(/[^/]+(/meetings)?)?|meetings/[^/]+)"
+)
 
 
 def create_app(
@@ -381,17 +383,15 @@ def create_app(
         project_id: Annotated[UUID, Form()],
         meeting_date: Annotated[date, Form()],
         consent_confirmed: Annotated[bool, Form()],
+        user: User,
+        conn: Conn,
     ):
         if not consent_confirmed:
             raise HTTPException(400, "Confirm permission to process this recording")
         name = title.strip()
         if not name or len(name) > 255:
             raise HTTPException(400, "Provide a title within the length limits")
-        if app.state.pool is None:
-            raise HTTPException(503, "Database is not configured; set DATABASE_URL")
-        with app.state.pool.connection() as conn:
-            if not meeting_store.project_exists(conn, project_id):
-                raise HTTPException(404, "Project not found")
+        require_member(conn, user, project_id)
         extension = Path(file.filename or "").suffix.lower()
         if extension not in EXTENSIONS:
             raise HTTPException(415, "Choose a supported audio or video file")
@@ -432,6 +432,7 @@ def create_app(
                     name=name,
                     meeting_date=meeting_date,
                     audio_file_path=str(directory / filename),
+                    uploaded_by=user.id,
                 )
             app.state.executor.submit(app.state.process, meeting_id)
             return public(record) | {"job_id": meeting_id}
