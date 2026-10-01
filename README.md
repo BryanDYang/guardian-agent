@@ -19,7 +19,7 @@ Ask Will for the API key privately. Never commit it.
 git clone https://github.com/BryanDYang/guardian-agent.git
 cd guardian-agent
 scripts/use_shared_backend.sh
-run scripts/check_tunnel.sh api.guardianagent.dev
+scripts/check_tunnel.sh api.guardianagent.dev
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
 Every line should say PASS when you run scripts/check_tunnel.sh api.guardianagent.dev
@@ -140,7 +140,28 @@ uv sync --locked --extra dev --extra audio --extra server --extra diarize
 
 Then repeat steps 6 to 8. Rebuild the app in Xcode if iOS code changed. You do not need to redo steps 2 to 5. If the pull added files under `supabase/migrations/` and you use your own Supabase project, run `supabase db push` again.
 
-More: [RUN_UI.md](RUN_UI.md) covers troubleshooting.
+### Run without speaker labels
+
+To run without diarization, omit `--extra diarize` and `--diarize`:
+
+```bash
+uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
+```
+
+## Troubleshooting
+
+Logs: `artifacts/server/<meeting-id>/processing.log`
+
+| Symptom | Fix |
+| --- | --- |
+| "Missing or invalid API token" | Using Will's backend: re-run `scripts/use_shared_backend.sh` with his current key. Own backend: make `.env` and `LabSyncConfig.plist` match, rebuild, start the server with `--env-file .env` |
+| "Invalid host header" | Re-run `scripts/setup_tunnel.sh` |
+| HTTP 502 | Start the backend |
+| HTTP 530 | Start `cloudflared tunnel run` |
+| "Transcribing failed" | Add `contexts/meeting_transcriber-master` (README step 2) |
+| "Extracting failed" | Run `codex login` or fix `ANTHROPIC_API_KEY` |
+| First upload is slow | The medium Whisper weights (about 1.5 GB) download on first use |
+| Upload over 100 MB fails | Cloudflare plan limit |
 
 ## CLI without the server
 
@@ -174,7 +195,9 @@ redistributed. Download AMI inputs using the protocol manifest. Raw audio run
 artifacts stay local. The rule-based extraction example below works without CCB,
 model credentials, or audio downloads. Use a fresh output directory for each run. Offline benchmark tests use the dev extra.
 
-### Task extraction
+### Action-item extraction evaluation
+
+These commands reproduce the offline evaluation of action items extracted from transcripts. They are for comparing extraction methods, rather than running the app.
 
 [Initial measured results](docs/archive/milestone_2/results/README.md) compare rules,
 Codex and local Qwen3 8B on 24 synthetic development cases. Run the
@@ -215,7 +238,9 @@ annotation rules, matching and metric definitions. Labels are AI-authored pendin
 human review; the reported action-matching scores are development proxies.
 This implements the extraction portion of [checklist Phase 5](docs/checklist.md).
 
-## Development
+## Contributor checks
+
+Run these checks after changing the backend code:
 
 ```bash
 uv run --locked --extra dev ruff check src tests

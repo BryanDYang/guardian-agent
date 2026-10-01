@@ -8,7 +8,7 @@ load it locally and do not copy or redistribute its code in the LabSync package.
 Audited `meeting_transcriber.py` SHA-256:
 `c1f1a342ecf5924d9d92ee9791790ab90d98beef5a0a61377b552235ba1c0fa3`.
 
-For the connected app workflow, see [RUN_UI.md](../RUN_UI.md).
+For backend setup, see the [README](../README.md#option-b-run-your-own-backend-end-to-end); for common failures, see [troubleshooting](../README.md#troubleshooting).
 
 ## Working audio-to-Codex path
 
