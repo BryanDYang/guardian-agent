@@ -19,10 +19,10 @@ Ask Will for the API key privately. Never commit it.
 git clone https://github.com/BryanDYang/guardian-agent.git
 cd guardian-agent
 scripts/use_shared_backend.sh
-scripts/check_tunnel.sh api.guardianagent.dev
+scripts/check_tunnel.sh --shared api.guardianagent.dev
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
-Every line should say PASS when you run scripts/check_tunnel.sh api.guardianagent.dev
+Every line should say `PASS`. Set `API_SECRET_KEY` in `.env` to the same key used by the app. Shared mode checks that the configs match and the remote backend responds; it skips the local server and transcriber checks.
 
 The script saves the key to the gitignored `LabSyncConfig.plist` and checks that Will's backend is online. Build and run the app in Xcode.
 

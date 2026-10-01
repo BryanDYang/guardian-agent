@@ -1,8 +1,18 @@
 #!/usr/bin/env bash
 # Checks the LabSync backend end to end: configs, local server, and tunnel.
-# Usage: scripts/check_tunnel.sh [hostname]   (defaults to api.guardianagent.dev)
+# Usage: scripts/check_tunnel.sh [--shared] [hostname]
+# --shared skips the local server and transcriber checks.
 set -uo pipefail
 
+SHARED=0
+if [ "${1:-}" = "--shared" ]; then
+  SHARED=1
+  shift
+fi
+if [ "$#" -gt 1 ] || [[ "${1:-}" = -* ]]; then
+  echo "Usage: scripts/check_tunnel.sh [--shared] [hostname]" >&2
+  exit 2
+fi
 HOST="${1:-api.guardianagent.dev}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PLIST="$ROOT/ios/MeetingApp/MeetingApp/LabSyncConfig.plist"
@@ -12,11 +22,16 @@ pass() { printf 'PASS  %s\n' "$1"; }
 fail() { printf 'FAIL  %s\n      %s\n' "$1" "$2"; FAILED=1; }
 status() { curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$@"; }
 
+if [ "$SHARED" = 1 ]; then
+  SETUP="scripts/use_shared_backend.sh $HOST"
+else
+  SETUP="scripts/setup_tunnel.sh $HOST"
+fi
 TOKEN="$(sed -n 's/^API_SECRET_KEY=//p' "$ROOT/.env" 2>/dev/null | tail -n 1 | tr -d '\r')"
 if [ -n "$TOKEN" ]; then
   pass ".env has API_SECRET_KEY"
 else
-  fail ".env has API_SECRET_KEY" "Run scripts/setup_tunnel.sh"
+  fail ".env has API_SECRET_KEY" "Set API_SECRET_KEY in .env to the backend's API key"
 fi
 
 APP_TOKEN="$(plutil -extract APIToken raw "$PLIST" 2>/dev/null || true)"
@@ -24,27 +39,35 @@ APP_URL="$(plutil -extract BaseURL raw "$PLIST" 2>/dev/null || true)"
 if [ -n "$TOKEN" ] && [ "$APP_TOKEN" = "$TOKEN" ]; then
   pass "iOS APIToken matches .env"
 else
-  fail "iOS APIToken matches .env" "Run scripts/setup_tunnel.sh, then rebuild the app"
+  fail "iOS APIToken matches .env" "Run $SETUP with the same key, then rebuild the app"
 fi
 if [ "$APP_URL" = "https://$HOST" ]; then
   pass "iOS BaseURL is https://$HOST"
 else
-  fail "iOS BaseURL is https://$HOST" "Found '$APP_URL'. Run scripts/setup_tunnel.sh $HOST"
+  fail "iOS BaseURL is https://$HOST" "Found '$APP_URL'. Run $SETUP, then rebuild the app"
 fi
 
-if [ -f "$ROOT/contexts/meeting_transcriber-master/meeting_transcriber.py" ]; then
-  pass "CCB transcriber source present"
-else
-  fail "CCB transcriber source present" "Add contexts/meeting_transcriber-master (see docs/ccb-transcriber.md)"
+# Do not send a token when the destination does not match the app config.
+if [ -z "$TOKEN" ] || [ "$APP_TOKEN" != "$TOKEN" ] || [ "$APP_URL" != "https://$HOST" ]; then
+  exit 1
 fi
 
-CODE="$(status -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/health)"
-if [ "$CODE" = 200 ]; then
-  pass "Local server answers with the token"
-elif [ "$CODE" = 401 ]; then
-  fail "Local server answers with the token" "401: restart the server with --env-file .env"
-else
-  fail "Local server answers with the token" "HTTP $CODE: start it with uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium"
+if [ "$SHARED" = 0 ]; then
+  if [ -f "$ROOT/contexts/meeting_transcriber-master/meeting_transcriber.py" ]; then
+    pass "CCB transcriber source present"
+  else
+    fail "CCB transcriber source present" "Add contexts/meeting_transcriber-master (see docs/ccb-transcriber.md)"
+  fi
+
+  CODE="$(status -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/health)"
+  if [ "$CODE" = 200 ]; then
+    pass "Local server answers with the token"
+  elif [ "$CODE" = 401 ]; then
+    fail "Local server answers with the token" "401: restart the server with --env-file .env"
+  else
+    fail "Local server answers with the token" "HTTP $CODE: start it with uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium"
+  fi
+
 fi
 
 CODE="$(status "https://$HOST/api/health")"
