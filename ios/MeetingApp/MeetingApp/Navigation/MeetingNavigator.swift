@@ -5,6 +5,7 @@ enum Tab {
     case meetings
     case tasks
     case chat
+    case profile
 }
 
 // events.ts → NavigateToMeetingEvent.segment

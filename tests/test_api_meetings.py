@@ -157,7 +157,8 @@ def test_upload_processes_and_saves_results(client, project_id):
     assert summary[0]["overview"] == "TA check-in."
 
     tasks = query(
-        "SELECT title, owner_label, category FROM tasks WHERE meeting_id = %s ORDER BY title",
+        "SELECT title, owner_label, category FROM tasks "
+        "WHERE meeting_id = %s ORDER BY title",
         meeting_id,
     )
     assert [(t["title"], t["owner_label"], t["category"]) for t in tasks] == [
@@ -167,7 +168,8 @@ def test_upload_processes_and_saves_results(client, project_id):
     evidence = query(
         "SELECT e.position, e.quote, t.content FROM item_evidence e "
         "JOIN tasks k ON k.id = e.task_id "
-        "JOIN meeting_transcripts t ON t.meeting_id = k.meeting_id AND t.turn_key = e.turn_key "
+        "JOIN meeting_transcripts t "
+        "ON t.meeting_id = k.meeting_id AND t.turn_key = e.turn_key "
         "WHERE k.title = 'Share the recording' ORDER BY e.position",
     )
     assert [(e["position"], e["quote"]) for e in evidence] == [
@@ -210,7 +212,8 @@ def test_retry_replaces_results_and_mirrors_attempt(client, project_id, tmp_path
     meeting = wait_for(meeting_id, "completed")
     assert meeting["processing_attempt"] == 2
     counts = query(
-        "SELECT (SELECT count(*) FROM meeting_transcripts WHERE meeting_id = %s) AS turns, "
+        "SELECT "
+        "(SELECT count(*) FROM meeting_transcripts WHERE meeting_id = %s) AS turns, "
         "(SELECT count(*) FROM tasks WHERE meeting_id = %s) AS tasks, "
         "(SELECT count(*) FROM rag_chunks WHERE meeting_id = %s) AS chunks",
         meeting_id,

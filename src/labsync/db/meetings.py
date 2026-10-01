@@ -8,7 +8,12 @@ from psycopg.types.json import Jsonb
 
 from ..extraction import Evidence, Extraction, Transcript
 
-RESULT_TABLES = ("tasks", "meeting_decisions", "meeting_summaries", "meeting_transcripts")
+RESULT_TABLES = (
+    "tasks",
+    "meeting_decisions",
+    "meeting_summaries",
+    "meeting_transcripts",
+)
 
 
 def project_exists(conn: Connection, project_id: UUID) -> bool:
@@ -125,12 +130,11 @@ def create_meeting(
 
 def delete_project_meetings(conn: Connection, project_id: UUID) -> int:
     # Project-wide chats quote the purged meetings, so they go too.
-    conn.execute(
-        "DELETE FROM chat_conversations WHERE project_id = %s", (project_id,)
-    )
+    conn.execute("DELETE FROM chat_conversations WHERE project_id = %s", (project_id,))
     return conn.execute(
         "DELETE FROM meetings WHERE project_id = %s", (project_id,)
     ).rowcount
+
 
 def update_status(
     conn: Connection, meeting_id: str, status: str, attempt: int, error: str | None
@@ -170,8 +174,10 @@ def save_results(
     with conn.cursor() as cursor:
         cursor.executemany(
             """
-            INSERT INTO meeting_transcripts (meeting_id, speaker_label, turn_key, start_time_ms,
-                                     end_time_ms, content, turn_order)
+            INSERT INTO meeting_transcripts (
+                meeting_id, speaker_label, turn_key,
+                start_time_ms, end_time_ms, content, turn_order
+            )
             VALUES (%s, %s, %s, %s, %s, %s, %s)
             """,
             [
@@ -190,7 +196,8 @@ def save_results(
     turns = {
         row["turn_key"]: row
         for row in conn.execute(
-            "SELECT id, turn_key, start_time_ms FROM meeting_transcripts WHERE meeting_id = %s",
+            "SELECT id, turn_key, start_time_ms FROM meeting_transcripts "
+            "WHERE meeting_id = %s",
             (meeting_id,),
         )
     }
@@ -285,5 +292,3 @@ def _add_evidence(
                 turn["start_time_ms"],
             ),
         )
-
-

@@ -283,4 +283,3 @@ def _task_status(row: dict) -> str:
 
 def _squash(text: str) -> str:
     return " ".join(text.split())
-

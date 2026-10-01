@@ -49,3 +49,4 @@ Thumbs.db
 # Local-only
 backup_*.sql
 Claude outputs/
+supabase/signing_keys.json
