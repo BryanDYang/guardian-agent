@@ -26,3 +26,16 @@ def can_see_meeting(conn: Connection, user_id: UUID, meeting_id: UUID) -> bool:
         (meeting_id, user_id),
     ).fetchone()
     return row is not None
+
+
+def can_see_task(conn: Connection, user_id: UUID, task_id: UUID) -> bool:
+    """A task is visible to the members of its project."""
+    row = conn.execute(
+        """
+        SELECT 1 FROM tasks t
+        JOIN project_members pm ON pm.project_id = t.project_id
+        WHERE t.id = %s AND pm.user_id = %s
+        """,
+        (task_id, user_id),
+    ).fetchone()
+    return row is not None

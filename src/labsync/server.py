@@ -37,10 +37,8 @@ MAX_UPLOAD_BYTES = 512 * 1024 * 1024
 ACTIVE = {"queued", "transcribing", "extracting"}
 EXTENSIONS = {".wav", ".mp3", ".mp4", ".m4a", ".flac", ".ogg", ".webm", ".mov"}
 
-# Routes that check Supabase access tokens themselves, so the shared-token
-# middleware skips them. Phase 2b widens this one route group at a time.
 SUPABASE_ROUTES = re.compile(
-    r"/api/v1/(me|projects(/[^/]+(/meetings)?)?|meetings/[^/]+)"
+    r"/api/v1/(me|projects(/[^/]+(/meetings)?)?|meetings/[^/]+|tasks(/.+)?)"
 )
 
 

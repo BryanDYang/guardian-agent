@@ -69,3 +69,8 @@ def require_member(conn: Connection, user: CurrentUser, project_id: UUID) -> Non
 def require_meeting(conn: Connection, user: CurrentUser, meeting_id: UUID) -> None:
     if not access.can_see_meeting(conn, user.id, meeting_id):
         raise HTTPException(404, "Meeting not found")
+
+
+def require_task(conn: Connection, user: CurrentUser, task_id: UUID) -> None:
+    if not access.can_see_task(conn, user.id, task_id):
+        raise HTTPException(404, "Task not found")

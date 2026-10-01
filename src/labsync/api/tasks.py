@@ -9,8 +9,8 @@ from psycopg import Connection
 from psycopg.errors import ForeignKeyViolation
 from pydantic import BaseModel, Field
 
-from ..db import meetings, tasks
-from .deps import get_conn
+from ..db import access, tasks
+from .deps import User, get_conn, require_member, require_task
 
 router = APIRouter(prefix="/api/v1/tasks", tags=["tasks"])
 Conn = Annotated[Connection, Depends(get_conn)]
@@ -38,17 +38,17 @@ def locked(conn: Connection, task_id: UUID) -> dict:
 
 @router.get("")
 def list_tasks(
-    project_id: UUID, start_date: date, end_date: date, conn: Conn
+    project_id: UUID, start_date: date, end_date: date, user: User, conn: Conn
 ) -> list[dict]:
     if start_date > end_date:
         raise HTTPException(400, "start_date must not be after end_date")
-    if not meetings.project_exists(conn, project_id):
-        raise HTTPException(404, "Project not found")
+    require_member(conn, user, project_id)
     return tasks.list_calendar_tasks(conn, project_id, start_date, end_date)
 
 
 @router.patch("/{task_id}/review")
-def review_task(task_id: UUID, body: Review, conn: Conn) -> dict:
+def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
+    require_task(conn, user, task_id)
     task = locked(conn, task_id)
     if task["review_status"] != "pending":
         raise HTTPException(409, f"Task was already {task['review_status']}")
@@ -70,6 +70,7 @@ def review_task(task_id: UUID, body: Review, conn: Conn) -> dict:
             title=title,
             attendee_id=attendee_id,
             due_date=due_date,
+            approved_by=user.id if body.action == "approve" else None,
         )
     except ForeignKeyViolation as exc:
         raise HTTPException(400, "Unknown assignee_id") from exc
@@ -80,22 +81,24 @@ def review_task(task_id: UUID, body: Review, conn: Conn) -> dict:
 
 
 @router.post("/{task_id}/state")
-def change_state(task_id: UUID, body: StateChange, conn: Conn) -> dict:
+def change_state(task_id: UUID, body: StateChange, user: User, conn: Conn) -> dict:
+    require_task(conn, user, task_id)
     task = locked(conn, task_id)
     if task["review_status"] != "approved":
         raise HTTPException(409, "Only approved tasks can change state")
     if task["lifecycle_status"] == body.state:
         raise HTTPException(409, f"Task is already {body.state}")
     task, token = tasks.set_lifecycle(
-        conn, task_id, task["lifecycle_status"], body.state, "STATUS_CHANGE"
+        conn, task_id, task["lifecycle_status"], body.state, "STATUS_CHANGE", user.id
     )
     return {"task": task, "revert_token": token}
 
 
 @router.post("/revert/{revert_token}")
-def revert(revert_token: UUID, conn: Conn) -> dict:
+def revert(revert_token: UUID, user: User, conn: Conn) -> dict:
     audit = tasks.find_audit(conn, revert_token)
-    if audit is None:
+    # A token for another project's task looks exactly like an unknown one.
+    if audit is None or not access.can_see_task(conn, user.id, audit["task_id"]):
         raise HTTPException(404, "Unknown revert token")
     task = locked(conn, audit["task_id"])
     if tasks.latest_audit_id(conn, task["id"]) != audit["id"]:
@@ -106,5 +109,6 @@ def revert(revert_token: UUID, conn: Conn) -> dict:
         task["lifecycle_status"],
         audit["old_value"]["lifecycle_status"],
         "REVERT",
+        user.id,
     )
     return {"task": task, "revert_token": token}
