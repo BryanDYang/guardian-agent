@@ -16,11 +16,6 @@ RESULT_TABLES = (
 )
 
 
-def project_exists(conn: Connection, project_id: UUID) -> bool:
-    row = conn.execute("SELECT 1 FROM projects WHERE id = %s", (project_id,))
-    return row.fetchone() is not None
-
-
 def list_meetings(
     conn: Connection, project_id: UUID, limit: int, offset: int
 ) -> list[dict]:

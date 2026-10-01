@@ -1,7 +1,6 @@
 """Single-user local HTTP API for the meeting UI and CLI pipeline."""
 
 import json
-import re
 import secrets
 import shutil
 import subprocess
@@ -36,10 +35,6 @@ from .providers import DEFAULT_MODELS
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024
 ACTIVE = {"queued", "transcribing", "extracting"}
 EXTENSIONS = {".wav", ".mp3", ".mp4", ".m4a", ".flac", ".ogg", ".webm", ".mov"}
-
-SUPABASE_ROUTES = re.compile(
-    r"/api/v1/(me|projects(/[^/]+(/meetings)?)?|meetings/[^/]+|tasks(/.+)?)"
-)
 
 
 def create_app(
@@ -273,7 +268,9 @@ def create_app(
 
     @app.middleware("http")
     async def require_token(request: Request, call_next):
-        if token and not SUPABASE_ROUTES.fullmatch(request.url.path):
+        # Every /api/v1 route checks Supabase access tokens itself. The older
+        # /api routes keep the shared token until Phase 2b part 5.
+        if token and not request.url.path.startswith("/api/v1/"):
             supplied = request.headers.get("authorization", "")
             if not secrets.compare_digest(
                 supplied.encode(), f"Bearer {token}".encode()
