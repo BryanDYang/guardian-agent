@@ -7,7 +7,7 @@
 **Draft updated:** October 1, 2026
 **Submission date:** October 26, 2026
 
-> **Draft status:** This document records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The team must reconcile this structure with the official Milestone 3 rubric when that rubric is available.
+> **Draft status:** This document follows the AI Engineering requirements and 100-point rubric in `contexts/milestone_3/Milestone 3.pdf`. It records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The final deliverable must be submitted as a single PDF unless the teaching staff directs otherwise.
 
 ## 1. Project and Milestone Goal
 
@@ -27,6 +27,30 @@ Milestone 2 established the initial data, transcription, task-extraction, and ev
 6. Ask questions over project history and receive grounded answers with verified citations, or a refusal when the indexed meetings do not support an answer.
 
 The repository implements most individual stages of this path. The complete journey still requires a recorded end-to-end verification before submission.
+
+### Milestone 3 development path
+
+We selected prompt engineering, structured outputs, retrieval-augmented generation, and lightweight orchestration rather than model fine-tuning. This path fits the application because the central challenges are grounding extraction in transcript evidence, maintaining structured application state, retrieving private project history, and refusing unsupported answers. We are not training a new foundation model.
+
+The main development changes beyond the Milestone 2 baselines are:
+
+- Replacing independent transcript-only outputs with persistent PostgreSQL project state.
+- Adding schema-constrained extraction and evidence validation at the application boundary.
+- Connecting the iOS application to project, meeting, transcript, task, and chat APIs.
+- Adding hybrid dense and full-text retrieval over transcripts, summaries, decisions, and tasks.
+- Verifying model citations against retrieved sources and refusing unsupported answers.
+- Adding task review, lifecycle transitions, audit records, undo, and Apple Reminders export.
+
+### Decision log
+
+| Design question | What we considered | Decision and rationale | Evidence still needed |
+| --- | --- | --- | --- |
+| Retrieval strategy | Dense-only, sparse-only, and hybrid retrieval | Use dense and PostgreSQL full-text retrieval fused with reciprocal rank fusion. Dense search handles paraphrases while sparse search preserves exact terminology. | Required retrieval ablation |
+| Retrieval index | HNSW approximate search or exact project-scoped cosine search | Use exact cosine search at the current alpha scale to avoid filtered approximate-search recall loss. | Query latency and corpus-size measurement |
+| Retrieval unit | Individual turns or bounded multi-turn windows | Pack complete turns into windows up to 150 words and index summaries, decisions, and tasks separately. | Chunking comparison if time permits |
+| Citation format | Model-generated database IDs or temporary source handles | Give the model temporary handles, then map verified quotes to stored IDs and timestamps on the server. | Human faithfulness review and live-model test |
+| Unsupported questions | Best-effort answer or evidence requirement | Return a fixed refusal when no verified citation remains. | Refusal-accuracy evaluation |
+| Model adaptation | Fine-tuning or constrained provider models | Use provider models with Pydantic contracts because current data volume does not justify fine-tuning and the task depends on grounding and workflow integration. | Final prompts, versions, settings, and hashes |
 
 ## 2. Progress Since Milestone 2
 
@@ -169,7 +193,21 @@ The task-extraction development diagnostic compared promise rules, Codex indepen
 
 The prior error review identified candidate issues involving negated promises, quoted examples, cross-turn acceptance, duplicate repetitions, corrections, unknown owners, joint ownership, and merged actions. Human adjudication remains incomplete.
 
-### 5.2 Milestone 3 evaluation targets
+### 5.2 Required ablation
+
+The rubric requires at least one targeted comparison that isolates a key design choice. Our primary proposed ablation compares retrieval strategies on the same frozen question set, indexed corpus, answer model, prompt, and top-K setting.
+
+| Variant | Dense retrieval | Full-text retrieval | RRF fusion | Recall@K | MRR | Faithful answers | Refusal accuracy | Median latency |
+| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Dense only | Yes | No | No | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] |
+| Sparse only | No | Yes | No | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] |
+| Hybrid | Yes | Yes | Yes | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] |
+
+This comparison will show whether hybrid retrieval improves evidence recall or ranking enough to justify its added complexity and latency. If time permits, a secondary comparison will test individual transcript turns against 150-word complete-turn windows.
+
+[PLACEHOLDER: freeze the question set, run each variant, add results, interpret the differences, and record the resulting design decision.]
+
+### 5.3 Milestone 3 evaluation targets
 
 Milestone 3 must evaluate the newly integrated behavior rather than repeat only the Milestone 2 component results.
 
@@ -205,13 +243,21 @@ Recommended measurements are:
 
 Include questions involving decisions, tasks, transcript statements, follow-up questions, dismissed tasks, and facts absent from the project. Preserve the question set, expected evidence, settings, raw outputs, and review decisions.
 
-#### C. Human qualitative review
+#### C. Robustness, bias, and safety tests
+
+Targeted robustness cases should include ASR errors, long transcript turns, paraphrased questions, exact technical terms, follow-up questions with pronouns, missing owners, missing deadlines, negated commitments, quoted examples, duplicate statements, and model-provider failure. Safety tests should include unsupported questions, attempts to retrieve another project's data, dismissed tasks, purged meetings, and fabricated citation handles.
+
+The intended alpha is English-only and the existing evaluation does not establish comparable performance across accents, speaking styles, genders, disciplines, group sizes, or languages. Where the available consented or public data permits, report results by relevant audio condition or speaker group. Otherwise, state that subgroup evidence is unavailable and avoid fairness claims.
+
+[PLACEHOLDER: list the final targeted cases, sample counts, pass criteria, subgroup or condition coverage, observed failures, and resulting changes.]
+
+#### D. Human qualitative review
 
 Two team members should independently review a shared sample containing ordinary successes and representative failures. Use the existing dimensions of evidence support, owner attribution, coverage, ambiguity handling, and usefulness. Add Milestone 3 performance dimensions for response time and estimated cost.
 
 [PLACEHOLDER: reviewer names, review date, sample size, scores, disagreements, adjudication, and 3-5 supported failure patterns.]
 
-#### D. Latency, usage, and cost
+#### E. Latency, usage, and cost
 
 The extraction providers already return elapsed time and token usage, and the evaluation harness summarizes observed latency. Milestone 3 should extend this instrumentation to the integrated alpha path and chat queries.
 
@@ -233,7 +279,53 @@ For each tested workload, report:
 
 Latency and cost must be interpreted together with quality. A faster or cheaper configuration is useful only if it preserves the required extraction, retrieval, citation, and refusal behavior.
 
-## 6. Privacy, Safety, and Responsible Use
+## 6. Model Card Draft
+
+### Intended use
+
+The alpha is intended to help consenting research teams review meeting transcripts, summaries, decisions, commitments, suggestions, and supporting evidence across recurring meetings. It supports human-reviewed follow-through and historical question answering within a selected project.
+
+### Uses outside the intended scope
+
+The system is not intended to record people without consent, evaluate employee or student performance, infer productivity, replace official project records, treat transcripts as proof that work occurred, make high-stakes decisions, or provide unrestricted access across organizations. It is not a general factual assistant and should refuse questions unsupported by stored project evidence.
+
+### Models and configuration
+
+- Whisper performs English speech recognition through the supplied CCB bridge.
+- Optional pyannote diarization assigns anonymous speaker labels.
+- Codex or Claude performs schema-constrained meeting extraction and grounded answer generation.
+- `all-MiniLM-L6-v2` produces retrieval embeddings for the current RAG implementation.
+- PostgreSQL full-text search supplies the sparse retrieval leg.
+
+[PLACEHOLDER: record exact final model identifiers, provider or CLI versions, prompts and hashes, temperatures or reasoning settings, embedding version, top K, RRF constant, chunk size, and run date.]
+
+### Evaluation summary and limitations
+
+Milestone 2 measured ASR and independent-meeting extraction. Milestone 3 will add retrieval, grounded-answer, refusal, isolation, latency, and cost measurements plus the required ablation. ASR errors can propagate into extraction, anonymous speaker labels do not establish identity, and candidate tasks may merge, omit, or misattribute work. Human review is required before approval. The evaluation data remains small and partly synthetic, so claims are limited to the measured inputs and configurations.
+
+## 7. System Card Draft
+
+### Components and data flow
+
+The SwiftUI client uploads consented audio to an authenticated FastAPI service, directly or through Cloudflare Tunnel. A sequential worker normalizes and transcribes the recording, optionally diarizes speakers, obtains structured extraction output, validates source evidence, and writes results to PostgreSQL. The retrieval service chunks and embeds meeting records. Chat queries use project-scoped hybrid retrieval, a schema-constrained answer model, server-side citation verification, and persistent conversation storage. The client displays results and lets users review task candidates and lifecycle changes.
+
+### Guardrails
+
+- Upload requires affirmative consent in the application flow.
+- API routes require a bearer token.
+- Database reads and retrieval searches are scoped by project UUID.
+- Structured extraction uses typed contracts and evidence checks.
+- Candidate tasks require human approval.
+- Chat citations require a valid source handle and a quote matching stored source text.
+- Answers without verified citations are replaced by a fixed refusal.
+- Task lifecycle changes append audit records and return revert tokens.
+- Project purge cascades through related meeting, retrieval, task, and chat records.
+
+### Operational constraints and mitigations
+
+The backend currently runs on an Apple Silicon Mac, depends on separately supplied transcription code, stores audio locally, and uses a shared team secret rather than multi-user authentication. The first model download is large, chat is not streamed, and some pipeline status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Longer-term mitigations include database-backed status, selective redaction, participant-level consent controls, stronger authentication, audio seeking, and reviewed reconciliation logic.
+
+## 8. Privacy, Safety, and Responsible Use
 
 Meeting recordings can contain personal information, unpublished research, or confidential discussion. The alpha therefore requires explicit meeting-level consent before upload, keeps private recordings and credentials out of Git, scopes retrieval by project, and protects routes with a bearer token.
 
@@ -250,11 +342,12 @@ Current limits must be stated clearly:
 
 [PLACEHOLDER: document the completed privacy/purge test and any TA guidance received.]
 
-## 7. What Remains Before Submission
+## 9. What Remains Before Submission
 
 ### Required for a credible Milestone 3 alpha
 
-- [ ] Confirm the official rubric, submission format, page limit, deadline, and required TA check-in.
+- [x] Identify the official Milestone 3 rubric and required components.
+- [ ] Confirm the Canvas deadline, page limit if any, and required TA check-in.
 - [ ] Run and record the complete Python tests and lint checks on the submission commit.
 - [ ] Build and test the current SwiftUI application.
 - [ ] Complete one clean recording-to-results-to-task-to-chat user journey.
@@ -262,10 +355,14 @@ Current limits must be stated clearly:
 - [ ] Load projects from PostgreSQL after relaunch and verify persistence.
 - [ ] Test real embeddings and one live Codex or Claude chat response.
 - [ ] Create a supported-query and unsupported-query RAG evaluation set.
+- [ ] Run and interpret at least one targeted ablation.
 - [ ] Measure retrieval, citation, refusal, isolation, latency, token usage, and cost.
 - [ ] Complete the two-reviewer human rubric and adjudication log.
+- [ ] Finalize the Model Card and System Card with exact settings and results.
+- [ ] Add a substantive advanced-extension write-up and metrics for each team member.
 - [ ] Add screenshots and a short demonstration video.
 - [ ] Freeze the submission commit and record exact reproduction instructions.
+- [ ] Export and visually inspect the required single submission PDF.
 
 ### Central product claim that remains incomplete
 
@@ -281,23 +378,27 @@ Cross-meeting task reconciliation is the core distinction between LabSync and an
 - Add transcript redaction.
 - Add attendee storylines and named-speaker matching only after consent and evaluation rules are settled.
 
-## 8. Team Contributions
+## 10. Team Contributions and Advanced Extensions
 
-The following table is a draft based on repository history and the previous milestone plan. Every team member should review and correct it before submission.
+The rubric requires a substantive advanced-extension write-up and metrics for each team member. The following table is a draft based on repository history and the previous milestone plan. Every team member should review and correct it before submission.
 
-| Team member       | Current contribution summary                                                                                                        | Evidence to add                                                                             |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Will Liu          | PostgreSQL/API integration, iOS and backend data flow, setup documentation, and project chat with hybrid RAG and verified citations | [PLACEHOLDER: PRs/commits, testing performed, and Milestone 3 write-up contribution]        |
-| Guadalupe Cantera | Database/schema work and data research from earlier milestones                                                                      | [PLACEHOLDER: Milestone 3 work, reviewed labels, Data Card or privacy updates, PRs/commits] |
-| Bryan Yang        | Audio/extraction integration, evaluation harness and reports, backend/client integration, and submission synthesis                  | [PLACEHOLDER: Milestone 3 PRs/commits, end-to-end verification, and evaluation results]     |
+| Team member | Current contribution summary | Proposed advanced extension and required evidence |
+| --- | --- | --- |
+| Will Liu | PostgreSQL/API integration, iOS and backend data flow, setup documentation, and project chat with hybrid RAG and verified citations | **Integrated RAG and native chat.** Add retrieval comparison results, live-query success count, latency, citation validity, Swift build result, PRs/commits, and a substantive explanation of design choices and failures. |
+| Guadalupe Cantera | Database/schema work and data research from earlier milestones | **Reviewed data and human evaluation.** Add number of labels reviewed, agreement and disagreement results, finalized policies, error categories, privacy checks, PRs/commits, and a substantive explanation of how review changed the system. |
+| Bryan Yang | Audio/extraction integration, evaluation harness and reports, backend/client integration, and submission synthesis | **Evaluation and cross-meeting continuity.** Add sequence and RAG results, latency/cost instrumentation, end-to-end checks, PRs/commits, and a substantive explanation of the comparison design and resulting changes. |
 
 [PLACEHOLDER: replace contribution summaries with team-confirmed descriptions and include the required individual/group reporting format from the rubric.]
 
-## 9. Work Plan to Complete Milestone 3
+### Individual reflection survey
+
+Each team member must separately submit the non-graded reflection survey covering work completed and lessons learned, whether every member contributed materially, and any other feedback for the teaching staff. This survey is separate from the single group PDF.
+
+## 11. Work Plan for the Next Milestone
 
 | Task                                                                | Proposed owner                   | Completion evidence                                                                               |
 | ------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Confirm rubric and submission requirements                          | Team                             | Requirements copied into this draft and every section mapped to a rubric item                     |
+| Confirm remaining submission logistics                              | Team                             | Canvas deadline, any page limit, and check-in expectations recorded                               |
 | Verify current backend, database, tunnel, and iOS build             | Will                             | Dated clean-run log, screenshots, device/configuration details, and demo clip                     |
 | Implement and evaluate the narrow three-meeting reconciliation path | Will and Bryan                   | Reviewed sequence, saved outputs, baseline comparison, state metrics, and failures                |
 | Complete human label and error review                               | Guadalupe with a second reviewer | Filled review records, adjudication notes, and 3-5 supported failure patterns                     |
@@ -308,13 +409,57 @@ The following table is a draft based on repository history and the previous mile
 
 Assignments remain proposed until confirmed by the team.
 
-## 10. Known Limitations and Claims Boundary
+## 12. Weekly Check-In, Blockers, and Next Steps
+
+### Progress made
+
+- Integrated PostgreSQL-backed projects, meetings, transcripts, summaries, decisions, tasks, and chat.
+- Connected the iOS client to server project and meeting reads, task review and lifecycle APIs, and chat history and messages.
+- Added hybrid project-scoped retrieval, structured answers, verified citations, grounded refusal, and persistent conversations.
+- Added setup instructions for the team backend, local backend, Supabase, Cloudflare Tunnel, and iOS app.
+- Added automated coverage for chat, retrieval, citation validation, scope isolation, failure behavior, purge, and indexing.
+
+### Top blockers and risks
+
+- No recorded clean end-to-end alpha verification exists yet.
+- Cross-meeting reconciliation, the project's main differentiating claim, is not implemented or measured.
+- Human review of labels and semantic matches is incomplete.
+- The required ablation, updated RAG results, and latency/cost table are not complete.
+- The iOS build and real model/embedding behavior must be verified on the team environment.
+- Seed data and the remaining JSON status dependency weaken the clean alpha path.
+
+### Planned next steps
+
+The owner-assigned work plan in Section 11 prioritizes end-to-end verification, the retrieval ablation, RAG evaluation, human review, cross-meeting continuity, performance measurements, Model Card and System Card completion, and final single-PDF assembly.
+
+## 13. Known Limitations and Claims Boundary
 
 At this checkpoint, the repository supports a substantial alpha: consented upload, transcription, structured extraction, PostgreSQL persistence, task review and lifecycle changes, Apple Reminders export, and project chat with verified citations. Automated tests cover the individual backend behaviors extensively.
 
 The current evidence does not yet establish reliable cross-meeting reconciliation, general accuracy on natural research meetings, diarization accuracy, named-speaker recognition, complete audio citation seeking, selective redaction, or production security. The existing extraction numbers are development proxies on synthetic examples, and the ASR test covers only two meeting series. Milestone 3 claims will be limited to the exact configurations, inputs, and user journeys measured before submission.
 
-## 11. Reproduction and References
+## 14. Rubric Coverage
+
+| Official requirement | Draft section | Status |
+| --- | --- | --- |
+| Track declaration | Front matter and Section 1 | Complete |
+| Development path, M2 changes, and decision log | Sections 1 and 2 | Draft complete; evidence pending |
+| Configuration and reproducibility | Sections 3-7 and 15 | Partial; exact final settings pending |
+| At least one ablation | Section 5.2 | Planned; results required |
+| Targeted tests, robustness, bias, safety, and hallucination | Sections 4, 5.3, and 8 | Partial; updated results required |
+| Latency and cost | Section 5.3 | Planned; measurements required |
+| Updated results and error analysis | Section 5 | Partial; M3 results and human adjudication required |
+| Alpha flow and inference service | Sections 1-4 | Implemented in parts; recorded end-to-end evidence required |
+| README run instructions and examples | Section 15 references | Present; clean-run verification required |
+| Model Card and System Card drafts | Sections 6 and 7 | Drafted; exact settings and results pending |
+| Weekly check-in, team roles, and work plan | Sections 10-12 | Team confirmation required |
+| Per-member extension write-up and metrics | Section 10 | Placeholders require completion |
+| GitHub link | Front matter | Complete |
+| Single PDF | Submission packaging | Not yet exported |
+
+The rubric allocates 60 points to core progress and evidence quality and 40 points to the alpha deliverable and documentation artifacts. Missing the ablation, updated results, Model Card, System Card, or per-member extension evidence would directly leave graded requirements incomplete.
+
+## 15. Reproduction and References
 
 Primary repository documentation:
 
@@ -326,5 +471,6 @@ Primary repository documentation:
 - `docs/archive/milestone_2/transcription_results.md` for ASR measurements.
 - `docs/archive/milestone_2/failure_review.md` and `failure_review_log.md` for the prepared human-review materials.
 - `tests/fixtures/evaluation/README.md` and `tests/fixtures/asr/README.md` for evaluation protocols.
+- `contexts/milestone_3/Milestone 3.pdf` for the official assignment and grading rubric.
 
-[PLACEHOLDER: add the official Milestone 3 assignment citation, TA feedback, final commit SHA, demo link, and any external sources used in the final report.]
+[PLACEHOLDER: add TA feedback, final commit SHA, demo link, and any external sources used in the final report.]
