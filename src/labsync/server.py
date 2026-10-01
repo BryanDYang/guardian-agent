@@ -18,9 +18,11 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .api.chat import router as chat_router
+from .api.me import router as me_router
 from .api.meetings import router as meetings_router
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
+from .auth import TokenVerifier
 from .db import meetings as meeting_store
 from .db import projects as project_store
 from .db import rag
@@ -46,6 +48,8 @@ def create_app(
     token: str | None = None,
     database_url: str | None = None,
     embedder: rag.Embedder | None = None,
+    supabase_url: str | None = None,
+    jwt_secret: str | None = None,
 ) -> FastAPI:
     if provider not in DEFAULT_MODELS:
         raise ValueError(f"Unknown extraction provider: {provider}")
@@ -236,12 +240,14 @@ def create_app(
     app = FastAPI(title="LabSync local backend", lifespan=lifespan)
     app.state.pool = None
     app.state.embedder = embedder or OpenAIEmbedder()
+    app.state.auth = TokenVerifier(supabase_url, jwt_secret) if supabase_url else None
 
     app.state.chat = {"provider": provider, "model": model}
     app.include_router(projects_router)
     app.include_router(meetings_router)
     app.include_router(tasks_router)
     app.include_router(chat_router)
+    app.include_router(me_router)
 
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]
@@ -261,7 +267,9 @@ def create_app(
 
     @app.middleware("http")
     async def require_token(request: Request, call_next):
-        if token:
+        # /api/v1/me already uses Supabase tokens. Every route moves to them in
+        # Phase 2b, and this shared-token check is removed in Phase 3.
+        if token and not request.url.path.startswith("/api/v1/me"):
             supplied = request.headers.get("authorization", "")
             if not secrets.compare_digest(
                 supplied.encode(), f"Bearer {token}".encode()

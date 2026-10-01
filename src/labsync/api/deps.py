@@ -1,9 +1,15 @@
 """FastAPI dependencies shared by the /api/v1 routers."""
 
 from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import Annotated
+from uuid import UUID
 
-from fastapi import HTTPException, Request
+from fastapi import Depends, HTTPException, Request
 from psycopg import Connection
+
+from ..auth import InvalidToken
+from ..db import profiles
 
 
 def get_conn(request: Request) -> Iterator[Connection]:
@@ -12,3 +18,43 @@ def get_conn(request: Request) -> Iterator[Connection]:
         raise HTTPException(503, "Database is not configured; set DATABASE_URL")
     with pool.connection() as conn:
         yield conn
+
+
+Conn = Annotated[Connection, Depends(get_conn)]
+
+
+@dataclass(frozen=True)
+class CurrentUser:
+    id: UUID
+    email: str
+    profile: dict
+
+
+def unauthorized(detail: str) -> HTTPException:
+    return HTTPException(401, detail, headers={"WWW-Authenticate": "Bearer"})
+
+
+def current_user(request: Request, conn: Conn) -> CurrentUser:
+    """The signed-in user, from a Supabase access token (FR-AUTH-5)."""
+    verifier = request.app.state.auth
+    if verifier is None:
+        raise HTTPException(503, "Authentication is not configured; set SUPABASE_URL")
+    scheme, _, token = request.headers.get("authorization", "").partition(" ")
+    if scheme.lower() != "bearer" or not token:
+        raise unauthorized("Sign in to continue")
+    try:
+        claims = verifier.verify(token)
+        user_id = UUID(claims["sub"])
+    except (InvalidToken, ValueError) as exc:
+        raise unauthorized(
+            "Your session is invalid or expired. Sign in again."
+        ) from exc
+    profile = profiles.get_profile(conn, user_id)
+    if profile is None:
+        # The auth.users trigger creates every profile, so this means the account
+        # was deleted while the token was still valid.
+        raise unauthorized("profile_missing")
+    return CurrentUser(id=user_id, email=profile["email"], profile=profile)
+
+
+User = Annotated[CurrentUser, Depends(current_user)]

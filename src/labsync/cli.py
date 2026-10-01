@@ -136,6 +136,8 @@ def main(argv: list[str] | None = None) -> int:
                 token=token,
                 database_url=os.environ.get("DATABASE_URL") or None,
                 embedder=embedder,
+                supabase_url=os.environ.get("SUPABASE_URL") or None,
+                jwt_secret=os.environ.get("SUPABASE_JWT_SECRET") or None,
             ),
             host="127.0.0.1",
             port=args.port,
