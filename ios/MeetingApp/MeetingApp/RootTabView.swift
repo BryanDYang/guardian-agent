@@ -20,6 +20,10 @@ struct RootTabView: View {
             ChatView()
                 .tabItem { Label("Chat", systemImage: "message") }
                 .tag(Tab.chat)
+
+            ProfileTab()
+                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+                .tag(Tab.profile)
         }
     }
 }
@@ -27,5 +31,6 @@ struct RootTabView: View {
 #Preview {
     RootTabView()
         .environment(MeetingNavigator())
+        .environment(AppSession(stage: .signedIn))
         .modelContainer(PreviewContainer.shared)
 }
