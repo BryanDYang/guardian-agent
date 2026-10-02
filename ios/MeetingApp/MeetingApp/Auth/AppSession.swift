@@ -100,6 +100,21 @@ final class AppSession {
         }
     }
 
+    /// FR-ACCT: the backend deletes the account and everything only this user
+    /// owned. Then this device forgets the session, and the signedOut event
+    /// clears the local cache. Throws, and stays signed in, if the backend refused.
+    @MainActor
+    func deleteAccount() async throws {
+        guard let auth else {
+            stage = .signedOut
+            return
+        }
+        try await MeetingAPIClient.shared.deleteAccount()
+        pendingInviteToken = nil
+        // The server-side session went with the account, so only forget it here.
+        try? await auth.signOut(scope: .local)
+    }
+
     /// Handles meetingmemory://invite?token=... and ignores other links.
     func open(_ url: URL) {
         guard url.scheme == "meetingmemory", url.host() == "invite",

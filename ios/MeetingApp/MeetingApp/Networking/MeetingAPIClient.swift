@@ -293,6 +293,13 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
+    /// FR-ACCT: deletes the signed-in user's account on the server.
+    func deleteAccount() async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me"))
+        request.httpMethod = "DELETE"
+        let _: [String: Int] = try await send(request)
+    }
+
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
         let token = try await accessToken()

@@ -218,10 +218,8 @@ struct NotificationsIntegrationsView: View {
 // MARK: - Privacy & data
 
 struct PrivacyDataView: View {
-    @Environment(AppSession.self) private var session
     @State private var showingExportAlert = false
-    @State private var showingDeleteAlert = false
-    @State private var deleteConfirmation = ""
+    @State private var showingDeleteAccount = false
 
     var body: some View {
         List {
@@ -246,8 +244,7 @@ struct PrivacyDataView: View {
 
             Section {
                 Button("Delete account", role: .destructive) {
-                    deleteConfirmation = ""
-                    showingDeleteAlert = true
+                    showingDeleteAccount = true
                 }
             } footer: {
                 Text("Permanently deletes your account, voiceprint, and memberships. Meetings in projects shared with others stay with those projects.")
@@ -259,18 +256,8 @@ struct PrivacyDataView: View {
         } message: {
             Text("We'll prepare your data export.")
         }
-        .alert("Delete account?", isPresented: $showingDeleteAlert) {
-            TextField("Type DELETE", text: $deleteConfirmation)
-                .textInputAutocapitalization(.characters)
-            Button("Delete", role: .destructive) {
-                // Placeholder: the real flow calls DELETE /api/v1/me first.
-                if deleteConfirmation == "DELETE" {
-                    Task { await session.signOut() }
-                }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Type DELETE to confirm. This can't be undone.")
+        .sheet(isPresented: $showingDeleteAccount) {
+            DeleteAccountView()
         }
     }
 }
