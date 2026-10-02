@@ -74,3 +74,10 @@ def complete_onboarding(body: OnboardingDone, user: SignedIn, conn: Conn) -> dic
             conn, user.id, onboarding_completed_at=datetime.now(timezone.utc)
         )
     return me_payload(conn, profile)
+
+
+@router.get("/tasks/summary")
+def task_summary(user: SignedIn, conn: Conn) -> dict:
+    """FR-PROF-3: approved tasks assigned to me. All zero until speaker matching
+    fills in assignees."""
+    return profiles.task_summary(conn, user.id)

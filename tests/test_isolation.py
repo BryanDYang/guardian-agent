@@ -103,6 +103,8 @@ OWN_DATA_ROUTES = [
     ("GET", "/api/v1/me"),
     ("PATCH", "/api/v1/me"),
     ("POST", "/api/v1/me/onboarding/complete"),
+    ("GET", "/api/v1/me/tasks/summary"),
+    ("DELETE", "/api/v1/me"),
     ("GET", "/api/v1/projects"),
     ("POST", "/api/v1/projects"),
     ("GET", "/api/v1/conversations"),
@@ -240,6 +242,8 @@ def test_own_data_routes_show_outsiders_nothing(app, seeded):
         assert ids["project_id"] not in [p["id"] for p in projects]
         assert client.get("/api/v1/conversations").json() == []
         assert client.get("/api/v1/invitations").json() == []
+        summary = client.get("/api/v1/me/tasks/summary").json()
+        assert summary == {"open": 0, "overdue": 0, "done": 0}
         created = client.post("/api/v1/projects", json={"name": "pytest isolation"})
         assert created.status_code == 201  # Bob's own new project, not Alice's
 

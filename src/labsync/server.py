@@ -18,7 +18,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .api.chat import router as chat_router
-from .api.deps import Conn, User, require_meeting, require_member
+from .api.deps import Conn, SignedIn, User, require_meeting, require_member
 from .api.invitations import router as invitations_router
 from .api.me import router as me_router
 from .api.meetings import router as meetings_router
@@ -26,8 +26,8 @@ from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
 from .auth import InvalidToken, TokenVerifier
 from .db import meetings as meeting_store
+from .db import profiles, rag
 from .db import projects as project_store
-from .db import rag
 from .db.connection import create_pool
 from .embeddings import OpenAIEmbedder
 from .extraction import Extraction, Transcript
@@ -409,6 +409,35 @@ def create_app(
             for record in matching:
                 shutil.rmtree(folder(record["id"]), ignore_errors=True)
         return {"deleted": 1}
+
+    @app.delete("/api/v1/me")
+    def delete_account(user: SignedIn, conn: Conn):
+        """FR-ACCT: projects where this user is the only member go with the
+        account, recordings included. Shared projects keep their content."""
+        solo = {
+            str(project_id) for project_id in project_store.solo_projects(conn, user.id)
+        }
+        busy = HTTPException(
+            409, "Wait for your meetings to finish processing, then try again"
+        )
+        with lock:
+            records = [
+                json.loads(path.read_text()) for path in storage.glob("*/meeting.json")
+            ]
+            matching = [r for r in records if r["project"] in solo]
+            if any(r["status"] in ACTIVE for r in matching):
+                raise busy
+            try:
+                for project_id in solo:
+                    project_store.delete_project(conn, UUID(project_id))
+            except project_store.ProjectBusyError as exc:
+                raise busy from exc
+            profiles.delete_account(conn, user.id)
+            # Commit before removing recordings, so a failed delete keeps them.
+            conn.commit()
+            for record in matching:
+                shutil.rmtree(folder(record["id"]), ignore_errors=True)
+        return {"deleted_projects": len(solo)}
 
     @app.delete("/api/projects/{project_id}/meetings")
     def purge_project(project_id: UUID, user: User, conn: Conn):
