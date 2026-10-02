@@ -28,6 +28,9 @@ struct MeetingsTab: View {
         .onChange(of: navigator.selectedMeetingID) { _, meetingID in
             syncPath(with: meetingID)
         }
+        .onChange(of: navigator.selectedProjectID) { _, _ in
+            openSelectedProject()
+        }
         // Swipe-back or the back button pops the stack; mirror that onto the navigator.
         .onChange(of: path) { _, newPath in
             if case .meeting(let id) = newPath.last {
@@ -38,6 +41,7 @@ struct MeetingsTab: View {
         }
         .onAppear {
             syncPath(with: navigator.selectedMeetingID)
+            openSelectedProject()
         }
     }
 
@@ -49,6 +53,12 @@ struct MeetingsTab: View {
         if path.last != .meeting(meetingID) {
             path.append(.meeting(meetingID))
         }
+    }
+
+    private func openSelectedProject() {
+        guard let projectID = navigator.selectedProjectID else { return }
+        path = [.project(projectID)]
+        navigator.selectedProjectID = nil
     }
 }
 

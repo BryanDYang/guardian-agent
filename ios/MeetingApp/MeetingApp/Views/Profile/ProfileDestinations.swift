@@ -1,14 +1,17 @@
 import SwiftData
 import SwiftUI
 
-// Screens pushed from the Profile menu. All content is placeholder until the accounts API exists.
+// Screens pushed from the Profile menu. Speaker Identity, Notifications, and
+// Export are still placeholder.
 
 // MARK: - Workspaces
 
 struct WorkspacesView: View {
     @Environment(\.modelContext) private var context
+    @Environment(AppSession.self) private var session
+    @Environment(MeetingNavigator.self) private var navigator
     @State private var invitations: [RemoteInvitation] = []
-    @State private var workspaces = ProfilePlaceholder.workspaces
+    @State private var projects: [RemoteProject] = []
     @State private var errorMessage: String?
 
     var body: some View {
@@ -49,33 +52,50 @@ struct WorkspacesView: View {
             }
 
             Section("Your workspaces") {
-                ForEach(workspaces) { workspace in
-                    HStack {
+                if projects.isEmpty {
+                    Text("You're not in any projects yet.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                ForEach(projects, id: \.id) { project in
+                    Button {
+                        navigator.open(projectID: project.id)
+                    } label: {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(workspace.name)
+                            Text(project.name)
                                 .font(.subheadline.weight(.semibold))
-                            Text("\(workspace.memberCount) members \u{2022} Active \(workspace.lastActivity)")
+                                .foregroundStyle(Palette.ink)
+                            Text(details(of: project))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        Spacer()
-                        RoleBadge(role: workspace.role)
                     }
                 }
             }
         }
         .navigationTitle("Workspaces")
-        .task { await loadInvitations() }
-        .refreshable { await loadInvitations() }
+        .task { await load() }
+        .refreshable { await load() }
     }
 
-    private func loadInvitations() async {
+    private func load() async {
         do {
             invitations = try await MeetingAPIClient.shared.myInvitations()
+            projects = try await MeetingAPIClient.shared.projects()
+            try? await ProjectSync.refreshProjects(context: context, api: .shared)
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func details(of project: RemoteProject) -> String {
+        let members = project.memberCount ?? 1
+        var text = "\(members) \(members == 1 ? "member" : "members")"
+        if let date = project.lastActivityAt.flatMap(LabSyncDate.timestamp) {
+            text += " \u{2022} Active \(date.formatted(.relative(presentation: .named)))"
+        }
+        return text
     }
 
     private func respond(to invite: RemoteInvitation, accepted: Bool) async {
@@ -86,25 +106,11 @@ struct WorkspacesView: View {
             } else {
                 try await MeetingAPIClient.shared.declineInvitation(id: invite.id)
             }
-            invitations.removeAll { $0.id == invite.id }
+            await load()
+            await session.refreshProfile()
         } catch {
             errorMessage = InviteErrors.message(for: error)
         }
-    }
-}
-
-private struct RoleBadge: View {
-    let role: String
-
-    var body: some View {
-        let isOwner = role == "Owner"
-        Text(role)
-            .font(.caption2.weight(.semibold))
-            .foregroundStyle(isOwner ? Palette.violet : Palette.secondaryText)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(Capsule().fill(isOwner ? Palette.violetWash : Palette.fieldFill))
-            .overlay(Capsule().strokeBorder(isOwner ? Palette.violet.opacity(0.3) : Palette.border))
     }
 }
 
@@ -271,18 +277,18 @@ struct SecurityCredentialsView: View {
         List {
             Section("Sign-in methods") {
                 LabeledContent {
-                    Text(session.user.signInMethod == .email ? "Primary" : "Not set")
+                    Text(session.user.signInMethods.contains(.email) ? "Set" : "Not set")
                 } label: {
                     Label("Email & password", systemImage: "envelope")
                 }
                 LabeledContent {
-                    Text(session.user.signInMethod == .google ? "Connected" : "Not connected")
+                    Text(session.user.signInMethods.contains(.google) ? "Connected" : "Not connected")
                 } label: {
                     Label("Google", systemImage: "g.circle")
                 }
             }
 
-            if session.user.signInMethod == .email {
+            if session.user.signInMethods.contains(.email) {
                 Section {
                     NavigationLink("Change password") {
                         ChangePasswordView()
@@ -303,31 +309,58 @@ struct SecurityCredentialsView: View {
 }
 
 private struct ChangePasswordView: View {
+    @Environment(AppSession.self) private var session
     @Environment(\.dismiss) private var dismiss
     @State private var currentPassword = ""
     @State private var newPassword = ""
     @State private var confirmPassword = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
 
     private var canSave: Bool {
-        !currentPassword.isEmpty && newPassword.count >= 6 && newPassword == confirmPassword
+        !currentPassword.isEmpty && newPassword.count >= 6
+            && newPassword == confirmPassword && !isSaving
     }
 
     var body: some View {
         Form {
-            SecureField("Current password", text: $currentPassword)
-                .textContentType(.password)
-            SecureField("New password", text: $newPassword)
-                .textContentType(.newPassword)
-            SecureField("Confirm new password", text: $confirmPassword)
-                .textContentType(.newPassword)
+            Section {
+                SecureField("Current password", text: $currentPassword)
+                    .textContentType(.password)
+                SecureField("New password", text: $newPassword)
+                    .textContentType(.newPassword)
+                SecureField("Confirm new password", text: $confirmPassword)
+                    .textContentType(.newPassword)
+            } footer: {
+                if let errorMessage {
+                    Text(errorMessage).foregroundStyle(Palette.danger)
+                } else {
+                    Text("At least 6 characters.")
+                }
+            }
         }
         .navigationTitle("Change Password")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                // Placeholder: no API call yet.
-                Button("Save") { dismiss() }
+                Button(isSaving ? "Saving..." : "Save", action: save)
                     .disabled(!canSave)
+            }
+        }
+    }
+
+    private func save() {
+        isSaving = true
+        errorMessage = nil
+        Task {
+            do {
+                try await session.changePassword(current: currentPassword, new: newPassword)
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription == "Invalid login credentials"
+                    ? "Your current password is incorrect."
+                    : error.localizedDescription
+                isSaving = false
             }
         }
     }

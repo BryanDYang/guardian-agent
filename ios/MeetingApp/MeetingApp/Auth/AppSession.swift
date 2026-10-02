@@ -20,9 +20,12 @@ final class AppSession {
     }
 
     var stage: Stage
-    /// Shown in the Profile tab. Name and email come from Supabase; the rest
-    /// stays placeholder until the tab reads /api/v1/me (Phase 8).
+    /// Shown in the Profile tab. Email and sign-in methods come from Supabase;
+    /// name and title from /api/v1/me. The voiceprint stays placeholder until
+    /// voice enrollment ships.
     var user: PlaceholderUser
+    /// From /api/v1/me; the dot on Profile > Workspaces.
+    var pendingInvitationCount = 0
     /// Token from an invite link, kept until the user is signed in and has
     /// finished onboarding (FR-ONB-5). Closing the invite sheet clears it.
     var pendingInviteToken: String?
@@ -146,6 +149,33 @@ final class AppSession {
         show(try await MeetingAPIClient.shared.updateMe(displayName: name, title: title))
     }
 
+    /// Edit Profile: saves to the server, then shows what the server stored.
+    @MainActor
+    func updateProfile(name: String, title: String) async throws {
+        guard auth != nil else {
+            user.name = name
+            user.title = title
+            return
+        }
+        apply(try await MeetingAPIClient.shared.updateMe(displayName: name, title: title))
+    }
+
+    /// Re-reads /api/v1/me for the Profile tab. Never changes the screen.
+    @MainActor
+    func refreshProfile() async {
+        guard auth != nil, let me = try? await MeetingAPIClient.shared.me() else { return }
+        apply(me)
+    }
+
+    /// Supabase doesn't ask for the old password when setting a new one, so this
+    /// checks it by signing in with it first ("Invalid login credentials" if wrong).
+    @MainActor
+    func changePassword(current: String, new: String) async throws {
+        guard let auth else { return }
+        _ = try await auth.signIn(email: user.email, password: current)
+        _ = try await auth.update(user: UserAttributes(password: new))
+    }
+
     // The recorder is still a placeholder, so Continue sends "placeholder" and
     // no voice profile is stored (FR-ONB-2a).
     @MainActor
@@ -183,15 +213,20 @@ final class AppSession {
 
     /// The server decides the next screen; the app never marks onboarding done itself.
     private func show(_ me: RemoteMe) {
-        if let name = me.displayName {
-            user.name = name
-        }
-        user.title = me.title ?? ""
+        apply(me)
         stage = switch me.onboardingStep {
         case "needs_profile": .profileSetup
         case "needs_voice": .voiceEnrollment
         default: .signedIn
         }
+    }
+
+    private func apply(_ me: RemoteMe) {
+        if let name = me.displayName {
+            user.name = name
+        }
+        user.title = me.title ?? ""
+        pendingInvitationCount = me.pendingInvitationCount
     }
 }
 
@@ -204,7 +239,9 @@ struct PlaceholderUser {
     var name: String
     var email: String
     var title: String = ""
-    var signInMethod: SignInMethod = .email
+    /// Email, Google, or both: Phase 5 links a Google login to an existing
+    /// email account with the same address.
+    var signInMethods: Set<SignInMethod> = [.email]
     var voiceprintEnrolledAt: Date? = .now
 
     var hasVoiceprint: Bool { voiceprintEnrolledAt != nil }
@@ -224,6 +261,12 @@ extension PlaceholderUser {
                 break
             }
         }
-        self.init(name: name, email: email, voiceprintEnrolledAt: nil)
+        // Each linked login is an "identity" in Supabase. profiles.auth_provider
+        // only records how the account was first created.
+        let providers = Set((supabaseUser.identities ?? []).map(\.provider))
+        var methods: Set<SignInMethod> = []
+        if providers.contains("email") { methods.insert(.email) }
+        if providers.contains("google") { methods.insert(.google) }
+        self.init(name: name, email: email, signInMethods: methods, voiceprintEnrolledAt: nil)
     }
 }

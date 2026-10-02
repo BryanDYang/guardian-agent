@@ -300,6 +300,11 @@ struct MeetingAPIClient {
         let _: [String: Int] = try await send(request)
     }
 
+    /// FR-PROF-3: approved tasks assigned to me.
+    func taskSummary() async throws -> RemoteTaskSummary {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/me/tasks/summary")))
+    }
+
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
         let token = try await accessToken()
@@ -381,10 +386,14 @@ struct RemoteProject: Decodable {
     let id: String
     let name: String
     let imagePath: String?
+    let memberCount: Int?
+    let lastActivityAt: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case imagePath = "image_path"
+        case memberCount = "member_count"
+        case lastActivityAt = "last_activity_at"
     }
 }
 
@@ -392,12 +401,20 @@ struct RemoteMe: Decodable {
     let displayName: String?
     let title: String?
     let onboardingStep: String
+    let pendingInvitationCount: Int
 
     enum CodingKeys: String, CodingKey {
         case title
         case displayName = "display_name"
         case onboardingStep = "onboarding_step"
+        case pendingInvitationCount = "pending_invitation_count"
     }
+}
+
+struct RemoteTaskSummary: Decodable {
+    let open: Int
+    let overdue: Int
+    let done: Int
 }
 
 struct RemoteInvitation: Decodable, Identifiable {
@@ -714,6 +731,13 @@ enum LabSyncDate {
     static func string(from date: Date) -> String {
         let parts = Calendar.current.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+
+    /// Server timestamps look like 2026-10-01T18:04:05.123456Z. The fraction is
+    /// dropped first, since ISO8601DateFormatter doesn't read every fraction length.
+    static func timestamp(_ value: String) -> Date? {
+        let whole = value.replacingOccurrences(of: #"\.\d+"#, with: "", options: .regularExpression)
+        return ISO8601DateFormatter().date(from: whole)
     }
 }
 
