@@ -104,7 +104,6 @@ def client(tmp_path, seeded):
     app = create_app(
         tmp_path,
         tmp_path,
-        token="test-token",
         database_url=DATABASE_URL,
         supabase_url=SUPABASE_URL,
         jwt_secret=JWT_SECRET,

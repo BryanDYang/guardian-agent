@@ -4,8 +4,6 @@
 <dict>
 	<key>BaseURL</key>
 	<string>https://labsync.yourdomain.com</string>
-	<key>APIToken</key>
-	<string>paste-API_SECRET_KEY-here</string>
 	<key>SupabaseURL</key>
 	<string>http://127.0.0.1:54321</string>
 	<key>SupabaseAnonKey</key>

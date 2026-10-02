@@ -1,26 +1,23 @@
 import Foundation
+import Supabase
 
 struct MeetingAPIClient {
-    static let shared: MeetingAPIClient = {
-        let config = Bundle.main.url(forResource: "LabSyncConfig", withExtension: "plist")
-            .flatMap { NSDictionary(contentsOf: $0) as? [String: String] } ?? [:]
-        return MeetingAPIClient(
-            baseURL: config["BaseURL"].flatMap(URL.init(string:))
-                ?? URL(string: "http://127.0.0.1:8000")!,
-            token: config["APIToken"]
-        )
-    }()
+    static let shared = MeetingAPIClient(baseURL: LabSyncConfig.baseURL)
 
     private static let uploadTimeout: TimeInterval = 15 * 60
     private static let answerTimeout: TimeInterval = 100
 
     let baseURL: URL
-    private let token: String?
+    private let auth: AuthClient
     private let session: URLSession
 
-    init(baseURL: URL, token: String? = nil, session: URLSession = .shared) {
+    init(
+        baseURL: URL,
+        auth: AuthClient = SupabaseService.client.auth,
+        session: URLSession = .shared
+    ) {
         self.baseURL = baseURL
-        self.token = token
+        self.auth = auth
         self.session = session
     }
 
@@ -223,18 +220,34 @@ struct MeetingAPIClient {
 
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
-        if let token {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try await accessToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await session.data(for: request)
         guard let response = response as? HTTPURLResponse else {
             throw MeetingAPIError.invalidResponse
+        }
+        if response.statusCode == 401 {
+            // Supabase already refreshed the token, so the backend turning it down
+            // means the session is over (for example, the account was deleted).
+            // Signing out returns the app to log in and clears the local cache.
+            try? await auth.signOut(scope: .local)
+            throw MeetingAPIError.server("Your session ended. Sign in again.")
         }
         guard (200..<300).contains(response.statusCode) else {
             let detail = try? JSONDecoder().decode(ErrorResponse.self, from: data).detail
             throw MeetingAPIError.server(detail ?? "Backend returned HTTP \(response.statusCode).")
         }
         return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    /// The signed-in user's access token. Supabase refreshes it first when it is
+    /// about to expire, and signs out if the refresh token is no longer valid.
+    private func accessToken() async throws -> String {
+        do {
+            return try await auth.session.accessToken
+        } catch AuthError.sessionMissing {
+            throw MeetingAPIError.server("Sign in to continue.")
+        }
     }
 
     private static func mimeType(for url: URL) -> String {

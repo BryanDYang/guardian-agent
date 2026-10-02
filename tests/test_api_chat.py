@@ -20,8 +20,6 @@ from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
-# The older /api routes still use the shared token (until Phase 2b part 5).
-SHARED = {"Authorization": "Bearer test-token"}
 PROJECTS = ("pytest chat", "pytest chat other")
 
 
@@ -207,7 +205,6 @@ def client(tmp_path, embedder, seeded):
     app = create_app(
         tmp_path,
         tmp_path,
-        token="test-token",
         database_url=DATABASE_URL,
         embedder=embedder,
         supabase_url=SUPABASE_URL,
@@ -363,9 +360,7 @@ def test_purge_deletes_project_chats(client, seeded, model):
     conversation = start(client, seeded["project"])
     model.keyword = "go with 3e-4"
     ask(client, conversation, "What learning rate?")
-    response = client.delete(
-        f"/api/projects/{seeded['project']}/meetings", headers=SHARED
-    )
+    response = client.delete(f"/api/projects/{seeded['project']}/meetings")
     assert response.status_code == 200
     got = client.get(f"/api/v1/conversations/{conversation}")
     assert got.status_code == 404

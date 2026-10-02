@@ -18,8 +18,6 @@ from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
-# The older /api/meetings routes still use the shared token (until Phase 2b part 5).
-SHARED = {"Authorization": "Bearer test-token"}
 
 
 def query(sql, *params):
@@ -107,7 +105,6 @@ def client(tmp_path, monkeypatch, embedder):
     app = create_app(
         tmp_path,
         tmp_path,
-        token="test-token",
         database_url=DATABASE_URL,
         embedder=embedder,
         supabase_url=SUPABASE_URL,
@@ -229,7 +226,7 @@ def test_retry_replaces_results_and_mirrors_attempt(
     record_path.write_text(json.dumps(record))
 
     assert (
-        client.post(f"/api/meetings/{meeting_id}/retry", headers=SHARED).status_code
+        client.post(f"/api/meetings/{meeting_id}/retry", headers=member[1]).status_code
         == 202
     )
     meeting = wait_for(meeting_id, "completed")

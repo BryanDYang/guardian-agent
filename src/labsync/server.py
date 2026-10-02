@@ -1,7 +1,6 @@
 """Single-user local HTTP API for the meeting UI and CLI pipeline."""
 
 import json
-import secrets
 import shutil
 import subprocess
 import sys
@@ -14,16 +13,17 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 from fastapi import FastAPI, Form, HTTPException, Request, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .api.chat import router as chat_router
-from .api.deps import Conn, User, require_member
+from .api.deps import Conn, User, require_meeting, require_member
 from .api.me import router as me_router
 from .api.meetings import router as meetings_router
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
-from .auth import TokenVerifier
+from .auth import InvalidToken, TokenVerifier
 from .db import meetings as meeting_store
 from .db import projects as project_store
 from .db import rag
@@ -46,7 +46,6 @@ def create_app(
     whisper_model: str = "base",
     whisper_backend: str = "openai",
     diarize: bool = False,
-    token: str | None = None,
     database_url: str | None = None,
     embedder: rag.Embedder | None = None,
     supabase_url: str | None = None,
@@ -267,16 +266,21 @@ def create_app(
         return await call_next(request)
 
     @app.middleware("http")
-    async def require_token(request: Request, call_next):
-        # Every /api/v1 route checks Supabase access tokens itself. The older
-        # /api routes keep the shared token until Phase 2b part 5.
-        if token and not request.url.path.startswith("/api/v1/"):
-            supplied = request.headers.get("authorization", "")
-            if not secrets.compare_digest(
-                supplied.encode(), f"Bearer {token}".encode()
-            ):
+    async def check_token_early(request: Request, call_next):
+        """Turn away a missing or invalid Supabase token before FastAPI reads the
+        request body, so strangers can't make the server store large uploads.
+        Routes still load the user and check project membership themselves."""
+        verifier, path = app.state.auth, request.url.path
+        if verifier is not None and path.startswith("/api/") and path != "/api/health":
+            header = request.headers.get("authorization", "")
+            scheme, _, credentials = header.partition(" ")
+            try:
+                if scheme.lower() != "bearer" or not credentials:
+                    raise InvalidToken("No bearer token")
+                await run_in_threadpool(verifier.verify, credentials)
+            except InvalidToken:
                 return JSONResponse(
-                    {"detail": "Missing or invalid API token"},
+                    {"detail": "Sign in to continue"},
                     status_code=401,
                     headers={"WWW-Authenticate": "Bearer"},
                 )
@@ -293,83 +297,20 @@ def create_app(
             "extraction_model": model,
         }
 
+    def require_stored_meeting(conn, user, meeting_id: str) -> None:
+        """Membership check for the /api/meetings/{id} routes, whose ids are plain
+        strings. A malformed id is just another meeting that isn't found."""
+        try:
+            require_meeting(conn, user, UUID(meeting_id))
+        except ValueError as exc:
+            raise HTTPException(404, "Meeting not found") from exc
+
     def public(record):
         return {
             key: value
             for key, value in record.items()
             if key not in {"filename", "transcript_path", "extraction_path"}
         }
-
-    @app.get("/api/meetings")
-    def meetings():
-        with lock:
-            records = [
-                json.loads(path.read_text()) for path in storage.glob("*/meeting.json")
-            ]
-        return sorted(
-            [public(record) for record in records],
-            key=lambda record: record["created_at"],
-            reverse=True,
-        )
-
-    @app.post("/api/meetings", status_code=202)
-    def upload(
-        file: UploadFile,
-        title: Annotated[str, Form()],
-        project: Annotated[str, Form()],
-        meeting_date: Annotated[date, Form()],
-        permission_confirmed: Annotated[bool, Form()],
-    ):
-        if not permission_confirmed:
-            raise HTTPException(400, "Confirm permission to process this recording")
-        if (
-            not title.strip()
-            or not project.strip()
-            or len(title) > 200
-            or len(project) > 100
-        ):
-            raise HTTPException(
-                400, "Provide a title and project within the length limits"
-            )
-        extension = Path(file.filename or "").suffix.lower()
-        if extension not in EXTENSIONS:
-            raise HTTPException(415, "Choose a supported audio or video file")
-        meeting_id = str(uuid4())
-        directory = folder(meeting_id)
-        directory.mkdir()
-        filename = "recording" + extension
-        try:
-            total = 0
-            with (directory / filename).open("xb") as destination:
-                while chunk := file.file.read(1024 * 1024):
-                    total += len(chunk)
-                    if total > MAX_UPLOAD_BYTES:
-                        raise HTTPException(413, "Recording exceeds the 512 MB limit")
-                    destination.write(chunk)
-            if not total:
-                raise HTTPException(400, "Recording is empty")
-            record = {
-                "id": meeting_id,
-                "title": title.strip(),
-                "project": project.strip(),
-                "date": meeting_date.isoformat(),
-                "filename": filename,
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "permission_confirmed": True,
-                "status": "queued",
-                "attempt": 1,
-                "diarization": diarize,
-                "error": None,
-            }
-            with lock:
-                save(record)
-            app.state.executor.submit(app.state.process, meeting_id)
-            return public(record)
-        except Exception:
-            shutil.rmtree(directory)
-            raise
-        finally:
-            file.file.close()
 
     @app.post("/api/v1/meetings/upload", status_code=202)
     def upload_to_project(
@@ -467,8 +408,10 @@ def create_app(
                 shutil.rmtree(folder(record["id"]), ignore_errors=True)
         return {"deleted": 1}
 
-    @app.delete("/api/projects/{project}/meetings")
-    def purge_project(project: str):
+    @app.delete("/api/projects/{project_id}/meetings")
+    def purge_project(project_id: UUID, user: User, conn: Conn):
+        require_member(conn, user, project_id)
+        project = str(project_id)
         with lock:
             records = [
                 json.loads(path.read_text()) for path in storage.glob("*/meeting.json")
@@ -480,20 +423,13 @@ def create_app(
                 )
             for record in matching:
                 shutil.rmtree(folder(record["id"]))
-        removed = len(matching)
-        try:
-            project_id = UUID(project)
-        except ValueError:
-            project_id = None
-        if project_id is not None and app.state.pool is not None:
-            with app.state.pool.connection() as conn:
-                removed = max(
-                    removed, meeting_store.delete_project_meetings(conn, project_id)
-                )
-        return {"deleted": removed}
+        with app.state.pool.connection() as writer:
+            removed = meeting_store.delete_project_meetings(writer, project_id)
+        return {"deleted": max(len(matching), removed)}
 
     @app.get("/api/meetings/{meeting_id}")
-    def detail(meeting_id: str):
+    def detail(meeting_id: str, user: User, conn: Conn):
+        require_stored_meeting(conn, user, meeting_id)
         with lock:
             record = read(meeting_id)
         result = public(record)
@@ -511,12 +447,14 @@ def create_app(
         return result
 
     @app.get("/api/meetings/{meeting_id}/audio")
-    def audio(meeting_id: str):
+    def audio(meeting_id: str, user: User, conn: Conn):
+        require_stored_meeting(conn, user, meeting_id)
         record = read(meeting_id)
         return FileResponse(folder(meeting_id) / record["filename"])
 
     @app.post("/api/meetings/{meeting_id}/retry", status_code=202)
-    def retry(meeting_id: str):
+    def retry(meeting_id: str, user: User, conn: Conn):
+        require_stored_meeting(conn, user, meeting_id)
         with lock:
             record = read(meeting_id)
             if record["status"] != "failed":

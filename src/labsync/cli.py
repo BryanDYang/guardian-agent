@@ -110,9 +110,8 @@ def main(argv: list[str] | None = None) -> int:
             + ", ".join(DEFAULT_MODELS)
         )
     if args.command == "serve":
-        token = os.environ.get("API_SECRET_KEY")
-        if not token:
-            parser.exit(1, "Set API_SECRET_KEY before starting the server\n")
+        if not os.environ.get("SUPABASE_URL"):
+            parser.exit(1, "Set SUPABASE_URL before starting the server\n")
         if problem := setup_error(args.provider):
             parser.exit(1, problem + "\n")
         from .embeddings import OpenAIEmbedder
@@ -133,7 +132,6 @@ def main(argv: list[str] | None = None) -> int:
                 whisper_model=args.whisper_model,
                 whisper_backend=args.whisper_backend,
                 diarize=args.diarize,
-                token=token,
                 database_url=os.environ.get("DATABASE_URL") or None,
                 embedder=embedder,
                 supabase_url=os.environ.get("SUPABASE_URL") or None,

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Supabase
 
 // main.tsx → app entry point
 @main

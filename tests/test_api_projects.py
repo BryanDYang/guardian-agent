@@ -21,7 +21,6 @@ def client(tmp_path):
     app = create_app(
         tmp_path,
         tmp_path,
-        token="test-token",
         database_url=DATABASE_URL,
         supabase_url=SUPABASE_URL,
         jwt_secret=JWT_SECRET,
@@ -80,7 +79,7 @@ def test_sign_in_is_required(client):
 
 
 def test_without_database_url_returns_503(tmp_path):
-    with TestClient(create_app(tmp_path, tmp_path, token="test-token")) as client:
+    with TestClient(create_app(tmp_path, tmp_path)) as client:
         assert client.get("/api/v1/projects").status_code == 503
 
 
