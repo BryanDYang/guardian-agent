@@ -1,3 +1,4 @@
+import AuthenticationServices
 import Foundation
 import Observation
 import Supabase
@@ -61,6 +62,22 @@ final class AppSession {
             data: ["full_name": .string(name)]
         )
         return response.session == nil
+    }
+
+    /// Opens Google in a secure browser sheet. Supabase creates the account the
+    /// first time it sees this email, or adds Google to the existing account with
+    /// the same email. The auth event then moves the app on. Closing the sheet
+    /// is not an error.
+    func signInWithGoogle() async throws {
+        guard let auth else { return }
+        do {
+            try await auth.signInWithOAuth(
+                provider: .google,
+                redirectTo: URL(string: "meetingmemory://auth-callback")!
+            )
+        } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
+            return
+        }
     }
 
     @MainActor

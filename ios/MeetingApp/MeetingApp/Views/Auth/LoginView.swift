@@ -54,9 +54,8 @@ struct LoginView: View {
                     .padding(.top, 72)
 
                     VStack(spacing: 14) {
-                        GoogleButton(title: "Continue with Google") {
-                            errorMessage = "Google sign-in isn't set up yet."
-                        }
+                        GoogleButton(title: "Continue with Google", action: continueWithGoogle)
+                            .disabled(isWorking)
 
                         Button(isWorking ? "Logging In..." : "Log In", action: logIn)
                             .buttonStyle(PrimaryButtonStyle())
@@ -92,6 +91,19 @@ struct LoginView: View {
                     email: email.trimmingCharacters(in: .whitespacesAndNewlines),
                     password: password
                 )
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isWorking = false
+        }
+    }
+
+    private func continueWithGoogle() {
+        isWorking = true
+        errorMessage = nil
+        Task {
+            do {
+                try await session.signInWithGoogle()
             } catch {
                 errorMessage = error.localizedDescription
             }
