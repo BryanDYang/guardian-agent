@@ -8,12 +8,15 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 Pick one:
 
-- **Option A:** use Will's backend. You only need the iOS app and Will's Supabase URL and anon key.
+- **Option A:** use Will's backend. You only need Xcode.
 - **Option B:** run the whole pipeline on your own Mac.
 
 ## Option A: Use Will's backend
 
-Ask Will for the Supabase URL and anon key. Both are public (they ship in the app).
+1. Send Will the email you will sign up with. He adds you to the Supabase team and the Google sign-in test users.
+2. Accept the Supabase team invite in your email.
+3. Ask Will for the Supabase URL and anon key.
+4. Run:
 
 ```bash
 git clone https://github.com/BryanDYang/guardian-agent.git
@@ -22,9 +25,14 @@ scripts/use_shared_backend.sh
 scripts/check_tunnel.sh --shared api.guardianagent.dev
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
-Every line should say `PASS`. Shared mode checks the app config and that Will's backend responds; it skips the local server and transcriber checks.
 
-The script saves the settings to the gitignored `LabSyncConfig.plist`. Build and run the app in Xcode, then sign up. You see a project once you are added to it.
+Every line should say `PASS`.
+
+5. Build and run the app in Xcode.
+6. Sign up with the email from step 1, or tap **Continue with Google**.
+7. Click the link in the confirmation email, then log in.
+8. Record your voice or tap **Skip for now**.
+9. Ask Will to invite you to a project. Accept it in **Profile > Workspaces**.
 
 ## Option B: Run your own backend (end to end)
 
@@ -60,13 +68,11 @@ Set `OPENAI_API_KEY` in `.env`.
 
 Speaker labels need a Hugging Face token. Accept the terms for `pyannote/speaker-diarization-3.1` and `pyannote/segmentation-3.0`, then set `HF_TOKEN` in `.env`.
 
-### 4. Connect the database
+### 4. Connect Supabase
 
-Projects, meetings, and tasks are stored in Postgres on Supabase. The schema lives in `supabase/migrations/`.
+**Team project:** ask Will for the values in the table below.
 
-To use the team database, ask Will for the connection string privately and set `DATABASE_URL` in `.env`. Never commit it.
-
-To use your own Supabase project instead, create one at [supabase.com](https://supabase.com), then apply the schema:
+**Your own project:** create one at [supabase.com](https://supabase.com), then run:
 
 ```bash
 brew install supabase/tap/supabase
@@ -75,9 +81,16 @@ supabase link --project-ref <your-project-ref>
 supabase db push
 ```
 
-In the Supabase dashboard, click **Connect**, copy the **Session pooler** connection string, fill in your database password, and set it as `DATABASE_URL` in `.env`.
+Then add `meetingmemory://auth-callback` under **Authentication > URL Configuration > Redirect URLs**.
 
-Sign-in also uses this Supabase project. From **Project Settings > API**, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env`. Set `SUPABASE_JWT_SECRET` only if the project still signs tokens with the legacy JWT secret.
+Set these in `.env`. Never commit `.env`.
+
+| Variable | Where to find it |
+| --- | --- |
+| `DATABASE_URL` | **Connect > Session pooler**, with your database password filled in |
+| `SUPABASE_URL` | **Project Settings > Data API > Project URL** |
+| `SUPABASE_ANON_KEY` | **Project Settings > API Keys > Legacy anon, service_role API keys > anon** |
+| `SUPABASE_JWT_SECRET` | Only if the current key in **Project Settings > JWT Keys** is HS256 |
 
 Check the connection:
 
@@ -85,7 +98,7 @@ Check the connection:
 uv run --locked --env-file .env --extra server python scripts/check_supabase.py
 ```
 
-It should end with `Supabase connection OK`. Without `DATABASE_URL`, the backend still transcribes, but the project, meeting, and task endpoints return `503`.
+It should end with `Supabase connection OK`.
 
 Index existing meetings for chat:
 
@@ -131,7 +144,7 @@ Every line should say `PASS`. Each `FAIL` line tells you what to fix.
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
 
-Build and run on your iPhone or the simulator, sign up, and create a project. Upload `tests/fixtures/ami/TS3005a-90s-135s.wav` and wait for the transcript and action items to appear.
+Build and run on your iPhone or the simulator. Sign up, confirm your email, and create a project. Upload `tests/fixtures/ami/TS3005a-90s-135s.wav` and wait for the transcript and action items to appear.
 
 ### After every `git pull`
 
@@ -156,7 +169,10 @@ Logs: `artifacts/server/<meeting-id>/processing.log`
 
 | Symptom | Fix |
 | --- | --- |
-| "Sign in to continue" | Using Will's backend: re-run `scripts/use_shared_backend.sh` with his current Supabase URL and anon key. Own backend: make `.env` and `LabSyncConfig.plist` match, rebuild, start the server with `--env-file .env` |
+| "Sign in to continue", or sent back to Log In | Will's backend: re-run `scripts/use_shared_backend.sh` and rebuild. Own backend: make `SUPABASE_URL` in `.env` match `SupabaseURL` in `LabSyncConfig.plist`, then restart the server with `--env-file .env` |
+| "Email not confirmed" | Click the link in the confirmation email. No email: ask Will to add you to the Supabase team |
+| Google "Access blocked" | Ask Will to add your Google account as a test user |
+| No projects after sign-in | Ask a project member to invite you, then accept in **Profile > Workspaces** |
 | "Invalid host header" | Re-run `scripts/setup_tunnel.sh` |
 | HTTP 502 | Start the backend |
 | HTTP 530 | Start `cloudflared tunnel run` |
