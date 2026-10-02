@@ -7,6 +7,8 @@ struct LoginView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var showingResetAlert = false
+    @State private var isWorking = false
+    @State private var errorMessage: String?
 
     private var canSubmit: Bool {
         email.contains("@") && !password.isEmpty
@@ -41,17 +43,24 @@ struct LoginView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(Palette.brandBlue)
                         }
+
+                        if let errorMessage {
+                            Text(errorMessage)
+                                .font(.footnote)
+                                .foregroundStyle(Palette.danger)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                     .padding(.top, 72)
 
                     VStack(spacing: 14) {
                         GoogleButton(title: "Continue with Google") {
-                            session.continueWithGoogle(isNewAccount: false)
+                            errorMessage = "Google sign-in isn't set up yet."
                         }
 
-                        Button("Log In") { session.logIn(email: email) }
+                        Button(isWorking ? "Logging In..." : "Log In", action: logIn)
                             .buttonStyle(PrimaryButtonStyle())
-                            .disabled(!canSubmit)
+                            .disabled(!canSubmit || isWorking)
                     }
                     .padding(.top, 24)
                 }
@@ -71,6 +80,22 @@ struct LoginView: View {
             Text(email.isEmpty
                  ? "Enter your email above, then tap Forgot password again."
                  : "If an account exists for \(email), we sent a reset link.")
+        }
+    }
+
+    private func logIn() {
+        isWorking = true
+        errorMessage = nil
+        Task {
+            do {
+                try await session.logIn(
+                    email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                    password: password
+                )
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isWorking = false
         }
     }
 }

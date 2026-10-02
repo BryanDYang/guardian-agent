@@ -240,7 +240,7 @@ struct PrivacyDataView: View {
             Button("Delete", role: .destructive) {
                 // Placeholder: the real flow calls DELETE /api/v1/me first.
                 if deleteConfirmation == "DELETE" {
-                    session.signOut()
+                    Task { await session.signOut() }
                 }
             }
             Button("Cancel", role: .cancel) {}

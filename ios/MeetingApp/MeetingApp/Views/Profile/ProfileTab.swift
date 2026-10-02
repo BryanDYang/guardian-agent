@@ -189,7 +189,9 @@ struct ProfileTab: View {
     // MARK: - Sign out
 
     private var signOutButton: some View {
-        Button(action: session.signOut) {
+        Button {
+            Task { await session.signOut() }
+        } label: {
             Text("Sign Out")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Palette.danger)
