@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Exposes the local LabSync backend through a Cloudflare tunnel and writes the
-# matching server (.env) and iOS (LabSyncConfig.plist) configs. Safe to re-run.
+# Exposes the local LabSync backend through a Cloudflare tunnel and points the
+# iOS app (LabSyncConfig.plist) at it and at the Supabase project in .env.
+# Safe to re-run.
 #
 # Usage: scripts/setup_tunnel.sh [hostname] [tunnel-name]
 #   hostname     defaults to api.guardianagent.dev
@@ -77,26 +78,25 @@ EOF
   echo "Wrote $CF_CONFIG."
 fi
 
-step "Server token $ENV_FILE"
-if grep -q '^API_SECRET_KEY=.' "$ENV_FILE" 2>/dev/null; then
-  echo "Keeping the existing API_SECRET_KEY."
-else
-  NEW_TOKEN="$(python3 -c 'import secrets; print(secrets.token_urlsafe(32))')"
-  {
-    grep -v '^API_SECRET_KEY=' "$ENV_FILE" 2>/dev/null || true
-    echo "API_SECRET_KEY=$NEW_TOKEN"
-  } >"$ENV_FILE.tmp"
-  mv "$ENV_FILE.tmp" "$ENV_FILE"
-  echo "Generated a new API_SECRET_KEY."
+step "Supabase settings in $ENV_FILE"
+[ -f "$ENV_FILE" ] || fail "Create .env first: cp .env.example .env"
+env_value() { sed -n "s/^$1=//p" "$ENV_FILE" | tail -n 1 | tr -d '\r'; }
+SUPABASE_URL="$(env_value SUPABASE_URL)"
+ANON_KEY="$(env_value SUPABASE_ANON_KEY)"
+if [ -z "$SUPABASE_URL" ] || [ -z "$ANON_KEY" ]; then
+  fail "Set SUPABASE_URL and SUPABASE_ANON_KEY in .env (Supabase dashboard: Project Settings > API), then re-run."
 fi
+case "$SUPABASE_URL" in
+  *127.0.0.1* | *localhost*) echo "Warning: $SUPABASE_URL is local Supabase. Phones and teammates can't sign in through it." ;;
+esac
 chmod 600 "$ENV_FILE"
-TOKEN="$(sed -n 's/^API_SECRET_KEY=//p' "$ENV_FILE" | tail -n 1 | tr -d '\r')"
 
 step "iOS config $PLIST"
 [ -f "$PLIST" ] || cp "$PLIST_TEMPLATE" "$PLIST"
 plutil -replace BaseURL -string "https://$HOST" "$PLIST"
-plutil -replace APIToken -string "$TOKEN" "$PLIST"
-echo "Set BaseURL to https://$HOST and APIToken to match .env."
+plutil -replace SupabaseURL -string "$SUPABASE_URL" "$PLIST"
+plutil -replace SupabaseAnonKey -string "$ANON_KEY" "$PLIST"
+echo "Set BaseURL to https://$HOST and the Supabase settings to match .env."
 
 if [ ! -f "$ROOT/contexts/meeting_transcriber-master/meeting_transcriber.py" ]; then
   printf '\nWarning: contexts/meeting_transcriber-master is missing, so uploads will fail at\n'

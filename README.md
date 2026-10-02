@@ -8,12 +8,12 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 Pick one:
 
-- **Option A:** use Will's backend. You only need the iOS app and his API key.
+- **Option A:** use Will's backend. You only need the iOS app and Will's Supabase URL and anon key.
 - **Option B:** run the whole pipeline on your own Mac.
 
 ## Option A: Use Will's backend
 
-Ask Will for the API key privately. Never commit it.
+Ask Will for the Supabase URL and anon key. Both are public (they ship in the app).
 
 ```bash
 git clone https://github.com/BryanDYang/guardian-agent.git
@@ -22,9 +22,9 @@ scripts/use_shared_backend.sh
 scripts/check_tunnel.sh --shared api.guardianagent.dev
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
-Every line should say `PASS`. Set `API_SECRET_KEY` in `.env` to the same key used by the app. Shared mode checks that the configs match and the remote backend responds; it skips the local server and transcriber checks.
+Every line should say `PASS`. Shared mode checks the app config and that Will's backend responds; it skips the local server and transcriber checks.
 
-The script saves the key to the gitignored `LabSyncConfig.plist` and checks that Will's backend is online. Build and run the app in Xcode.
+The script saves the settings to the gitignored `LabSyncConfig.plist`. Build and run the app in Xcode, then sign up. You see a project once you are added to it.
 
 ## Option B: Run your own backend (end to end)
 
@@ -54,7 +54,7 @@ cp .env.example .env
 codex login        # if codex is missing: npm install -g @openai/codex
 ```
 
-Leave `API_SECRET_KEY` blank; step 5 fills it in. To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
+To use Claude instead of Codex, set `LABSYNC_PROVIDER=claude` and `ANTHROPIC_API_KEY=...` in `.env`.
 
 Set `OPENAI_API_KEY` in `.env`.
 
@@ -76,6 +76,8 @@ supabase db push
 ```
 
 In the Supabase dashboard, click **Connect**, copy the **Session pooler** connection string, fill in your database password, and set it as `DATABASE_URL` in `.env`.
+
+Sign-in also uses this Supabase project. From **Project Settings > API**, set `SUPABASE_URL` and `SUPABASE_ANON_KEY` in `.env`. Set `SUPABASE_JWT_SECRET` only if the project still signs tokens with the legacy JWT secret.
 
 Check the connection:
 
@@ -99,7 +101,7 @@ Pick your own hostname and tunnel name:
 scripts/setup_tunnel.sh api-yourname.guardianagent.dev labsync-yourname
 ```
 
-This logs you in to Cloudflare, creates the tunnel, generates `API_SECRET_KEY` in `.env`, and points the iOS app at `https://api-yourname.guardianagent.dev` with the same key.
+This logs you in to Cloudflare, creates the tunnel, and points the iOS app at `https://api-yourname.guardianagent.dev` and at the Supabase project in `.env`.
 
 ### 6. Start the backend (Terminal 1)
 
@@ -129,7 +131,7 @@ Every line should say `PASS`. Each `FAIL` line tells you what to fix.
 open ios/MeetingApp/MeetingApp.xcodeproj
 ```
 
-Build and run on your iPhone or the simulator. Upload `tests/fixtures/ami/TS3005a-90s-135s.wav` and wait for the transcript and action items to appear.
+Build and run on your iPhone or the simulator, sign up, and create a project. Upload `tests/fixtures/ami/TS3005a-90s-135s.wav` and wait for the transcript and action items to appear.
 
 ### After every `git pull`
 
@@ -154,7 +156,7 @@ Logs: `artifacts/server/<meeting-id>/processing.log`
 
 | Symptom | Fix |
 | --- | --- |
-| "Missing or invalid API token" | Using Will's backend: re-run `scripts/use_shared_backend.sh` with his current key. Own backend: make `.env` and `LabSyncConfig.plist` match, rebuild, start the server with `--env-file .env` |
+| "Sign in to continue" | Using Will's backend: re-run `scripts/use_shared_backend.sh` with his current Supabase URL and anon key. Own backend: make `.env` and `LabSyncConfig.plist` match, rebuild, start the server with `--env-file .env` |
 | "Invalid host header" | Re-run `scripts/setup_tunnel.sh` |
 | HTTP 502 | Start the backend |
 | HTTP 530 | Start `cloudflared tunnel run` |

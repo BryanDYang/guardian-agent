@@ -75,19 +75,19 @@ Whisper, optional diarization, and Codex/Claude extraction run, and completed v1
 v1 project, meeting, and task routes talk to Postgres. Legacy `/api/meetings` routes still serve the JSON worker record, which is what the iOS poll uses. No WebSocket, summary edit, or chat/RAG routes.
 
 - [x] Sequential worker so only one meeting processes at a time
-- [x] `POST /api/v1/meetings/upload` with consent, title, `project_id` (UUID), and date. Legacy `POST /api/meetings` remains
+- [x] `POST /api/v1/meetings/upload` with consent, title, `project_id` (UUID), and date. Legacy `POST /api/meetings` removed
 - [x] `GET /api/v1/projects` and `POST /api/v1/projects`
 - [x] `GET /api/v1/projects/{project_id}/meetings` and `GET /api/v1/meetings/{id}` (transcript, summary, decisions, tasks, storylines)
 - [x] `GET /api/meetings/{id}` JSON poll, `POST /api/meetings/{id}/retry`
 - [x] `GET /api/meetings/{id}/audio` supports `HTTP 206` Range requests (`FileResponse`) and that project's chat conversations
 - [x] `DELETE /api/projects/{project}/meetings` removes JSON folders and, when the id is a UUID, Postgres meeting rows (tasks, transcripts, and decisions cascade)
-- [x] Bearer token guard (`Authorization: Bearer <API_SECRET_KEY>`) on every route
+- [x] Supabase sign-in on every route except `/api/health`; non-members get 404
 - [x] v1 reads and writes are scoped by project UUID
 - [x] Task review API: `PATCH /api/v1/tasks/{id}/review` approve / edit / dismiss, with an EventKit payload on approve
 - [x] Task lifecycle API: `POST /api/v1/tasks/{id}/state` (`open` / `done` / `dropped`) and `POST /api/v1/tasks/revert/{revert_token}`
 - [x] Cloudflare Tunnel scripts (`scripts/setup_tunnel.sh`, `scripts/check_tunnel.sh`) and the shared-backend hostname
 - [ ] Point iOS status polling at the Postgres meeting detail (it still polls `/api/meetings/{id}`)
-- [ ] Drop the legacy free-text project name on `/api/meetings`
+- [x] Drop the legacy free-text project name on `/api/meetings` (part 5 deleted that route)
 - [ ] Summary edit/save API
 - [x] Chat/RAG API: create conversation, list history (all vs project), query with citations or `"I don't know"`
 - [ ] `WS /ws/pipeline/{job_id}` for live stage cards (queued → transcribing → diarizing → extracting → complete)
@@ -127,7 +127,7 @@ The client uploads, polls, retries, purges, creates projects, and syncs tasks. P
 - [x] Swift models for meetings, transcript turns, decisions, commitments, tasks, , chat (create conversation, ask, history)
 - [x] `MeetingAPIClient` against the configured base URL: upload, poll, retry, purge, create project, list meetings, review tasks, change state, revert
 - [x] `RemoteMeetingApplier` mapping remote JSON → SwiftData
-- [x] Base URL and bearer token from `LabSyncConfig.plist` (`BaseURL`, `APIToken`) on every request
+- [x] Base URL from `LabSyncConfig.plist` (`BaseURL`); every request sends the signed-in user's Supabase access token
 - [x] Refresh a UUID project's meetings from `GET /api/v1/projects/{id}/meetings`
 - [x] Load approved tasks from `GET /api/v1/tasks` into the calendar
 - [x] EventKit: export an approved task to Apple Reminders (`ReminderScheduler`). Failure does not undo the approval
@@ -206,7 +206,7 @@ Check these only when the whole journey works on a real recording (or the golden
 - [ ] **Operate:** Mark a task done or dropped; undo via audit `revert_token`; Reminders copy exists on device; Calendar copy exists when there is a due date
 - [ ] **Ask:** Chat within a selected project, across its completed meetings or one selected meeting, returns cited answers or `"I don't know"`; history survives relaunch
 - [ ] **Scope/privacy:** Queries never leak another project; purge removes that project's meetings, audio, tasks, and chat from Postgres and the phone; redaction removes selected turns
-- [ ] **Remote:** Phone on cellular/Wi-Fi reaches the Mac backend through the tunnel with the bearer token, and status does not depend on the JSON file
+- [ ] **Remote:** Phone on cellular/Wi-Fi reaches the Mac backend through the tunnel while signed in, and status does not depend on the JSON file
 
 ---
 
