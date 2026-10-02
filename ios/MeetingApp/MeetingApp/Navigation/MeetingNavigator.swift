@@ -29,13 +29,20 @@ final class MeetingNavigator {
     var selectedMeetingID: String?
     var activeSegment: MeetingSegment = .summary
     var pendingSeekMilliseconds: Int?
-
+    /// Set by Profile > Workspaces; MeetingsTab pushes the project and clears it.
+    var selectedProjectID: String?
 
     /// events.ts → navigate(). Also switches to the Meetings tab, which App.tsx did on every event.
     func open(meetingID: String, segment: MeetingSegment = .summary, seekMilliseconds: Int? = nil) {
         selectedMeetingID = meetingID
         activeSegment = segment
         pendingSeekMilliseconds = seekMilliseconds
+        activeTab = .meetings
+    }
+
+    func open(projectID: String) {
+        selectedMeetingID = nil
+        selectedProjectID = projectID
         activeTab = .meetings
     }
 

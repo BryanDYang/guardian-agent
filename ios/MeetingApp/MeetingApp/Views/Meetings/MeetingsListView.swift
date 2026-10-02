@@ -19,6 +19,7 @@ struct MeetingsListView: View {
     @State private var errorMessage: String?
     @State private var showAddProject = false
     @State private var showAddMeeting = false
+    @State private var showInvite = false
 
     var body: some View {
         ScrollView {
@@ -54,6 +55,11 @@ struct MeetingsListView: View {
                     .disabled(selectedIDs.isEmpty || isDeleting)
                 } else if let project {
                     Menu {
+                        if isServerID(project.id) {
+                            Button("Invite People", systemImage: "person.badge.plus") {
+                                showInvite = true
+                            }
+                        }
                         Button("Delete Project", systemImage: "trash", role: .destructive) {
                             pendingDeletion = [project]
                             showDeleteConfirmation = true
@@ -80,6 +86,11 @@ struct MeetingsListView: View {
         .sheet(isPresented: $showAddMeeting) {
             if let project {
                 AddMeetingSheet(project: project)
+            }
+        }
+        .sheet(isPresented: $showInvite) {
+            if let project {
+                InviteMembersSheet(project: project)
             }
         }
         .confirmationDialog(

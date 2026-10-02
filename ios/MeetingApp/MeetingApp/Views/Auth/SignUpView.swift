@@ -8,6 +8,9 @@ struct SignUpView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
+    @State private var isWorking = false
+    @State private var errorMessage: String?
+    @State private var showingCheckEmail = false
 
     private static let minimumPasswordLength = 6
 
@@ -86,19 +89,23 @@ struct SignUpView: View {
                                     .foregroundStyle(Palette.danger)
                             }
                         }
+
+                        if let errorMessage {
+                            Text(errorMessage)
+                                .font(.footnote)
+                                .foregroundStyle(Palette.danger)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
                     .padding(.top, 40)
 
                     VStack(spacing: 14) {
-                        GoogleButton(title: "Sign up with Google") {
-                            session.continueWithGoogle(isNewAccount: true)
-                        }
+                        GoogleButton(title: "Sign up with Google", action: continueWithGoogle)
+                            .disabled(isWorking)
 
-                        Button("Create Account") {
-                            session.signUp(name: trimmedName, email: email)
-                        }
-                        .buttonStyle(PrimaryButtonStyle())
-                        .disabled(!canSubmit)
+                        Button(isWorking ? "Creating Account..." : "Create Account", action: createAccount)
+                            .buttonStyle(PrimaryButtonStyle())
+                            .disabled(!canSubmit || isWorking)
                     }
                     .padding(.top, 20)
                 }
@@ -111,6 +118,44 @@ struct SignUpView: View {
                 .padding(.bottom, 12)
         }
         .background(Color.white)
+        .alert("Check your email", isPresented: $showingCheckEmail) {
+            Button("OK", action: onLogIn)
+        } message: {
+            Text("We sent a confirmation link to \(email). Open it, then log in.")
+        }
+    }
+
+    private func createAccount() {
+        isWorking = true
+        errorMessage = nil
+        Task {
+            do {
+                let needsConfirmation = try await session.signUp(
+                    name: trimmedName,
+                    email: email.trimmingCharacters(in: .whitespacesAndNewlines),
+                    password: password
+                )
+                if needsConfirmation {
+                    showingCheckEmail = true
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isWorking = false
+        }
+    }
+
+    private func continueWithGoogle() {
+        isWorking = true
+        errorMessage = nil
+        Task {
+            do {
+                try await session.signInWithGoogle()
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isWorking = false
+        }
     }
 }
 

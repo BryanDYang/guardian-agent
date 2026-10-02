@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import psycopg
 import pytest
+from conftest import JWT_SECRET, SUPABASE_URL
 from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 
@@ -17,16 +18,23 @@ from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
-AUTH = {"Authorization": "Bearer test-token"}
 
 
 @pytest.fixture
-def seeded():
-    """One meeting with two extracted tasks, neither with a due date."""
+def seeded(make_user):
+    """One meeting with two extracted tasks, neither with a due date, plus a
+    project member and a signed-in outsider."""
+    member_id, member = make_user("Member")
+    _, outsider = make_user("Outsider")
     with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         project_id = conn.execute(
             "INSERT INTO projects (name) VALUES ('pytest tasks') RETURNING id"
         ).fetchone()["id"]
+        conn.execute(
+            "INSERT INTO project_members (project_id, user_id, role) "
+            "VALUES (%s, %s, 'member')",
+            (project_id, member_id),
+        )
         meeting_id = str(uuid4())
         meetings.create_meeting(
             conn,
@@ -79,25 +87,39 @@ def seeded():
                 "SELECT id, title FROM tasks WHERE meeting_id = %s", (meeting_id,)
             )
         }
-    yield {"project_id": str(project_id), **ids}
+    yield {
+        "project_id": str(project_id),
+        "member_id": member_id,
+        "member": member,
+        "outsider": outsider,
+        **ids,
+    }
     with psycopg.connect(DATABASE_URL) as conn:
         conn.execute("DELETE FROM projects WHERE name = 'pytest tasks'")
 
 
 @pytest.fixture
-def client(tmp_path):
-    app = create_app(tmp_path, tmp_path, token="test-token", database_url=DATABASE_URL)
-    with TestClient(app) as client:
+def client(tmp_path, seeded):
+    """Sends the project member's token unless a test passes other headers."""
+    app = create_app(
+        tmp_path,
+        tmp_path,
+        database_url=DATABASE_URL,
+        supabase_url=SUPABASE_URL,
+        jwt_secret=JWT_SECRET,
+    )
+    with TestClient(app, headers=seeded["member"]) as client:
         yield client
 
 
-def review(client, task_id, **body):
-    return client.patch(f"/api/v1/tasks/{task_id}/review", json=body, headers=AUTH)
+def review(client, task_id, headers=None, **body):
+    url = f"/api/v1/tasks/{task_id}/review"
+    return client.patch(url, json=body, headers=headers)
 
 
-def calendar(client, project_id, start="2026-10-01", end="2026-10-31"):
+def calendar(client, project_id, start="2026-10-01", end="2026-10-31", headers=None):
     params = {"project_id": project_id, "start_date": start, "end_date": end}
-    return client.get("/api/v1/tasks", params=params, headers=AUTH)
+    return client.get("/api/v1/tasks", params=params, headers=headers)
 
 
 def approve(client, task_id, due_date="2026-10-02"):
@@ -164,21 +186,19 @@ def test_edit_then_dismiss(client, seeded):
 def test_state_changes_and_undo(client, seeded):
     task_id = seeded["Share the recording"]
     url = f"/api/v1/tasks/{task_id}/state"
-    assert client.post(url, json={"state": "done"}, headers=AUTH).status_code == 409
+    assert client.post(url, json={"state": "done"}).status_code == 409
     approve(client, task_id)
 
-    done = client.post(url, json={"state": "done"}, headers=AUTH).json()
+    done = client.post(url, json={"state": "done"}).json()
     assert done["task"]["lifecycle_status"] == "done"
-    assert client.post(url, json={"state": "done"}, headers=AUTH).status_code == 409
+    assert client.post(url, json={"state": "done"}).status_code == 409
 
-    undo = client.post(f"/api/v1/tasks/revert/{done['revert_token']}", headers=AUTH)
+    undo = client.post(f"/api/v1/tasks/revert/{done['revert_token']}")
     assert undo.status_code == 200
     assert undo.json()["task"]["lifecycle_status"] == "open"
-    again = client.post(f"/api/v1/tasks/revert/{done['revert_token']}", headers=AUTH)
+    again = client.post(f"/api/v1/tasks/revert/{done['revert_token']}")
     assert again.status_code == 409  # only the most recent change can be undone
-    redo = client.post(
-        f"/api/v1/tasks/revert/{undo.json()['revert_token']}", headers=AUTH
-    )
+    redo = client.post(f"/api/v1/tasks/revert/{undo.json()['revert_token']}")
     assert redo.json()["task"]["lifecycle_status"] == "done"
 
     with psycopg.connect(DATABASE_URL) as conn:
@@ -192,9 +212,7 @@ def test_state_changes_and_undo(client, seeded):
 def test_errors(client, seeded):
     unknown = "00000000-0000-0000-0000-000000000000"
     assert review(client, unknown, action="edit").status_code == 404
-    assert (
-        client.post(f"/api/v1/tasks/revert/{unknown}", headers=AUTH).status_code == 404
-    )
+    assert client.post(f"/api/v1/tasks/revert/{unknown}").status_code == 404
     assert (
         review(client, seeded["Share the recording"], action="archive").status_code
         == 422
@@ -208,3 +226,44 @@ def test_errors(client, seeded):
         client, seeded["Share the recording"], action="edit", assignee_id=unknown
     )
     assert bad_assignee.status_code == 400
+
+
+def test_approver_and_actor_are_recorded(client, seeded):
+    task_id = seeded["Share the recording"]
+    approve(client, task_id)
+    done = client.post(f"/api/v1/tasks/{task_id}/state", json={"state": "done"})
+    client.post(f"/api/v1/tasks/revert/{done.json()['revert_token']}")
+    with psycopg.connect(DATABASE_URL) as conn:
+        approved = conn.execute(
+            "SELECT approved_by, approved_at IS NOT NULL FROM tasks WHERE id = %s",
+            (task_id,),
+        ).fetchone()
+        actors = conn.execute(
+            "SELECT actor_id FROM task_audit_log WHERE task_id = %s", (task_id,)
+        ).fetchall()
+    assert approved == (seeded["member_id"], True)
+    assert [a[0] for a in actors] == [seeded["member_id"]] * 2
+
+
+def test_outsiders_cannot_see_or_change_tasks(client, seeded):
+    task_id = seeded["Share the recording"]
+    approve(client, task_id)
+    token = client.post(
+        f"/api/v1/tasks/{task_id}/state", json={"state": "done"}
+    ).json()["revert_token"]
+
+    outsider = seeded["outsider"]
+    assert calendar(client, seeded["project_id"], headers=outsider).status_code == 404
+    assert review(client, task_id, outsider, action="edit").status_code == 404
+    state = client.post(
+        f"/api/v1/tasks/{task_id}/state", json={"state": "open"}, headers=outsider
+    )
+    assert state.status_code == 404
+    undo = client.post(f"/api/v1/tasks/revert/{token}", headers=outsider)
+    assert undo.status_code == 404
+
+    # Nothing the outsider tried went through.
+    [task] = calendar(client, seeded["project_id"]).json()
+    assert task["lifecycle_status"] == "done"
+    no_token = {"Authorization": ""}
+    assert calendar(client, seeded["project_id"], headers=no_token).status_code == 401

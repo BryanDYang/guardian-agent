@@ -420,7 +420,7 @@ def test_provider_from_environment_needs_credentials(tmp_path):
         "claude",
         "--whisper-backend",
         "openai",
-        API_SECRET_KEY="secret",
+        SUPABASE_URL="http://127.0.0.1:54321",
     )
     assert served.returncode == 1
     assert "ANTHROPIC_API_KEY" in served.stderr

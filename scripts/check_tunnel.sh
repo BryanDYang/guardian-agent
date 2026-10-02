@@ -27,63 +27,64 @@ if [ "$SHARED" = 1 ]; then
 else
   SETUP="scripts/setup_tunnel.sh $HOST"
 fi
-TOKEN="$(sed -n 's/^API_SECRET_KEY=//p' "$ROOT/.env" 2>/dev/null | tail -n 1 | tr -d '\r')"
-if [ -n "$TOKEN" ]; then
-  pass ".env has API_SECRET_KEY"
-else
-  fail ".env has API_SECRET_KEY" "Set API_SECRET_KEY in .env to the backend's API key"
-fi
+env_value() { sed -n "s/^$1=//p" "$ROOT/.env" 2>/dev/null | tail -n 1 | tr -d '\r'; }
+plist_value() { plutil -extract "$1" raw "$PLIST" 2>/dev/null || true; }
+APP_URL="$(plist_value BaseURL)"
+APP_SUPABASE="$(plist_value SupabaseURL)"
+APP_KEY="$(plist_value SupabaseAnonKey)"
 
-APP_TOKEN="$(plutil -extract APIToken raw "$PLIST" 2>/dev/null || true)"
-APP_URL="$(plutil -extract BaseURL raw "$PLIST" 2>/dev/null || true)"
-if [ -n "$TOKEN" ] && [ "$APP_TOKEN" = "$TOKEN" ]; then
-  pass "iOS APIToken matches .env"
-else
-  fail "iOS APIToken matches .env" "Run $SETUP with the same key, then rebuild the app"
-fi
 if [ "$APP_URL" = "https://$HOST" ]; then
   pass "iOS BaseURL is https://$HOST"
 else
   fail "iOS BaseURL is https://$HOST" "Found '$APP_URL'. Run $SETUP, then rebuild the app"
 fi
-
-# Do not send a token when the destination does not match the app config.
-if [ -z "$TOKEN" ] || [ "$APP_TOKEN" != "$TOKEN" ] || [ "$APP_URL" != "https://$HOST" ]; then
-  exit 1
+case "$APP_SUPABASE" in
+  "") fail "iOS SupabaseURL is a hosted project" "Run $SETUP, then rebuild the app" ;;
+  *127.0.0.1* | *localhost*) fail "iOS SupabaseURL is a hosted project" "Found $APP_SUPABASE. Phones and teammates can't reach local Supabase" ;;
+  *) pass "iOS SupabaseURL is a hosted project" ;;
+esac
+if [ -n "$APP_KEY" ]; then
+  pass "iOS SupabaseAnonKey is set"
+else
+  fail "iOS SupabaseAnonKey is set" "Run $SETUP, then rebuild the app"
 fi
 
 if [ "$SHARED" = 0 ]; then
+  # The server only accepts tokens issued by the Supabase project in its .env.
+  if [ -n "$APP_SUPABASE" ] && [ "$(env_value SUPABASE_URL)" = "$APP_SUPABASE" ]; then
+    pass "Server and app use the same Supabase"
+  else
+    fail "Server and app use the same Supabase" "Set SUPABASE_URL in .env, re-run $SETUP, rebuild the app, restart the server"
+  fi
+
   if [ -f "$ROOT/contexts/meeting_transcriber-master/meeting_transcriber.py" ]; then
     pass "CCB transcriber source present"
   else
     fail "CCB transcriber source present" "Add contexts/meeting_transcriber-master (see docs/ccb-transcriber.md)"
   fi
 
-  CODE="$(status -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/health)"
+  CODE="$(status http://127.0.0.1:8000/api/health)"
   if [ "$CODE" = 200 ]; then
-    pass "Local server answers with the token"
-  elif [ "$CODE" = 401 ]; then
-    fail "Local server answers with the token" "401: restart the server with --env-file .env"
+    pass "Local server is running"
   else
-    fail "Local server answers with the token" "HTTP $CODE: start it with uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium"
+    fail "Local server is running" "HTTP $CODE: start it with uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium"
   fi
-
 fi
 
 CODE="$(status "https://$HOST/api/health")"
 case "$CODE" in
-  401) pass "Tunnel rejects requests without the token" ;;
-  400) fail "Tunnel rejects requests without the token" "400: add httpHostHeader: localhost to ~/.cloudflared/config.yml" ;;
-  502) fail "Tunnel rejects requests without the token" "502: the tunnel is up but the local server is not running" ;;
-  530) fail "Tunnel rejects requests without the token" "530: run cloudflared tunnel run <tunnel-name>" ;;
-  *) fail "Tunnel rejects requests without the token" "HTTP $CODE from https://$HOST" ;;
+  200) pass "Tunnel reaches the server" ;;
+  400) fail "Tunnel reaches the server" "400: add httpHostHeader: localhost to ~/.cloudflared/config.yml" ;;
+  502) fail "Tunnel reaches the server" "502: the tunnel is up but the local server is not running" ;;
+  530) fail "Tunnel reaches the server" "530: run cloudflared tunnel run <tunnel-name>" ;;
+  *) fail "Tunnel reaches the server" "HTTP $CODE from https://$HOST" ;;
 esac
 
-CODE="$(status -H "Authorization: Bearer $TOKEN" "https://$HOST/api/health")"
-if [ "$CODE" = 200 ]; then
-  pass "Tunnel accepts requests with the token"
+CODE="$(status "https://$HOST/api/v1/me")"
+if [ "$CODE" = 401 ]; then
+  pass "Tunnel turns away requests without a sign-in"
 else
-  fail "Tunnel accepts requests with the token" "HTTP $CODE from https://$HOST"
+  fail "Tunnel turns away requests without a sign-in" "HTTP $CODE: pull the latest code and restart the server"
 fi
 
 exit "$FAILED"

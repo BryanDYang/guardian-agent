@@ -1,26 +1,23 @@
 import Foundation
+import Supabase
 
 struct MeetingAPIClient {
-    static let shared: MeetingAPIClient = {
-        let config = Bundle.main.url(forResource: "LabSyncConfig", withExtension: "plist")
-            .flatMap { NSDictionary(contentsOf: $0) as? [String: String] } ?? [:]
-        return MeetingAPIClient(
-            baseURL: config["BaseURL"].flatMap(URL.init(string:))
-                ?? URL(string: "http://127.0.0.1:8000")!,
-            token: config["APIToken"]
-        )
-    }()
+    static let shared = MeetingAPIClient(baseURL: LabSyncConfig.baseURL)
 
     private static let uploadTimeout: TimeInterval = 15 * 60
     private static let answerTimeout: TimeInterval = 100
 
     let baseURL: URL
-    private let token: String?
+    private let auth: AuthClient
     private let session: URLSession
 
-    init(baseURL: URL, token: String? = nil, session: URLSession = .shared) {
+    init(
+        baseURL: URL,
+        auth: AuthClient = SupabaseService.client.auth,
+        session: URLSession = .shared
+    ) {
         self.baseURL = baseURL
-        self.token = token
+        self.auth = auth
         self.session = session
     }
 
@@ -221,20 +218,123 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
+    func me() async throws -> RemoteMe {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/me")))
+    }
+
+    func updateMe(displayName: String, title: String) async throws -> RemoteMe {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me"))
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(
+            withJSONObject: ["display_name": displayName, "title": title]
+        )
+        return try await send(request)
+    }
+
+    /// voiceStep is "skipped", or "placeholder" until voice enrollment ships (FR-ONB-2a).
+    func completeOnboarding(voiceStep: String) async throws -> RemoteMe {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/me/onboarding/complete")
+        )
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["voice_step": voiceStep])
+        return try await send(request)
+    }
+
+        func invite(projectID: String, email: String) async throws -> CreatedInvitation {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/invitations")
+        )
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["email": email])
+        return try await send(request)
+    }
+
+    func projectInvitations(projectID: String) async throws -> [RemoteInvitation] {
+        try await send(URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/invitations")
+        ))
+    }
+
+    func revokeInvitation(projectID: String, id: String) async throws {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/invitations/\(id)")
+        )
+        request.httpMethod = "DELETE"
+        let _: [String: Int] = try await send(request)
+    }
+
+    /// Pending invitations for the signed-in user's email (FR-INV-8).
+    func myInvitations() async throws -> [RemoteInvitation] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/invitations")))
+    }
+
+    func acceptInvitation(id: String) async throws -> JoinedProject {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/invitations/\(id)/accept"))
+        request.httpMethod = "POST"
+        return try await send(request)
+    }
+
+    func declineInvitation(id: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/invitations/\(id)/decline"))
+        request.httpMethod = "POST"
+        let _: [String: Int] = try await send(request)
+    }
+
+    /// From an invite link.
+    func acceptInvitation(token: String) async throws -> JoinedProject {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/invitations/accept-token"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["token": token])
+        return try await send(request)
+    }
+
+    /// FR-ACCT: deletes the signed-in user's account on the server.
+    func deleteAccount() async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me"))
+        request.httpMethod = "DELETE"
+        let _: [String: Int] = try await send(request)
+    }
+
+    /// FR-PROF-3: approved tasks assigned to me.
+    func taskSummary() async throws -> RemoteTaskSummary {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/me/tasks/summary")))
+    }
+
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
-        if let token {
-            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        }
+        let token = try await accessToken()
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let (data, response) = try await session.data(for: request)
         guard let response = response as? HTTPURLResponse else {
             throw MeetingAPIError.invalidResponse
+        }
+        if response.statusCode == 401 {
+            // Supabase already refreshed the token, so the backend turning it down
+            // means the session is over (for example, the account was deleted).
+            // Signing out returns the app to log in and clears the local cache.
+            try? await auth.signOut(scope: .local)
+            throw MeetingAPIError.sessionEnded
         }
         guard (200..<300).contains(response.statusCode) else {
             let detail = try? JSONDecoder().decode(ErrorResponse.self, from: data).detail
             throw MeetingAPIError.server(detail ?? "Backend returned HTTP \(response.statusCode).")
         }
         return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    /// The signed-in user's access token. Supabase refreshes it first when it is
+    /// about to expire, and signs out if the refresh token is no longer valid.
+    private func accessToken() async throws -> String {
+        do {
+            return try await auth.session.accessToken
+        } catch AuthError.sessionMissing {
+            throw MeetingAPIError.server("Sign in to continue.")
+        }
     }
 
     private static func mimeType(for url: URL) -> String {
@@ -254,12 +354,16 @@ struct MeetingAPIClient {
 
 enum MeetingAPIError: LocalizedError {
     case invalidResponse
+    /// The backend returned 401 and the app has already signed out locally.
+    case sessionEnded
     case server(String)
 
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
             "The backend returned an invalid response."
+        case .sessionEnded:
+            "Your session ended. Sign in again."
         case .server(let detail):
             detail
         }
@@ -282,10 +386,69 @@ struct RemoteProject: Decodable {
     let id: String
     let name: String
     let imagePath: String?
+    let memberCount: Int?
+    let lastActivityAt: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case imagePath = "image_path"
+        case memberCount = "member_count"
+        case lastActivityAt = "last_activity_at"
+    }
+}
+
+struct RemoteMe: Decodable {
+    let displayName: String?
+    let title: String?
+    let onboardingStep: String
+    let pendingInvitationCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case displayName = "display_name"
+        case onboardingStep = "onboarding_step"
+        case pendingInvitationCount = "pending_invitation_count"
+    }
+}
+
+struct RemoteTaskSummary: Decodable {
+    let open: Int
+    let overdue: Int
+    let done: Int
+}
+
+struct RemoteInvitation: Decodable, Identifiable {
+    let id: String
+    let projectID: String
+    let projectName: String
+    let email: String
+    let invitedByName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, email
+        case projectID = "project_id"
+        case projectName = "project_name"
+        case invitedByName = "invited_by_name"
+    }
+}
+
+struct CreatedInvitation: Decodable {
+    let invitation: RemoteInvitation
+    let inviteURL: URL
+
+    enum CodingKeys: String, CodingKey {
+        case invitation
+        case inviteURL = "invite_url"
+    }
+}
+
+struct JoinedProject: Decodable {
+    let projectID: String
+    let projectName: String
+
+    enum CodingKeys: String, CodingKey {
+        case projectID = "project_id"
+        case projectName = "project_name"
     }
 }
 
@@ -568,6 +731,13 @@ enum LabSyncDate {
     static func string(from date: Date) -> String {
         let parts = Calendar.current.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
+    }
+
+    /// Server timestamps look like 2026-10-01T18:04:05.123456Z. The fraction is
+    /// dropped first, since ISO8601DateFormatter doesn't read every fraction length.
+    static func timestamp(_ value: String) -> Date? {
+        let whole = value.replacingOccurrences(of: #"\.\d+"#, with: "", options: .regularExpression)
+        return ISO8601DateFormatter().date(from: whole)
     }
 }
 

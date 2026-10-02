@@ -5,6 +5,8 @@ struct EditProfileSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
     @State private var title = ""
+    @State private var isSaving = false
+    @State private var errorMessage: String?
 
     private var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -28,11 +30,17 @@ struct EditProfileSheet: View {
                 }
                 .listRowBackground(Color.clear)
 
-                Section("Profile") {
+                Section {
                     TextField("Full name", text: $name)
                         .textContentType(.name)
                     TextField("Title (optional)", text: $title)
                         .textContentType(.jobTitle)
+                } header: {
+                    Text("Profile")
+                } footer: {
+                    if let errorMessage {
+                        Text(errorMessage).foregroundStyle(Palette.danger)
+                    }
                 }
 
                 Section {
@@ -48,17 +56,30 @@ struct EditProfileSheet: View {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        session.user.name = trimmedName
-                        session.user.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-                        dismiss()
-                    }
-                    .disabled(trimmedName.isEmpty)
+                    Button(isSaving ? "Saving..." : "Save", action: save)
+                        .disabled(trimmedName.isEmpty || isSaving)
                 }
             }
             .onAppear {
                 name = session.user.name
                 title = session.user.title
+            }
+        }
+    }
+
+    private func save() {
+        isSaving = true
+        errorMessage = nil
+        Task {
+            do {
+                try await session.updateProfile(
+                    name: trimmedName,
+                    title: title.trimmingCharacters(in: .whitespacesAndNewlines)
+                )
+                dismiss()
+            } catch {
+                errorMessage = error.localizedDescription
+                isSaving = false
             }
         }
     }

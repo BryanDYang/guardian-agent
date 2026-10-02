@@ -9,6 +9,7 @@ from uuid import UUID, uuid4
 
 import psycopg
 import pytest
+from conftest import JWT_SECRET, SUPABASE_URL
 from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 
@@ -19,7 +20,6 @@ from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
-AUTH = {"Authorization": "Bearer test-token"}
 PROJECTS = ("pytest chat", "pytest chat other")
 
 
@@ -56,8 +56,21 @@ def add_meeting(conn, embedder, project_id, name, day, lines, extraction=None):
     return meeting_id
 
 
+def add_member(project_id, user_id):
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "INSERT INTO project_members (project_id, user_id, role) "
+            "VALUES (%s, %s, 'member')",
+            (project_id, user_id),
+        )
+
+
 @pytest.fixture
-def seeded(embedder):
+def seeded(embedder, make_user):
+    """Two projects with meetings. The member belongs to both; the outsider
+    to neither."""
+    member_id, member = make_user("Member")
+    _, outsider = make_user("Outsider")
     with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         project, other = (
             conn.execute(
@@ -65,6 +78,12 @@ def seeded(embedder):
             ).fetchone()["id"]
             for name in PROJECTS
         )
+        for project_id in (project, other):
+            conn.execute(
+                "INSERT INTO project_members (project_id, user_id, role) "
+                "VALUES (%s, %s, 'member')",
+                (project_id, member_id),
+            )
 
         def sync_results(meeting_id):
             turn = f"{meeting_id}:turn:"
@@ -136,6 +155,9 @@ def seeded(embedder):
             [("SPEAKER_01", "The learning rate here is 0.1 and nobody else knows.")],
         )
     yield {
+        "member_id": member_id,
+        "member": member,
+        "outsider": outsider,
         "project": str(project),
         "other": str(other),
         "kickoff": kickoff,
@@ -178,30 +200,32 @@ def model(monkeypatch):
 
 
 @pytest.fixture
-def client(tmp_path, embedder):
+def client(tmp_path, embedder, seeded):
+    """Sends the member's token unless a test passes other headers."""
     app = create_app(
         tmp_path,
         tmp_path,
-        token="test-token",
         database_url=DATABASE_URL,
         embedder=embedder,
+        supabase_url=SUPABASE_URL,
+        jwt_secret=JWT_SECRET,
     )
-    with TestClient(app) as client:
+    with TestClient(app, headers=seeded["member"]) as client:
         yield client
 
 
 def start(client, project, meeting=None):
     body = {"project_id": project} | ({"meeting_id": meeting} if meeting else {})
-    response = client.post("/api/v1/conversations", json=body, headers=AUTH)
+    response = client.post("/api/v1/conversations", json=body)
     assert response.status_code == 201, response.text
     return response.json()["id"]
 
 
-def ask(client, conversation, question):
+def ask(client, conversation, question, headers=None):
     return client.post(
         f"/api/v1/conversations/{conversation}/messages",
         json={"content": question},
-        headers=AUTH,
+        headers=headers,
     )
 
 
@@ -277,6 +301,7 @@ def test_empty_project_refuses_without_the_model(client, seeded, model):
         empty = conn.execute(
             "INSERT INTO projects (name) VALUES ('pytest chat') RETURNING id"
         ).fetchone()["id"]
+    add_member(empty, seeded["member_id"])
     response = ask(client, start(client, str(empty)), "Anything?")
     assert response.json()["assistant_message"]["content"] == chat.NO_ANSWER
     assert model.prompts == []
@@ -289,7 +314,7 @@ def test_history_titles_and_follow_ups(client, seeded, model):
     ask(client, conversation, "Why?")
     assert "USER: What learning rate did we pick?" in model.prompts[-1]
 
-    thread = client.get(f"/api/v1/conversations/{conversation}", headers=AUTH).json()
+    thread = client.get(f"/api/v1/conversations/{conversation}").json()
     assert thread["title"] == "What learning rate did we pick?"
     assert [m["role"] for m in thread["messages"]] == [
         "user",
@@ -298,11 +323,11 @@ def test_history_titles_and_follow_ups(client, seeded, model):
         "assistant",
     ]
     listed = client.get(
-        "/api/v1/conversations", params={"project_id": seeded["project"]}, headers=AUTH
+        "/api/v1/conversations", params={"project_id": seeded["project"]}
     ).json()
     assert [c["id"] for c in listed] == [conversation]  # empty threads are hidden
     other = client.get(
-        "/api/v1/conversations", params={"project_id": seeded["other"]}, headers=AUTH
+        "/api/v1/conversations", params={"project_id": seeded["other"]}
     ).json()
     assert other == []
 
@@ -313,7 +338,7 @@ def test_model_failure_stores_nothing(client, seeded, model):
     response = ask(client, conversation, "What learning rate?")
     assert response.status_code == 502
     assert response.json()["detail"] == "Claude chat timed out after 90s."
-    thread = client.get(f"/api/v1/conversations/{conversation}", headers=AUTH).json()
+    thread = client.get(f"/api/v1/conversations/{conversation}").json()
     assert thread["messages"] == []
 
 
@@ -321,10 +346,10 @@ def test_request_errors(client, seeded, model):
     missing = str(UUID(int=0))
     post = client.post
     assert (
-        post("/api/v1/conversations", json={"project_id": missing}, headers=AUTH)
+        post("/api/v1/conversations", json={"project_id": missing})
     ).status_code == 404
     foreign = {"project_id": seeded["project"], "meeting_id": seeded["leak"]}
-    assert post("/api/v1/conversations", json=foreign, headers=AUTH).status_code == 404
+    assert post("/api/v1/conversations", json=foreign).status_code == 404
     assert ask(client, missing, "Hi").status_code == 404
     conversation = start(client, seeded["project"])
     assert ask(client, conversation, "   ").status_code == 400
@@ -335,9 +360,62 @@ def test_purge_deletes_project_chats(client, seeded, model):
     conversation = start(client, seeded["project"])
     model.keyword = "go with 3e-4"
     ask(client, conversation, "What learning rate?")
-    response = client.delete(
-        f"/api/projects/{seeded['project']}/meetings", headers=AUTH
-    )
+    response = client.delete(f"/api/projects/{seeded['project']}/meetings")
     assert response.status_code == 200
-    got = client.get(f"/api/v1/conversations/{conversation}", headers=AUTH)
+    got = client.get(f"/api/v1/conversations/{conversation}")
     assert got.status_code == 404
+
+
+def test_conversations_record_their_creator(client, seeded, model):
+    conversation = start(client, seeded["project"])
+    with psycopg.connect(DATABASE_URL) as conn:
+        [(user_id,)] = conn.execute(
+            "SELECT user_id FROM chat_conversations WHERE id = %s", (conversation,)
+        ).fetchall()
+    assert user_id == seeded["member_id"]
+
+
+def test_conversations_are_private_to_their_creator(client, seeded, model, make_user):
+    conversation = start(client, seeded["project"])
+    model.keyword = "go with 3e-4"
+    ask(client, conversation, "What learning rate?")
+
+    teammate_id, teammate = make_user("Teammate")
+    add_member(seeded["project"], teammate_id)
+    url = f"/api/v1/conversations/{conversation}"
+    for headers in (teammate, seeded["outsider"]):
+        assert client.get(url, headers=headers).status_code == 404
+        assert ask(client, conversation, "Hi", headers).status_code == 404
+        listed = client.get("/api/v1/conversations", headers=headers).json()
+        assert listed == []
+    # The teammate can still chat about the same project in their own thread.
+    response = client.post(
+        "/api/v1/conversations",
+        json={"project_id": seeded["project"]},
+        headers=teammate,
+    )
+    assert response.status_code == 201
+
+
+def test_outsiders_cannot_start_conversations(client, seeded):
+    body = {"project_id": seeded["project"]}
+    response = client.post(
+        "/api/v1/conversations", json=body, headers=seeded["outsider"]
+    )
+    assert response.status_code == 404
+    no_token = {"Authorization": ""}
+    assert (
+        client.post("/api/v1/conversations", json=body, headers=no_token).status_code
+        == 401
+    )
+
+
+def test_leaving_the_project_closes_your_conversations(client, seeded, model):
+    conversation = start(client, seeded["project"])
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "DELETE FROM project_members WHERE project_id = %s AND user_id = %s",
+            (seeded["project"], seeded["member_id"]),
+        )
+    assert client.get(f"/api/v1/conversations/{conversation}").status_code == 404
+    assert ask(client, conversation, "Still there?").status_code == 404

@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// Fourth tab: identity header with task stats, settings menu, and Sign Out.
@@ -8,6 +9,8 @@ struct ProfileTab: View {
     @Environment(AppSession.self) private var session
     @Environment(MeetingNavigator.self) private var navigator
     @State private var showingEditProfile = false
+    @Query private var projects: [Project]
+    @State private var tasks = RemoteTaskSummary(open: 0, overdue: 0, done: 0)
 
     var body: some View {
         NavigationStack {
@@ -24,6 +27,14 @@ struct ProfileTab: View {
             .sheet(isPresented: $showingEditProfile) {
                 EditProfileSheet()
             }
+            .task { await refresh() }
+        }
+    }
+
+    private func refresh() async {
+        await session.refreshProfile()
+        if let summary = try? await MeetingAPIClient.shared.taskSummary() {
+            tasks = summary
         }
     }
 
@@ -43,6 +54,11 @@ struct ProfileTab: View {
                     Text(session.user.name)
                         .font(.headline)
                         .foregroundStyle(Palette.ink)
+                    if !session.user.title.isEmpty {
+                        Text(session.user.title)
+                            .font(.subheadline)
+                            .foregroundStyle(Palette.secondaryText)
+                    }
                     Text(session.user.email)
                         .font(.subheadline)
                         .foregroundStyle(Palette.secondaryText)
@@ -74,15 +90,11 @@ struct ProfileTab: View {
                 navigator.activeTab = .tasks
             } label: {
                 HStack(spacing: 0) {
-                    TaskStat(value: ProfilePlaceholder.openTasks, label: "Open")
+                    TaskStat(value: tasks.open, label: "Open")
                     statDivider
-                    TaskStat(
-                        value: ProfilePlaceholder.overdueTasks,
-                        label: "Overdue",
-                        isAlert: ProfilePlaceholder.overdueTasks > 0
-                    )
+                    TaskStat(value: tasks.overdue, label: "Overdue", isAlert: tasks.overdue > 0)
                     statDivider
-                    TaskStat(value: ProfilePlaceholder.doneTasks, label: "Done")
+                    TaskStat(value: tasks.done, label: "Done")
                 }
             }
             .buttonStyle(.plain)
@@ -101,8 +113,8 @@ struct ProfileTab: View {
     // MARK: - Menu
 
     private var menuCard: some View {
-        let pending = ProfilePlaceholder.invitations.count
-        let active = ProfilePlaceholder.workspaces.count
+        let pending = session.pendingInvitationCount
+        let active = projects.filter { isServerID($0.id) }.count
 
         return VStack(spacing: 0) {
             NavigationLink {
@@ -189,7 +201,9 @@ struct ProfileTab: View {
     // MARK: - Sign out
 
     private var signOutButton: some View {
-        Button(action: session.signOut) {
+        Button {
+            Task { await session.signOut() }
+        } label: {
             Text("Sign Out")
                 .font(.subheadline.weight(.semibold))
                 .foregroundStyle(Palette.danger)
@@ -302,4 +316,5 @@ private extension View {
     ProfileTab()
         .environment(AppSession(stage: .signedIn, user: PlaceholderUser(name: "a", email: "a@a.com")))
         .environment(MeetingNavigator())
+        .modelContainer(PreviewContainer.shared)
 }

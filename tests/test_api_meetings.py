@@ -9,6 +9,7 @@ from pathlib import Path
 
 import psycopg
 import pytest
+from conftest import JWT_SECRET, SUPABASE_URL
 from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 
@@ -17,7 +18,6 @@ from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
-AUTH = {"Authorization": "Bearer test-token"}
 
 
 def query(sql, *params):
@@ -105,15 +105,29 @@ def client(tmp_path, monkeypatch, embedder):
     app = create_app(
         tmp_path,
         tmp_path,
-        token="test-token",
         database_url=DATABASE_URL,
         embedder=embedder,
+        supabase_url=SUPABASE_URL,
+        jwt_secret=JWT_SECRET,
     )
     with TestClient(app) as client:
         yield client
 
 
-def upload(client, project_id, overrides=None):
+@pytest.fixture
+def member(make_user, project_id):
+    """A signed-in member of the test project: (user_id, headers)."""
+    user_id, headers = make_user()
+    query(
+        "INSERT INTO project_members (project_id, user_id, role) "
+        "VALUES (%s, %s, 'member') RETURNING user_id",
+        project_id,
+        user_id,
+    )
+    return user_id, headers
+
+
+def upload(client, project_id, headers, overrides=None):
     form = {
         "project_id": project_id,
         "title": "TA check-in",
@@ -121,7 +135,9 @@ def upload(client, project_id, overrides=None):
         "consent_confirmed": "true",
     } | (overrides or {})
     files = {"file": ("recording.mp3", b"fake audio", "audio/mpeg")}
-    return client.post("/api/v1/meetings/upload", data=form, files=files, headers=AUTH)
+    return client.post(
+        "/api/v1/meetings/upload", data=form, files=files, headers=headers
+    )
 
 
 def wait_for(meeting_id, status):
@@ -133,12 +149,14 @@ def wait_for(meeting_id, status):
     raise AssertionError(f"Meeting never reached {status}: {rows}")
 
 
-def test_upload_processes_and_saves_results(client, project_id):
-    response = upload(client, project_id)
+def test_upload_processes_and_saves_results(client, project_id, member):
+    user_id, headers = member
+    response = upload(client, project_id, headers)
     assert response.status_code == 202
     meeting_id = response.json()["job_id"]
     meeting = wait_for(meeting_id, "completed")
     assert meeting["processing_attempt"] == 1 and meeting["error_message"] is None
+    assert meeting["uploaded_by"] == user_id
     assert meeting["model_metadata"]["transcription"] == {"whisper_model": "medium"}
 
     turns = query(
@@ -198,15 +216,17 @@ def test_upload_processes_and_saves_results(client, project_id):
     ]
 
 
-def test_retry_replaces_results_and_mirrors_attempt(client, project_id, tmp_path):
-    meeting_id = upload(client, project_id).json()["job_id"]
+def test_retry_replaces_results_and_mirrors_attempt(
+    client, project_id, member, tmp_path
+):
+    meeting_id = upload(client, project_id, member[1]).json()["job_id"]
     wait_for(meeting_id, "completed")
     record_path = tmp_path / meeting_id / "meeting.json"
     record = json.loads(record_path.read_text()) | {"status": "failed"}
     record_path.write_text(json.dumps(record))
 
     assert (
-        client.post(f"/api/meetings/{meeting_id}/retry", headers=AUTH).status_code
+        client.post(f"/api/meetings/{meeting_id}/retry", headers=member[1]).status_code
         == 202
     )
     meeting = wait_for(meeting_id, "completed")
@@ -232,6 +252,13 @@ def test_retry_replaces_results_and_mirrors_attempt(client, project_id, tmp_path
         ({"project_id": "not-a-uuid"}, 422),
     ],
 )
-def test_upload_rejections(client, project_id, overrides, status, tmp_path):
-    assert upload(client, project_id, overrides).status_code == status
+def test_upload_rejections(client, project_id, member, overrides, status, tmp_path):
+    assert upload(client, project_id, member[1], overrides).status_code == status
+    assert not list(tmp_path.glob("*/meeting.json"))
+
+
+def test_only_members_can_upload(client, project_id, make_user, tmp_path):
+    _, outsider = make_user("Outsider")
+    assert upload(client, project_id, outsider).status_code == 404
+    assert upload(client, project_id, {}).status_code == 401
     assert not list(tmp_path.glob("*/meeting.json"))

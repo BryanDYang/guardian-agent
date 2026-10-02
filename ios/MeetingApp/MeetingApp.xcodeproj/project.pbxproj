@@ -6,15 +6,32 @@
 	objectVersion = 90;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		D86DFB79306F51C50054551E /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = D86DFB78306F51C50054551E /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		000000000000000000000120 /* MeetingApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeetingApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D89D09A8306330120093139E /* SeedDataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedDataTests.swift; sourceTree = "<group>"; };
 		D89D09A93063301B0093139E /* TasksLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksLogicTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D86DFB84306F87D60054551E /* Exceptions for "MeetingApp" folder in "MeetingApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 000000000000000100000000 /* MeetingApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* MeetingApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D86DFB84306F87D60054551E /* Exceptions for "MeetingApp" folder in "MeetingApp" target */,
+			);
 			path = MeetingApp;
 			sourceTree = "<group>";
 		};
@@ -24,6 +41,7 @@
 		000000000000000130000000 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
+				D86DFB79306F51C50054551E /* Supabase in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -34,6 +52,7 @@
 			children = (
 				D89D09A7306330060093139E /* MeetingAppTests */,
 				000000000000000000000010 /* MeetingApp */,
+				D86DFB77306F51C50054551E /* Frameworks */,
 				000000000000000000000020 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -44,6 +63,13 @@
 				000000000000000000000120 /* MeetingApp.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		D86DFB77306F51C50054551E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		D89D09A7306330060093139E /* MeetingAppTests */ = {
@@ -72,6 +98,9 @@
 				000000000000000000000010 /* MeetingApp */,
 			);
 			name = MeetingApp;
+			packageProductDependencies = (
+				D86DFB78306F51C50054551E /* Supabase */,
+			);
 			productName = MyApp;
 			productReference = 000000000000000000000120 /* MeetingApp.app */;
 			productType = "com.apple.product-type.application";
@@ -100,6 +129,9 @@
 			);
 			mainGroup = 000000000000000000000001;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D86DFB76306F37900054551E /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = 000000000000000000000020 /* Products */;
 			projectDirPath = "";
@@ -268,6 +300,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeetingApp/Info.plist;
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -307,6 +340,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeetingApp/Info.plist;
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -357,6 +391,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D86DFB76306F37900054551E /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.5.1;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D86DFB78306F51C50054551E /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D86DFB76306F37900054551E /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000000 /* Project object */;
 }

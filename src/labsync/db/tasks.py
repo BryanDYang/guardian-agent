@@ -45,21 +45,33 @@ def update_review(
     title: str,
     attendee_id: UUID | None,
     due_date: date | None,
+    approved_by: UUID | None,
 ) -> dict:
+    """approved_by is the approving user, or None for edit and dismiss."""
     return conn.execute(
         f"""
         UPDATE tasks t
         SET review_status = %s, title = %s, attendee_id = %s, due_date = %s,
+            approved_by = %s,
+            approved_at = CASE WHEN %s::uuid IS NULL THEN NULL ELSE now() END,
             updated_at = now()
         WHERE t.id = %s
         RETURNING {COLUMNS}
         """,
-        (review_status, title, attendee_id, due_date, task_id),
+        (
+            review_status,
+            title,
+            attendee_id,
+            due_date,
+            approved_by,
+            approved_by,
+            task_id,
+        ),
     ).fetchone()
 
 
 def set_lifecycle(
-    conn: Connection, task_id: UUID, old: str, new: str, action: str
+    conn: Connection, task_id: UUID, old: str, new: str, action: str, actor_id: UUID
 ) -> tuple[dict, UUID]:
     """Change lifecycle_status and append the audit row that can undo it."""
     task = conn.execute(
@@ -72,8 +84,8 @@ def set_lifecycle(
     ).fetchone()
     token = conn.execute(
         """
-        INSERT INTO task_audit_log (task_id, action, old_value, new_value)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO task_audit_log (task_id, action, old_value, new_value, actor_id)
+        VALUES (%s, %s, %s, %s, %s)
         RETURNING revert_token
         """,
         (
@@ -81,6 +93,7 @@ def set_lifecycle(
             action,
             Jsonb({"lifecycle_status": old}),
             Jsonb({"lifecycle_status": new}),
+            actor_id,
         ),
     ).fetchone()["revert_token"]
     return task, token

@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Points the iOS app at Will's backend. Ask Will privately for the API key.
+# Points the iOS app at Will's backend and the Supabase project it signs users in
+# with. Ask Will for the Supabase URL and anon key. Both are public: they ship in
+# the app, and they let people sign in, not read data.
 #
 # Usage: scripts/use_shared_backend.sh [hostname]   (defaults to api.guardianagent.dev)
 set -euo pipefail
@@ -12,23 +14,24 @@ PLIST_TEMPLATE="$ROOT/ios/MeetingApp/LabSyncConfig.example.plist"
 command -v plutil >/dev/null || { echo "Error: this script requires macOS." >&2; exit 1; }
 
 echo "This app uses Will's backend at https://$HOST."
-echo "You need Will's API key (API_SECRET_KEY). Ask him for it privately; never commit it."
-read -r -s -p "Paste the API key: " TOKEN
-echo
-[ -n "$TOKEN" ] || { echo "Error: no key entered." >&2; exit 1; }
+read -r -p "Supabase URL (https://<project>.supabase.co): " SUPABASE_URL
+read -r -p "Supabase anon key: " ANON_KEY
+if [ -z "$SUPABASE_URL" ] || [ -z "$ANON_KEY" ]; then
+  echo "Error: enter both values." >&2
+  exit 1
+fi
 
 [ -f "$PLIST" ] || cp "$PLIST_TEMPLATE" "$PLIST"
 plutil -replace BaseURL -string "https://$HOST" "$PLIST"
-plutil -replace APIToken -string "$TOKEN" "$PLIST"
+plutil -replace SupabaseURL -string "$SUPABASE_URL" "$PLIST"
+plutil -replace SupabaseAnonKey -string "$ANON_KEY" "$PLIST"
 echo "Saved to ios/MeetingApp/MeetingApp/LabSyncConfig.plist (gitignored)."
 
-CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 \
-  -H "Authorization: Bearer $TOKEN" "https://$HOST/api/health" || true)"
+CODE="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "https://$HOST/api/health" || true)"
 case "$CODE" in
-  200) echo "OK: the key works and Will's backend is online." ;;
-  401) echo "The key was rejected. Check it with Will." ;;
+  200) echo "OK: Will's backend is online." ;;
   502|530) echo "Will's backend is offline right now (HTTP $CODE). Ask him to start it." ;;
   *) echo "Could not reach https://$HOST (HTTP $CODE)." ;;
 esac
 
-echo "Next: open ios/MeetingApp/MeetingApp.xcodeproj and rebuild the app."
+echo "Next: open ios/MeetingApp/MeetingApp.xcodeproj, rebuild the app, and sign up."

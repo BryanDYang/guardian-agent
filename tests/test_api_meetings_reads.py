@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import psycopg
 import pytest
+from conftest import JWT_SECRET, SUPABASE_URL
 from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 
@@ -17,7 +18,6 @@ from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
 pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not set")
-AUTH = {"Authorization": "Bearer test-token"}
 
 
 def add_meeting(conn, project_id, name, meeting_date, with_results=False):
@@ -81,42 +81,65 @@ def add_meeting(conn, project_id, name, meeting_date, with_results=False):
 
 
 @pytest.fixture
-def seeded():
+def seeded(make_user):
+    """A project with two meetings, one member, and one signed-in outsider."""
+    member_id, member = make_user("Member")
+    _, outsider = make_user("Outsider")
     with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         project_id = conn.execute(
             "INSERT INTO projects (name) VALUES ('pytest reads') RETURNING id"
         ).fetchone()["id"]
+        conn.execute(
+            "INSERT INTO project_members (project_id, user_id, role) "
+            "VALUES (%s, %s, 'member')",
+            (project_id, member_id),
+        )
         older = add_meeting(conn, project_id, "Week 1", date(2026, 9, 18))
         newer = add_meeting(conn, project_id, "Week 2", date(2026, 9, 25), True)
-    yield {"project_id": str(project_id), "older": older, "newer": newer}
+    yield {
+        "project_id": str(project_id),
+        "older": older,
+        "newer": newer,
+        "auth": member,
+        "outsider": outsider,
+    }
     with psycopg.connect(DATABASE_URL) as conn:
         conn.execute("DELETE FROM projects WHERE name = 'pytest reads'")
 
 
 @pytest.fixture
 def client(tmp_path):
-    app = create_app(tmp_path, tmp_path, token="test-token", database_url=DATABASE_URL)
+    app = create_app(
+        tmp_path,
+        tmp_path,
+        database_url=DATABASE_URL,
+        supabase_url=SUPABASE_URL,
+        jwt_secret=JWT_SECRET,
+    )
     with TestClient(app) as client:
         yield client
 
 
 def test_list_is_newest_first_and_paginates(client, seeded):
     url = f"/api/v1/projects/{seeded['project_id']}/meetings"
-    listed = client.get(url, headers=AUTH).json()
+    auth = seeded["auth"]
+    listed = client.get(url, headers=auth).json()
     assert [m["id"] for m in listed] == [seeded["newer"], seeded["older"]]
-    page = client.get(url, params={"limit": 1, "offset": 1}, headers=AUTH).json()
+    page = client.get(url, params={"limit": 1, "offset": 1}, headers=auth).json()
     assert [m["id"] for m in page] == [seeded["older"]]
 
 
 def test_list_errors(client, seeded):
+    auth = seeded["auth"]
     unknown = "/api/v1/projects/00000000-0000-0000-0000-000000000000/meetings"
-    assert client.get(unknown, headers=AUTH).status_code == 404
+    assert client.get(unknown, headers=auth).status_code == 404
     url = f"/api/v1/projects/{seeded['project_id']}/meetings"
-    assert client.get(url, params={"limit": 0}, headers=AUTH).status_code == 422
+    assert client.get(url, params={"limit": 0}, headers=auth).status_code == 422
 
 
 def test_detail_has_everything_the_screen_needs(client, seeded):
-    detail = client.get(f"/api/v1/meetings/{seeded['newer']}", headers=AUTH).json()
+    url = f"/api/v1/meetings/{seeded['newer']}"
+    detail = client.get(url, headers=seeded["auth"]).json()
     assert detail["name"] == "Week 2" and detail["status"] == "queued"
     assert detail["summary"] == {"overview": "TA check-in.", "bullet_points": None}
     assert detail["decisions"][0]["statement"] == "Keep the meeting time"
@@ -135,11 +158,20 @@ def test_detail_has_everything_the_screen_needs(client, seeded):
 
 
 def test_detail_before_processing_finishes(client, seeded):
-    detail = client.get(f"/api/v1/meetings/{seeded['older']}", headers=AUTH).json()
+    url = f"/api/v1/meetings/{seeded['older']}"
+    detail = client.get(url, headers=seeded["auth"]).json()
     assert detail["summary"] is None
     assert detail["decisions"] == detail["tasks"] == detail["transcript"] == []
 
 
 def test_detail_unknown_meeting(client, seeded):
     unknown = "/api/v1/meetings/00000000-0000-0000-0000-000000000000"
-    assert client.get(unknown, headers=AUTH).status_code == 404
+    assert client.get(unknown, headers=seeded["auth"]).status_code == 404
+
+
+def test_outsiders_and_strangers_cannot_read_meetings(client, seeded):
+    project = f"/api/v1/projects/{seeded['project_id']}/meetings"
+    meeting = f"/api/v1/meetings/{seeded['newer']}"
+    for url in (project, meeting):
+        assert client.get(url, headers=seeded["outsider"]).status_code == 404
+        assert client.get(url).status_code == 401
