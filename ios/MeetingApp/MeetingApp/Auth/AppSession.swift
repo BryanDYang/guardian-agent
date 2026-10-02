@@ -23,6 +23,9 @@ final class AppSession {
     /// Shown in the Profile tab. Name and email come from Supabase; the rest
     /// stays placeholder until the tab reads /api/v1/me (Phase 8).
     var user: PlaceholderUser
+    /// Token from an invite link, kept until the user is signed in and has
+    /// finished onboarding (FR-ONB-5). Closing the invite sheet clears it.
+    var pendingInviteToken: String?
 
     /// nil in previews, which never talk to Supabase.
     @ObservationIgnored private let auth: AuthClient?
@@ -95,6 +98,15 @@ final class AppSession {
             // Offline or the server already forgot the session: still forget it here.
             try? await auth.signOut(scope: .local)
         }
+    }
+
+    /// Handles meetingmemory://invite?token=... and ignores other links.
+    func open(_ url: URL) {
+        guard url.scheme == "meetingmemory", url.host() == "invite",
+              let token = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+                .queryItems?.first(where: { $0.name == "token" })?.value
+        else { return }
+        pendingInviteToken = token
     }
 
     /// Asks the backend which onboarding step comes next (FR-ONB-1).

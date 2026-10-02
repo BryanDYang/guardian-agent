@@ -20,6 +20,15 @@ struct MeetingAppApp: App {
         }
     }
 
+    /// The sheet hangs off the signed-in screen only, so a link opened while
+    /// signed out or onboarding waits until the user reaches Meetings (FR-ONB-5).
+    private var inviteSheetShown: Binding<Bool> {
+        Binding(
+            get: { session.pendingInviteToken != nil },
+            set: { if !$0 { session.pendingInviteToken = nil } }
+        )
+    }
+
     var body: some Scene {
         WindowGroup {
             Group {
@@ -49,10 +58,16 @@ struct MeetingAppApp: App {
                     }
                 case .signedIn:
                     RootTabView()
+                        .sheet(isPresented: inviteSheetShown) {
+                            if let token = session.pendingInviteToken {
+                                InviteLinkSheet(token: token)
+                            }
+                        }
                 }
             }
             .environment(session)
             .environment(navigator)
+            .onOpenURL { session.open($0) }
             .task { await session.followAuthChanges() }
             .onChange(of: session.stage) { _, stage in
                 switch stage {

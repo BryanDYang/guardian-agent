@@ -243,6 +243,56 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
+        func invite(projectID: String, email: String) async throws -> CreatedInvitation {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/invitations")
+        )
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["email": email])
+        return try await send(request)
+    }
+
+    func projectInvitations(projectID: String) async throws -> [RemoteInvitation] {
+        try await send(URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/invitations")
+        ))
+    }
+
+    func revokeInvitation(projectID: String, id: String) async throws {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/invitations/\(id)")
+        )
+        request.httpMethod = "DELETE"
+        let _: [String: Int] = try await send(request)
+    }
+
+    /// Pending invitations for the signed-in user's email (FR-INV-8).
+    func myInvitations() async throws -> [RemoteInvitation] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/invitations")))
+    }
+
+    func acceptInvitation(id: String) async throws -> JoinedProject {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/invitations/\(id)/accept"))
+        request.httpMethod = "POST"
+        return try await send(request)
+    }
+
+    func declineInvitation(id: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/invitations/\(id)/decline"))
+        request.httpMethod = "POST"
+        let _: [String: Int] = try await send(request)
+    }
+
+    /// From an invite link.
+    func acceptInvitation(token: String) async throws -> JoinedProject {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/invitations/accept-token"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["token": token])
+        return try await send(request)
+    }
+
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
         let token = try await accessToken()
@@ -340,6 +390,41 @@ struct RemoteMe: Decodable {
         case title
         case displayName = "display_name"
         case onboardingStep = "onboarding_step"
+    }
+}
+
+struct RemoteInvitation: Decodable, Identifiable {
+    let id: String
+    let projectID: String
+    let projectName: String
+    let email: String
+    let invitedByName: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, email
+        case projectID = "project_id"
+        case projectName = "project_name"
+        case invitedByName = "invited_by_name"
+    }
+}
+
+struct CreatedInvitation: Decodable {
+    let invitation: RemoteInvitation
+    let inviteURL: URL
+
+    enum CodingKeys: String, CodingKey {
+        case invitation
+        case inviteURL = "invite_url"
+    }
+}
+
+struct JoinedProject: Decodable {
+    let projectID: String
+    let projectName: String
+
+    enum CodingKeys: String, CodingKey {
+        case projectID = "project_id"
+        case projectName = "project_name"
     }
 }
 

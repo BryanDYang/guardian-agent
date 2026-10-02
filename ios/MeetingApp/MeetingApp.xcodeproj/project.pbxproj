@@ -16,9 +16,22 @@
 		D89D09A93063301B0093139E /* TasksLogicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TasksLogicTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		D86DFB84306F87D60054551E /* Exceptions for "MeetingApp" folder in "MeetingApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 000000000000000100000000 /* MeetingApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		000000000000000000000010 /* MeetingApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				D86DFB84306F87D60054551E /* Exceptions for "MeetingApp" folder in "MeetingApp" target */,
+			);
 			path = MeetingApp;
 			sourceTree = "<group>";
 		};
@@ -287,6 +300,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeetingApp/Info.plist;
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -326,6 +340,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = MeetingApp/Info.plist;
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

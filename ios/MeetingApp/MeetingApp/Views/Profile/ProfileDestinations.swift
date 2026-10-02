@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 // Screens pushed from the Profile menu. All content is placeholder until the accounts API exists.
@@ -5,11 +6,21 @@ import SwiftUI
 // MARK: - Workspaces
 
 struct WorkspacesView: View {
-    @State private var invitations = ProfilePlaceholder.invitations
+    @Environment(\.modelContext) private var context
+    @State private var invitations: [RemoteInvitation] = []
     @State private var workspaces = ProfilePlaceholder.workspaces
+    @State private var errorMessage: String?
 
     var body: some View {
         List {
+            if let errorMessage {
+                Section {
+                    Text(errorMessage)
+                        .font(.footnote)
+                        .foregroundStyle(Palette.danger)
+                }
+            }
+
             if !invitations.isEmpty {
                 Section("Pending invitations") {
                     ForEach(invitations) { invite in
@@ -17,15 +28,19 @@ struct WorkspacesView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(invite.projectName)
                                     .font(.subheadline.weight(.semibold))
-                                Text("Invited by \(invite.invitedBy) \u{2022} \(invite.role)")
+                                Text("Invited by \(invite.invitedByName ?? "a teammate")")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
                             HStack {
-                                Button("Decline") { respond(to: invite, accepted: false) }
-                                    .buttonStyle(.bordered)
-                                Button("Accept") { respond(to: invite, accepted: true) }
-                                    .buttonStyle(.borderedProminent)
+                                Button("Decline") {
+                                    Task { await respond(to: invite, accepted: false) }
+                                }
+                                .buttonStyle(.bordered)
+                                Button("Accept") {
+                                    Task { await respond(to: invite, accepted: true) }
+                                }
+                                .buttonStyle(.borderedProminent)
                             }
                         }
                         .padding(.vertical, 4)
@@ -50,20 +65,30 @@ struct WorkspacesView: View {
             }
         }
         .navigationTitle("Workspaces")
+        .task { await loadInvitations() }
+        .refreshable { await loadInvitations() }
     }
 
-    private func respond(to invite: ProfilePlaceholder.Invitation, accepted: Bool) {
-        invitations.removeAll { $0.id == invite.id }
-        if accepted {
-            workspaces.insert(
-                ProfilePlaceholder.Workspace(
-                    name: invite.projectName,
-                    role: invite.role,
-                    memberCount: 1,
-                    lastActivity: "just now"
-                ),
-                at: 0
-            )
+    private func loadInvitations() async {
+        do {
+            invitations = try await MeetingAPIClient.shared.myInvitations()
+            errorMessage = nil
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func respond(to invite: RemoteInvitation, accepted: Bool) async {
+        do {
+            if accepted {
+                _ = try await MeetingAPIClient.shared.acceptInvitation(id: invite.id)
+                try? await ProjectSync.refreshProjects(context: context, api: .shared)
+            } else {
+                try await MeetingAPIClient.shared.declineInvitation(id: invite.id)
+            }
+            invitations.removeAll { $0.id == invite.id }
+        } catch {
+            errorMessage = InviteErrors.message(for: error)
         }
     }
 }
