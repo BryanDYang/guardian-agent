@@ -19,7 +19,7 @@ import pytest
 from conftest import JWT_SECRET, SUPABASE_URL, make_token
 from fastapi.testclient import TestClient
 
-from labsync.api.deps import CurrentUser, current_user
+from labsync.api.deps import CurrentUser, onboarded_user
 from labsync.embeddings import OpenAIEmbedder
 from labsync.providers import DEFAULT_MODELS
 from labsync.server import create_app
@@ -112,7 +112,7 @@ def upload(client, project_id, **overrides):
 
 def signed_in_member(app, monkeypatch):
     """Skip token and membership checks for tests that fake the database."""
-    app.dependency_overrides[current_user] = lambda: CurrentUser(
+    app.dependency_overrides[onboarded_user] = lambda: CurrentUser(
         id=uuid4(), email="member@example.com", profile={}
     )
     monkeypatch.setattr("labsync.db.access.is_member", lambda *args: True)

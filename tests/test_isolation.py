@@ -84,6 +84,7 @@ PROJECT_ROUTES = [
 OWN_DATA_ROUTES = [
     ("GET", "/api/v1/me"),
     ("PATCH", "/api/v1/me"),
+    ("POST", "/api/v1/me/onboarding/complete"),
     ("GET", "/api/v1/projects"),
     ("POST", "/api/v1/projects"),
     ("GET", "/api/v1/conversations"),
@@ -221,3 +222,26 @@ def test_every_route_needs_a_token(app, seeded):
             response = client.request(method, path.format(**ids), **options(ids))
             assert response.status_code == 401, f"{method} {path}"
         assert client.get("/api/health").status_code == 200
+
+
+def test_project_data_waits_for_onboarding(app, seeded, make_user):
+    """FR-ONB-3: until onboarding is complete, only the /me routes answer."""
+    ids, _, _ = seeded
+    _, newcomer = make_user("Newcomer", onboarded=False)
+    routes = [(method, path, options) for method, path, options in PROJECT_ROUTES]
+    routes += [
+        (method, path, lambda ids: {})
+        for method, path in OWN_DATA_ROUTES
+        if not path.startswith("/api/v1/me")
+    ]
+    with TestClient(app, headers=newcomer) as client:
+        for method, path, options in routes:
+            response = client.request(method, path.format(**ids), **options(ids))
+            assert response.status_code == 403, f"{method} {path}"
+            assert response.json()["detail"] == "onboarding_incomplete"
+        assert client.get("/api/v1/me").json()["onboarding_step"] == "needs_voice"
+        done = client.post(
+            "/api/v1/me/onboarding/complete", json={"voice_step": "skipped"}
+        )
+        assert done.json()["onboarding_step"] == "complete"
+        assert client.get("/api/v1/projects").status_code == 200

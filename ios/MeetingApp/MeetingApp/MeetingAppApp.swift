@@ -30,12 +30,23 @@ struct MeetingAppApp: App {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 case .signedOut:
                     AuthFlowView()
+                case .profileSetup:
+                    ProfileSetupView()
                 case .voiceEnrollment:
                     VoiceEnrollmentView(
                         speakerName: session.user.name,
-                        onFinish: session.finishVoiceEnrollment,
-                        onSkip: session.skipVoiceEnrollment
+                        onFinish: { Task { await session.finishVoiceEnrollment() } },
+                        onSkip: { Task { await session.skipVoiceEnrollment() } }
                     )
+                case .unavailable(let message):
+                    ContentUnavailableView {
+                        Label("Can't reach Meeting Memory", systemImage: "wifi.exclamationmark")
+                    } description: {
+                        Text(message)
+                    } actions: {
+                        Button("Try Again") { Task { await session.loadOnboarding() } }
+                        Button("Sign Out") { Task { await session.signOut() } }
+                    }
                 case .signedIn:
                     RootTabView()
                 }

@@ -218,6 +218,31 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
+    func me() async throws -> RemoteMe {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/me")))
+    }
+
+    func updateMe(displayName: String, title: String) async throws -> RemoteMe {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me"))
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(
+            withJSONObject: ["display_name": displayName, "title": title]
+        )
+        return try await send(request)
+    }
+
+    /// voiceStep is "skipped", or "placeholder" until voice enrollment ships (FR-ONB-2a).
+    func completeOnboarding(voiceStep: String) async throws -> RemoteMe {
+        var request = URLRequest(
+            url: baseURL.appending(path: "api/v1/me/onboarding/complete")
+        )
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["voice_step": voiceStep])
+        return try await send(request)
+    }
+
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
         let token = try await accessToken()
@@ -231,7 +256,7 @@ struct MeetingAPIClient {
             // means the session is over (for example, the account was deleted).
             // Signing out returns the app to log in and clears the local cache.
             try? await auth.signOut(scope: .local)
-            throw MeetingAPIError.server("Your session ended. Sign in again.")
+            throw MeetingAPIError.sessionEnded
         }
         guard (200..<300).contains(response.statusCode) else {
             let detail = try? JSONDecoder().decode(ErrorResponse.self, from: data).detail
@@ -267,12 +292,16 @@ struct MeetingAPIClient {
 
 enum MeetingAPIError: LocalizedError {
     case invalidResponse
+    /// The backend returned 401 and the app has already signed out locally.
+    case sessionEnded
     case server(String)
 
     var errorDescription: String? {
         switch self {
         case .invalidResponse:
             "The backend returned an invalid response."
+        case .sessionEnded:
+            "Your session ended. Sign in again."
         case .server(let detail):
             detail
         }
@@ -299,6 +328,18 @@ struct RemoteProject: Decodable {
     enum CodingKeys: String, CodingKey {
         case id, name
         case imagePath = "image_path"
+    }
+}
+
+struct RemoteMe: Decodable {
+    let displayName: String?
+    let title: String?
+    let onboardingStep: String
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case displayName = "display_name"
+        case onboardingStep = "onboarding_step"
     }
 }
 

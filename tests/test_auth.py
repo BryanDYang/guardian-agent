@@ -115,7 +115,7 @@ def test_me_requires_a_supabase_token(client):
 
 @needs_db
 def test_me_returns_profile_and_onboarding_step(client, make_user):
-    user_id, auth = make_user("Test One")
+    user_id, auth = make_user("Test One", onboarded=False)
     body = client.get("/api/v1/me", headers=auth).json()
     assert body["id"] == str(user_id)
     assert body["display_name"] == "Test One"
@@ -134,7 +134,7 @@ def test_user_without_a_name_needs_profile(client, make_user):
 
 @needs_db
 def test_update_me_sets_name_and_clears_title(client, make_user):
-    _, auth = make_user(name="   ")
+    _, auth = make_user(name="   ", onboarded=False)
     body = client.patch(
         "/api/v1/me", json={"display_name": " New Name ", "title": "PhD"}, headers=auth
     ).json()
@@ -142,6 +142,27 @@ def test_update_me_sets_name_and_clears_title(client, make_user):
     assert body["onboarding_step"] == "needs_voice"
     body = client.patch("/api/v1/me", json={"title": "  "}, headers=auth).json()
     assert body["title"] is None and body["display_name"] == "New Name"
+
+
+@needs_db
+def test_onboarding_completes_once(client, make_user):
+    _, auth = make_user(onboarded=False)
+    url = "/api/v1/me/onboarding/complete"
+    first = client.post(url, json={"voice_step": "skipped"}, headers=auth).json()
+    assert first["onboarding_step"] == "complete"
+    again = client.post(url, json={"voice_step": "placeholder"}, headers=auth).json()
+    assert again["onboarding_completed_at"] == first["onboarding_completed_at"]
+
+
+@needs_db
+def test_onboarding_needs_a_name_and_a_known_voice_step(client, make_user):
+    url = "/api/v1/me/onboarding/complete"
+    _, nameless = make_user(name="   ", onboarded=False)
+    response = client.post(url, json={"voice_step": "skipped"}, headers=nameless)
+    assert (response.status_code, response.json()["detail"]) == (409, "needs_profile")
+    _, auth = make_user(onboarded=False)
+    response = client.post(url, json={"voice_step": "enrolled"}, headers=auth)
+    assert response.status_code == 422
 
 
 @needs_db

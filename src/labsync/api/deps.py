@@ -63,7 +63,18 @@ def current_user(request: Request) -> CurrentUser:
     return CurrentUser(id=user_id, email=profile["email"], profile=profile)
 
 
-User = Annotated[CurrentUser, Depends(current_user)]
+# For /me routes, which a user needs while still onboarding.
+SignedIn = Annotated[CurrentUser, Depends(current_user)]
+
+
+def onboarded_user(user: SignedIn) -> CurrentUser:
+    """FR-ONB-3: project data waits until onboarding is complete."""
+    if user.profile["onboarding_completed_at"] is None:
+        raise HTTPException(403, "onboarding_incomplete")
+    return user
+
+
+User = Annotated[CurrentUser, Depends(onboarded_user)]
 
 
 def require_member(conn: Connection, user: CurrentUser, project_id: UUID) -> None:

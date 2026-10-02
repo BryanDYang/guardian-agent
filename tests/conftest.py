@@ -58,12 +58,13 @@ def make_user():
     """Create signed-in users: make_user(name) -> (user_id, request headers).
 
     Inserts into auth.users the way Supabase Auth does, so the trigger creates
-    the profile. Needs TEST_DATABASE_URL. Users are deleted afterwards, which
-    also removes their memberships."""
+    the profile. Users have finished onboarding unless onboarded=False. Needs
+    TEST_DATABASE_URL. Users are deleted afterwards, which also removes their
+    memberships."""
     database_url = os.environ["TEST_DATABASE_URL"]
     created = []
 
-    def make(name="Pytest User"):
+    def make(name="Pytest User", *, onboarded=True):
         user_id = uuid.uuid4()
         with psycopg.connect(database_url) as conn:
             conn.execute(
@@ -76,6 +77,11 @@ def make_user():
                     Jsonb({}),
                 ),
             )
+            if onboarded:
+                conn.execute(
+                    "UPDATE profiles SET onboarding_completed_at = now() WHERE id = %s",
+                    (user_id,),
+                )
         created.append(user_id)
         return user_id, {"Authorization": f"Bearer {make_token(user_id)}"}
 

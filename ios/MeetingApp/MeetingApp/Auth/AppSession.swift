@@ -8,12 +8,15 @@ import Supabase
 @Observable
 final class AppSession {
     enum Stage: Equatable {
-        /// Waiting for Supabase to restore a saved session.
+        /// Restoring the saved session, or asking /api/v1/me where to go.
         case launching
         case signedOut
-        /// New accounts record a voice sample before reaching the tabs (Phase 6).
+        /// Onboarding, in the order /api/v1/me reports it (FR-ONB-1).
+        case profileSetup
         case voiceEnrollment
         case signedIn
+        /// Signed in, but the backend couldn't be reached.
+        case unavailable(String)
     }
 
     var stage: Stage
@@ -37,9 +40,9 @@ final class AppSession {
         guard let auth else { return }
         for await (_, session) in auth.authStateChanges {
             if let session {
-                user = PlaceholderUser(supabaseUser: session.user)
                 if stage == .launching || stage == .signedOut {
-                    stage = .signedIn
+                    user = PlaceholderUser(supabaseUser: session.user)
+                    await loadOnboarding()
                 }
             } else {
                 stage = .signedOut
@@ -94,14 +97,74 @@ final class AppSession {
         }
     }
 
-    // Placeholders until Phase 6 sends new accounts through voice enrollment.
-    func finishVoiceEnrollment() {
-        user.voiceprintEnrolledAt = .now
-        stage = .signedIn
+    /// Asks the backend which onboarding step comes next (FR-ONB-1).
+    @MainActor
+    func loadOnboarding() async {
+        guard auth != nil else { return }
+        stage = .launching
+        do {
+            show(try await MeetingAPIClient.shared.me())
+        } catch {
+            showFailure(error)
+        }
     }
 
-    func skipVoiceEnrollment() {
-        stage = .signedIn
+    /// Onboarding step 1. Throws the backend's message for the form to show.
+    @MainActor
+    func saveProfile(name: String, title: String) async throws {
+        guard auth != nil else {
+            stage = .voiceEnrollment
+            return
+        }
+        show(try await MeetingAPIClient.shared.updateMe(displayName: name, title: title))
+    }
+
+    // The recorder is still a placeholder, so Continue sends "placeholder" and
+    // no voice profile is stored (FR-ONB-2a).
+    @MainActor
+    func finishVoiceEnrollment() async {
+        user.voiceprintEnrolledAt = .now
+        await completeOnboarding(voiceStep: "placeholder")
+    }
+
+    @MainActor
+    func skipVoiceEnrollment() async {
+        await completeOnboarding(voiceStep: "skipped")
+    }
+
+    @MainActor
+    private func completeOnboarding(voiceStep: String) async {
+        guard auth != nil else {
+            stage = .signedIn
+            return
+        }
+        do {
+            show(try await MeetingAPIClient.shared.completeOnboarding(voiceStep: voiceStep))
+        } catch {
+            showFailure(error)
+        }
+    }
+
+    /// A 401 has already signed the user out, so "Try Again" could never succeed.
+    private func showFailure(_ error: Error) {
+        if case MeetingAPIError.sessionEnded = error {
+            stage = .signedOut
+        } else {
+            stage = .unavailable(error.localizedDescription)
+        }
+    }
+
+    /// The server decides the next screen; the app never marks onboarding done itself.
+    private func show(_ me: RemoteMe) {
+        if let name = me.displayName {
+            user.name = name
+        }
+        user.title = me.title ?? ""
+        stage = switch me.onboardingStep {
+        case "needs_profile": .profileSetup
+        case "needs_voice": .voiceEnrollment
+        default: .signedIn
+        }
     }
 }
 
