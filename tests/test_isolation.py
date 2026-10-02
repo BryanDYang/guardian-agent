@@ -77,6 +77,24 @@ PROJECT_ROUTES = [
     ("GET", "/api/meetings/{meeting_id}/audio", lambda ids: {}),
     ("POST", "/api/meetings/{meeting_id}/retry", lambda ids: {}),
     ("DELETE", "/api/projects/{project_id}/meetings", lambda ids: {}),
+    (
+        "POST",
+        "/api/v1/projects/{project_id}/invitations",
+        lambda ids: {"json": {"email": "eve@example.com"}},
+    ),
+    ("GET", "/api/v1/projects/{project_id}/invitations", lambda ids: {}),
+    (
+        "DELETE",
+        "/api/v1/projects/{project_id}/invitations/{invitation_id}",
+        lambda ids: {},
+    ),
+    ("POST", "/api/v1/invitations/{invitation_id}/accept", lambda ids: {}),
+    ("POST", "/api/v1/invitations/{invitation_id}/decline", lambda ids: {}),
+    (
+        "POST",
+        "/api/v1/invitations/accept-token",
+        lambda ids: {"json": {"token": "not-a-real-token"}},
+    ),
 ]
 
 # Routes that only ever show the caller's own data, so they answer an outsider
@@ -88,6 +106,7 @@ OWN_DATA_ROUTES = [
     ("GET", "/api/v1/projects"),
     ("POST", "/api/v1/projects"),
     ("GET", "/api/v1/conversations"),
+    ("GET", "/api/v1/invitations"),
 ]
 
 PUBLIC_ROUTES = [("GET", "/api/health")]
@@ -155,12 +174,19 @@ def seeded(make_user):
             "VALUES (%s, 'user', 'A private question')",
             (conversation_id,),
         )
+        invitation_id = conn.execute(
+            "INSERT INTO project_invitations (project_id, email, token_hash, "
+            "expires_at) VALUES (%s, 'carol@example.com', %s, "
+            "now() + interval '7 days') RETURNING id",
+            (project_id, os.urandom(32)),
+        ).fetchone()[0]
     ids = {
         "project_id": str(project_id),
         "meeting_id": meeting_id,
         "task_id": str(task_id),
         "revert_token": str(revert_token),
         "conversation_id": str(conversation_id),
+        "invitation_id": str(invitation_id),
     }
     yield ids, alice, bob
     with psycopg.connect(DATABASE_URL) as conn:
@@ -198,6 +224,10 @@ def test_outsiders_get_not_found_and_change_nothing(app, seeded):
             f"/api/v1/conversations/{ids['conversation_id']}", headers=alice
         )
         assert len(chat.json()["messages"]) == 1
+        invites = client.get(
+            f"/api/v1/projects/{ids['project_id']}/invitations", headers=alice
+        )
+        assert len(invites.json()) == 1  # Bob's revoke didn't land
 
 
 def test_own_data_routes_show_outsiders_nothing(app, seeded):
@@ -209,6 +239,7 @@ def test_own_data_routes_show_outsiders_nothing(app, seeded):
         projects = client.get("/api/v1/projects").json()
         assert ids["project_id"] not in [p["id"] for p in projects]
         assert client.get("/api/v1/conversations").json() == []
+        assert client.get("/api/v1/invitations").json() == []
         created = client.post("/api/v1/projects", json={"name": "pytest isolation"})
         assert created.status_code == 201  # Bob's own new project, not Alice's
 

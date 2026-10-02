@@ -19,6 +19,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .api.chat import router as chat_router
 from .api.deps import Conn, User, require_meeting, require_member
+from .api.invitations import router as invitations_router
 from .api.me import router as me_router
 from .api.meetings import router as meetings_router
 from .api.projects import router as projects_router
@@ -248,6 +249,7 @@ def create_app(
     app.include_router(tasks_router)
     app.include_router(chat_router)
     app.include_router(me_router)
+    app.include_router(invitations_router)
 
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]
