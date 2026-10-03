@@ -1,10 +1,11 @@
 import SwiftData
 import SwiftUI
 
-/// Fourth tab: identity header with task stats, settings menu, and Sign Out.
+/// Fourth tab: who you are, your task counts, settings, and Sign Out.
 ///
-/// Visual language: neutral surfaces, monochrome icons, one accent color (brand blue).
-/// Red appears only where it carries meaning: overdue tasks and Sign Out.
+/// Visual language: white canvas, soft gray groups with no borders, monochrome icons,
+/// one accent color (brand blue). Red appears only where it carries meaning:
+/// overdue tasks and Sign Out.
 struct ProfileTab: View {
     @Environment(AppSession.self) private var session
     @Environment(MeetingNavigator.self) private var navigator
@@ -15,14 +16,18 @@ struct ProfileTab: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
-                    headerCard
-                    menuCard
+                VStack(spacing: 32) {
+                    identity
+                    taskSummary
+                    accountSection
+                    appSection
                     signOutButton
                 }
-                .padding(16)
+                .padding(.horizontal, 20)
+                .padding(.top, 32)
+                .padding(.bottom, 24)
             }
-            .background(Palette.screenBackground)
+            .background(Color.white)
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingEditProfile) {
                 EditProfileSheet()
@@ -38,164 +43,151 @@ struct ProfileTab: View {
         }
     }
 
-    // MARK: - Header
+    // MARK: - Identity
 
-    private var headerCard: some View {
-        VStack(spacing: 18) {
-            HStack(spacing: 14) {
-                Text(session.user.initial)
-                    .font(.title2.weight(.semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 56, height: 56)
-                    .background(Circle().fill(Palette.brandBlue))
-                    .accessibilityHidden(true)
+    private var identity: some View {
+        VStack(spacing: 14) {
+            Text(session.user.initial)
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 80, height: 80)
+                .background(
+                    Circle().fill(
+                        LinearGradient(
+                            colors: [Palette.brandIndigo, Palette.brandBlue],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                )
+                .accessibilityHidden(true)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(session.user.name)
-                        .font(.headline)
-                        .foregroundStyle(Palette.ink)
-                    if !session.user.title.isEmpty {
-                        Text(session.user.title)
-                            .font(.subheadline)
-                            .foregroundStyle(Palette.secondaryText)
-                    }
-                    Text(session.user.email)
+            VStack(spacing: 4) {
+                Text(session.user.name)
+                    .font(.title2.bold())
+                    .foregroundStyle(Palette.ink)
+                if !session.user.title.isEmpty {
+                    Text(session.user.title)
                         .font(.subheadline)
-                        .foregroundStyle(Palette.secondaryText)
-                    Button("Edit Profile") { showingEditProfile = true }
-                        .font(.footnote.weight(.semibold))
-                        .foregroundStyle(Palette.brandBlue)
-                        .padding(.top, 6)
+                        .foregroundStyle(Palette.ink.opacity(0.75))
                 }
-
-                Spacer()
-
-                // Placeholder: the mockup shows this icon button but not what it opens.
-                Button {} label: {
-                    Image(systemName: "ellipsis")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Palette.secondaryText)
-                        .frame(width: 32, height: 32)
-                        .background(Circle().fill(ProfileStyle.tileFill))
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Profile options")
+                Text(session.user.email)
+                    .font(.subheadline)
+                    .foregroundStyle(Palette.secondaryText)
             }
+            .multilineTextAlignment(.center)
 
-            Rectangle()
-                .fill(ProfileStyle.hairline)
-                .frame(height: 1)
+            Button("Edit profile") { showingEditProfile = true }
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Palette.ink)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 8)
+                .background(Capsule().fill(ProfileStyle.surface))
+                .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Tasks
+
+    private var taskSummary: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeader("My tasks")
 
             Button {
                 navigator.activeTab = .tasks
             } label: {
                 HStack(spacing: 0) {
                     TaskStat(value: tasks.open, label: "Open")
-                    statDivider
                     TaskStat(value: tasks.overdue, label: "Overdue", isAlert: tasks.overdue > 0)
-                    statDivider
                     TaskStat(value: tasks.done, label: "Done")
                 }
+                .padding(.vertical, 18)
             }
-            .buttonStyle(.plain)
+            .buttonStyle(RowButtonStyle())
+            .clipShape(RoundedRectangle(cornerRadius: ProfileStyle.cornerRadius, style: .continuous))
             .accessibilityHint("Opens the Tasks tab")
         }
-        .padding(20)
-        .profileCard()
     }
 
-    private var statDivider: some View {
-        Rectangle()
-            .fill(ProfileStyle.hairline)
-            .frame(width: 1, height: 28)
-    }
+    // MARK: - Settings
 
-    // MARK: - Menu
-
-    private var menuCard: some View {
+    private var accountSection: some View {
         let pending = session.pendingInvitationCount
         let active = projects.filter { isServerID($0.id) }.count
 
-        return VStack(spacing: 0) {
+        return MenuSection("Account") {
             NavigationLink {
                 WorkspacesView()
             } label: {
                 ProfileMenuRow(
-                    symbol: "building.2",
+                    symbol: "square.stack",
                     title: "Workspaces",
-                    subtitle: "\(active) active \u{2022} \(pending) pending \(pending == 1 ? "invite" : "invites")",
-                    showsBadge: pending > 0
+                    detail: pending > 0
+                        ? .badge("\(pending) \(pending == 1 ? "invite" : "invites")")
+                        : .text("\(active)")
                 )
             }
-            rowDivider
+            RowDivider()
 
             NavigationLink {
                 SpeakerIdentityView()
             } label: {
                 ProfileMenuRow(
-                    symbol: "person.wave.2",
-                    title: "Speaker Identity & Diarization",
-                    subtitle: session.user.hasVoiceprint
-                        ? "Voiceprint enrolled \u{2022} Attendee mapping"
-                        : "Not enrolled \u{2022} Record your voice"
+                    symbol: "waveform",
+                    title: "Voice recognition",
+                    detail: session.user.hasVoiceprint ? .text("On") : .action("Set up")
                 )
             }
-            rowDivider
-
-            NavigationLink {
-                NotificationsIntegrationsView()
-            } label: {
-                ProfileMenuRow(
-                    symbol: "bell",
-                    title: "Notifications & Integrations",
-                    subtitle: "Apple Reminders, Calendar & Push Alerts"
-                )
-            }
-            rowDivider
-
-            NavigationLink {
-                PrivacyDataView()
-            } label: {
-                ProfileMenuRow(
-                    symbol: "hand.raised",
-                    title: "Privacy & Data Management",
-                    subtitle: "Export data & account wipe"
-                )
-            }
-            rowDivider
+            RowDivider()
 
             NavigationLink {
                 SecurityCredentialsView()
             } label: {
                 ProfileMenuRow(
-                    symbol: "key",
-                    title: "Security & Credentials",
-                    subtitle: "Password & Google authentication"
+                    symbol: "lock",
+                    title: "Sign-in & security",
+                    detail: .text(signInSummary)
                 )
             }
-            rowDivider
+        }
+    }
+
+    private var appSection: some View {
+        MenuSection("App") {
+            NavigationLink {
+                NotificationsIntegrationsView()
+            } label: {
+                ProfileMenuRow(symbol: "bell", title: "Notifications")
+            }
+            RowDivider()
+
+            NavigationLink {
+                PrivacyDataView()
+            } label: {
+                ProfileMenuRow(symbol: "hand.raised", title: "Privacy & data")
+            }
+            RowDivider()
 
             NavigationLink {
                 AboutView()
             } label: {
                 ProfileMenuRow(
                     symbol: "info.circle",
-                    title: "About Meeting Memory",
-                    subtitle: "v\(ProfilePlaceholder.appVersion) \u{2022} Terms, Privacy & Support"
+                    title: "About",
+                    detail: .text("v\(ProfilePlaceholder.appVersion)")
                 )
             }
         }
-        .buttonStyle(RowButtonStyle())
-        .clipShape(RoundedRectangle(cornerRadius: ProfileStyle.cornerRadius, style: .continuous))
-        .profileCard()
     }
 
-    /// Inset so the line starts under the text, not under the icon.
-    private var rowDivider: some View {
-        Rectangle()
-            .fill(ProfileStyle.hairline)
-            .frame(height: 1)
-            .padding(.leading, 62)
+    private var signInSummary: String {
+        let methods = session.user.signInMethods
+        switch (methods.contains(.email), methods.contains(.google)) {
+        case (true, true): return "Email, Google"
+        case (false, true): return "Google"
+        default: return "Email"
+        }
     }
 
     // MARK: - Sign out
@@ -205,23 +197,71 @@ struct ProfileTab: View {
             Task { await session.signOut() }
         } label: {
             Text("Sign Out")
-                .font(.subheadline.weight(.semibold))
+                .font(.body.weight(.medium))
                 .foregroundStyle(Palette.danger)
-                .frame(maxWidth: .infinity, minHeight: 50)
+                .frame(maxWidth: .infinity, minHeight: 52)
         }
         .buttonStyle(RowButtonStyle())
         .clipShape(RoundedRectangle(cornerRadius: ProfileStyle.cornerRadius, style: .continuous))
-        .profileCard()
     }
 }
 
 // MARK: - Pieces
 
 private enum ProfileStyle {
-    static let tileFill = Color(hex: "#F2F4F7")
-    static let hairline = Color(hex: "#E8EBF0")
-    static let chevron = Color(hex: "#C4CAD4")
-    static let cornerRadius: CGFloat = 16
+    static let surface = Color(hex: "#F4F5F8")
+    static let pressed = Color(hex: "#EAECF1")
+    static let hairline = Color(hex: "#E4E7EC")
+    static let chevron = Color(hex: "#B8BFCA")
+    static let cornerRadius: CGFloat = 18
+}
+
+private struct SectionHeader: View {
+    let title: String
+
+    init(_ title: String) {
+        self.title = title
+    }
+
+    var body: some View {
+        Text(title.uppercased())
+            .font(.caption.weight(.semibold))
+            .tracking(1.2)
+            .foregroundStyle(Palette.secondaryText)
+            .padding(.leading, 4)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// A titled group of rows on a soft gray surface.
+private struct MenuSection<Rows: View>: View {
+    let title: String
+    let rows: Rows
+
+    init(_ title: String, @ViewBuilder rows: () -> Rows) {
+        self.title = title
+        self.rows = rows()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            SectionHeader(title)
+            VStack(spacing: 0) { rows }
+                .buttonStyle(RowButtonStyle())
+                .clipShape(RoundedRectangle(cornerRadius: ProfileStyle.cornerRadius, style: .continuous))
+        }
+    }
+}
+
+/// Inset so the line starts under the title, not under the icon.
+private struct RowDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(ProfileStyle.hairline)
+            .frame(height: 1)
+            .padding(.leading, 54)
+            .background(ProfileStyle.surface)
+    }
 }
 
 private struct TaskStat: View {
@@ -230,9 +270,9 @@ private struct TaskStat: View {
     var isAlert = false
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 4) {
             Text("\(value)")
-                .font(.title3.weight(.semibold))
+                .font(.system(.title2, design: .rounded, weight: .semibold))
                 .monospacedDigit()
                 .foregroundStyle(isAlert ? Palette.danger : Palette.ink)
             Text(label)
@@ -245,76 +285,80 @@ private struct TaskStat: View {
 }
 
 private struct ProfileMenuRow: View {
+    /// What sits before the chevron: a quiet value, a blue call to action, or a count badge.
+    enum Detail {
+        case none
+        case text(String)
+        case action(String)
+        case badge(String)
+    }
+
     let symbol: String
     let title: String
-    let subtitle: String
-    var showsBadge = false
+    var detail: Detail = .none
 
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
-                .font(.system(size: 15))
-                .foregroundStyle(Palette.ink.opacity(0.7))
-                .frame(width: 32, height: 32)
-                .background(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .fill(ProfileStyle.tileFill)
-                )
+                .font(.system(size: 17))
+                .foregroundStyle(Palette.ink.opacity(0.6))
+                .frame(width: 24)
                 .accessibilityHidden(true)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(Palette.ink)
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundStyle(Palette.secondaryText)
-                    .lineLimit(1)
-            }
+            Text(title)
+                .font(.body)
+                .foregroundStyle(Palette.ink)
 
             Spacer(minLength: 8)
 
-            if showsBadge {
-                Circle()
-                    .fill(Palette.brandBlue)
-                    .frame(width: 6, height: 6)
-                    .accessibilityLabel("Pending invitation")
-            }
+            detailView
+                .lineLimit(1)
 
             Image(systemName: "chevron.right")
-                .font(.caption.weight(.semibold))
+                .font(.footnote.weight(.semibold))
                 .foregroundStyle(ProfileStyle.chevron)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 13)
+        .frame(minHeight: 52)
         .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private var detailView: some View {
+        switch detail {
+        case .none:
+            EmptyView()
+        case .text(let value):
+            Text(value)
+                .font(.subheadline)
+                .foregroundStyle(Palette.secondaryText)
+        case .action(let value):
+            Text(value)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Palette.brandBlue)
+        case .badge(let value):
+            Text(value)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Capsule().fill(Palette.brandBlue))
+        }
     }
 }
 
-/// White row that tints gray while pressed, like a native grouped list.
+/// Soft gray row that darkens slightly while pressed, like a native grouped list.
 private struct RowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .background(configuration.isPressed ? ProfileStyle.tileFill : Color.white)
-    }
-}
-
-private extension View {
-    func profileCard() -> some View {
-        background(
-            RoundedRectangle(cornerRadius: ProfileStyle.cornerRadius, style: .continuous)
-                .fill(.white)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: ProfileStyle.cornerRadius, style: .continuous)
-                .strokeBorder(ProfileStyle.hairline)
-        )
+            .background(configuration.isPressed ? ProfileStyle.pressed : ProfileStyle.surface)
     }
 }
 
 #Preview {
     ProfileTab()
-        .environment(AppSession(stage: .signedIn, user: PlaceholderUser(name: "a", email: "a@a.com")))
+        .environment(AppSession(stage: .signedIn, user: PlaceholderUser(name: "Will Liu", email: "will@example.com")))
         .environment(MeetingNavigator())
         .modelContainer(PreviewContainer.shared)
 }

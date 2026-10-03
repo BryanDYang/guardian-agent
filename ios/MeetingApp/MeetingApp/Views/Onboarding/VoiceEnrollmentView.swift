@@ -5,7 +5,7 @@ import SwiftUI
 /// access and no upload yet.
 struct VoiceEnrollmentView: View {
     let speakerName: String
-    var skipTitle = "Skip for now (configure later in Profile)"
+    var skipTitle = "Skip for now"
     let onFinish: () -> Void
     let onSkip: () -> Void
 
@@ -16,264 +16,205 @@ struct VoiceEnrollmentView: View {
     }
 
     private let sampleSeconds = 6.0
-    private let barCount = 36
+    private let ringSize: CGFloat = 112
+    private let buttonSize: CGFloat = 84
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase: Phase = .standby
     @State private var consentGiven = false
     @State private var elapsed = 0.0
-    @State private var levels: [CGFloat] = []
+    @State private var level: CGFloat = 0
     @State private var recordingTask: Task<Void, Never>?
 
     private var progress: Double { min(elapsed / sampleSeconds, 1) }
 
+    /// "Will Liu" reads as "Will", the way someone introduces themselves.
+    private var firstName: String {
+        speakerName.split(separator: " ").first.map(String.init) ?? speakerName
+    }
+
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Voice Enrollment")
-                        .font(.title.bold())
-                        .foregroundStyle(Palette.ink)
-                    Text("Record a short sample so Meeting Memory can capture your acoustic embeddings and recognize when you speak in meetings.")
-                        .font(.subheadline)
-                        .foregroundStyle(Palette.secondaryText)
-                }
-
-                scriptCard
-                recorderCard
-                consentCard
-
-                VStack(spacing: 14) {
-                    actionButtons
-                    Button(skipTitle, action: onSkip)
-                        .font(.footnote)
-                        .foregroundStyle(Palette.secondaryText)
-                }
+            VStack(alignment: .leading, spacing: 36) {
+                intro
+                script
+                recorder
+                    .frame(maxWidth: .infinity)
             }
-            .padding(20)
+            .padding(.horizontal, 24)
+            .padding(.top, 40)
+            .padding(.bottom, 24)
         }
+        .scrollBounceBehavior(.basedOnSize)
+        .safeAreaInset(edge: .bottom) { footer }
         .background(Color.white)
         .onDisappear { recordingTask?.cancel() }
     }
 
     // MARK: - Sections
 
-    private var header: some View {
-        HStack(spacing: 12) {
-            AppMark(size: 44, symbol: "speaker.wave.2.fill")
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Meeting Memory")
-                    .font(.headline)
-                    .foregroundStyle(Palette.ink)
-                Label("Voice Diarization Setup", systemImage: "sparkles")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(Palette.violet)
-            }
-            Spacer()
-            Text("Step 1 of 1")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(Palette.secondaryText)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Capsule().fill(Palette.fieldFill))
-                .overlay(Capsule().strokeBorder(Palette.border))
-        }
-    }
-
-    private var scriptCard: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Label("READ THIS SHORT SCRIPT ALOUD", systemImage: "mic")
-                    .font(.caption.weight(.bold))
-                    .foregroundStyle(Palette.violet)
-                Spacer()
-                Text("~\(Int(sampleSeconds)) seconds")
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(Palette.violet)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .overlay(Capsule().strokeBorder(Palette.violet.opacity(0.4)))
-            }
-
-            // Placeholder script from the mockup.
-            Text("\u{201C}Hi, I'm \(speakerName). I'm calibrating my voice for Meeting Memory to accurately capture action items, diarize meeting turns, and transcribe team decisions.\u{201D}")
-                .font(.body.weight(.semibold))
-                .italic()
+    private var intro: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Set up your voice")
+                .font(.largeTitle.bold())
                 .foregroundStyle(Palette.ink)
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(.white))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .strokeBorder(Palette.violet.opacity(0.15))
-                )
-
-            Label("Speak naturally at your standard conversation volume and pace.", systemImage: "info.circle")
-                .font(.caption)
+            Text("Read one sentence aloud so your name appears next to what you say in meetings.")
+                .font(.body)
                 .foregroundStyle(Palette.secondaryText)
         }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Palette.violetWash))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(Palette.violet.opacity(0.2))
-        )
     }
 
-    private var recorderCard: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(statusColor)
-                    .frame(width: 8, height: 8)
-                Text(statusText)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.white)
-                Spacer()
-                Text("\(clock(elapsed)) / \(clock(sampleSeconds))")
-                    .font(.system(.caption, design: .monospaced).weight(.semibold))
-                    .foregroundStyle(Color.white.opacity(0.6))
-            }
+    private var script: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("READ ALOUD")
+                .font(.caption.weight(.semibold))
+                .tracking(1.2)
+                .foregroundStyle(Palette.brandBlue)
+            Text("\u{201C}Hi, I'm \(firstName). I'm setting up Meeting Memory so it can recognize my voice in our meetings.\u{201D}")
+                .font(.title3.weight(.medium))
+                .foregroundStyle(Palette.ink)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.leading, 16)
+        .overlay(alignment: .leading) {
+            Capsule()
+                .fill(Palette.brandBlue.opacity(0.25))
+                .frame(width: 3)
+        }
+    }
 
-            waveform
+    private var recorder: some View {
+        VStack(spacing: 16) {
+            Button(action: startRecording) {
+                ZStack {
+                    // Soft halo that breathes with the input level while recording.
+                    Circle()
+                        .fill(accent.opacity(0.1))
+                        .frame(width: ringSize, height: ringSize)
+                        .scaleEffect(phase == .recording && !reduceMotion ? 1 + level * 0.22 : 1)
+                    Circle()
+                        .stroke(Palette.border, lineWidth: 3)
+                        .frame(width: ringSize, height: ringSize)
+                    Circle()
+                        .trim(from: 0, to: progress)
+                        .stroke(accent, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                        .frame(width: ringSize, height: ringSize)
+                        .animation(.linear(duration: 0.1), value: progress)
+                    Circle()
+                        .fill(accent)
+                        .frame(width: buttonSize, height: buttonSize)
+                        .shadow(color: accent.opacity(0.3), radius: 12, y: 6)
+                    Image(systemName: symbol)
+                        .font(.system(size: 30, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .contentTransition(.symbolEffect(.replace))
+                }
+                .frame(width: ringSize * 1.3, height: ringSize * 1.3)
+                .contentShape(Circle())
+            }
+            .buttonStyle(.plain)
+            .disabled(!consentGiven || phase != .standby)
+            .opacity(consentGiven || phase != .standby ? 1 : 0.35)
+            .animation(.easeOut(duration: 0.12), value: level)
+            .animation(.easeInOut(duration: 0.25), value: phase)
+            .animation(.easeInOut(duration: 0.2), value: consentGiven)
+            .accessibilityLabel(recorderLabel)
+            .accessibilityValue(phase == .recording ? "\(Int(progress * 100)) percent" : "")
 
             VStack(spacing: 6) {
-                Capsule()
-                    .fill(Color.white.opacity(0.1))
-                    .frame(height: 4)
-                    .overlay(alignment: .leading) {
-                        GeometryReader { geometry in
-                            Capsule()
-                                .fill(Palette.brandBlue)
-                                .frame(width: geometry.size.width * progress)
-                        }
-                    }
-                HStack {
-                    Text("Embedding Vector Calibration")
-                    Spacer()
-                    Text("\(Int(progress * 100))%")
-                        .monospacedDigit()
+                Text(statusText)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(phase == .captured ? Palette.ink : Palette.secondaryText)
+                    .monospacedDigit()
+
+                if phase == .captured {
+                    Button("Re-record", action: startRecording)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(Palette.brandBlue)
+                        .disabled(!consentGiven)
                 }
-                .font(.caption2)
-                .foregroundStyle(Color.white.opacity(0.5))
             }
+            .frame(minHeight: 44, alignment: .top)
         }
-        .padding(16)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Palette.ink))
-        .accessibilityElement(children: .combine)
     }
 
-    private var waveform: some View {
-        HStack(spacing: 3) {
-            ForEach(0..<barCount, id: \.self) { index in
-                Capsule()
-                    .fill(barColor)
-                    .frame(width: 3, height: barHeight(at: index))
-            }
+    private var footer: some View {
+        VStack(spacing: 14) {
+            consentRow
+
+            Button("Continue", action: onFinish)
+                .buttonStyle(PrimaryButtonStyle())
+                .disabled(phase != .captured || !consentGiven)
+
+            Button(skipTitle, action: onSkip)
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Palette.secondaryText)
         }
-        .frame(maxWidth: .infinity, minHeight: 56)
-        .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color.white.opacity(0.05)))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.white.opacity(0.08))
-        )
-        .animation(.easeOut(duration: 0.1), value: levels)
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .background(Color.white)
     }
 
-    private var consentCard: some View {
+    private var consentRow: some View {
         Button {
             consentGiven.toggle()
         } label: {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: consentGiven ? "checkmark.square.fill" : "square")
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: consentGiven ? "checkmark.circle.fill" : "circle")
                     .font(.title3)
-                    .foregroundStyle(consentGiven ? Palette.brandBlue : Palette.secondaryText)
-                Text("I consent to recording my voice to generate biometric diarization embeddings.")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(consentGiven ? Palette.brandBlue : Palette.secondaryText.opacity(0.5))
+                Text("I agree to let Meeting Memory create a voiceprint from this recording.")
+                    .font(.footnote)
+                    .foregroundStyle(Palette.secondaryText)
                     .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)
             }
-            .padding(14)
-            .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(.white))
-            .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Palette.border))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(consentGiven ? .isSelected : [])
     }
 
-    @ViewBuilder
-    private var actionButtons: some View {
+    // MARK: - State
+
+    private var accent: Color {
+        phase == .captured ? Palette.success : Palette.brandBlue
+    }
+
+    private var symbol: String {
         switch phase {
-        case .standby:
-            Button(action: startRecording) {
-                Label("Press to Record Voice Sample", systemImage: "mic")
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .disabled(!consentGiven)
-
-        case .recording:
-            Button {} label: {
-                Label("Recording...", systemImage: "waveform")
-            }
-            .buttonStyle(PrimaryButtonStyle())
-            .disabled(true)
-
-        case .captured:
-            VStack(spacing: 10) {
-                Button("Continue", action: onFinish)
-                    .buttonStyle(PrimaryButtonStyle())
-                    .disabled(!consentGiven)
-                Button(action: startRecording) {
-                    Label("Re-record", systemImage: "arrow.counterclockwise")
-                }
-                .buttonStyle(OutlineButtonStyle())
-            }
+        case .standby: "mic.fill"
+        case .recording: "waveform"
+        case .captured: "checkmark"
         }
     }
 
-    // MARK: - State
-
     private var statusText: String {
         switch phase {
-        case .standby: "Microphone standby"
+        case .standby:
+            consentGiven ? "Tap to record \u{00B7} \(Int(sampleSeconds)) sec" : "Agree below to start"
+        case .recording:
+            "Recording \u{00B7} " + String(format: "0:%02d", Int(elapsed))
+        case .captured:
+            "Sample captured"
+        }
+    }
+
+    private var recorderLabel: String {
+        switch phase {
+        case .standby: "Record voice sample"
         case .recording: "Recording"
         case .captured: "Sample captured"
         }
     }
 
-    private var statusColor: Color {
-        switch phase {
-        case .standby: Palette.secondaryText
-        case .recording: Palette.danger
-        case .captured: Palette.success
-        }
-    }
-
-    private var barColor: Color {
-        switch phase {
-        case .standby: Color.white.opacity(0.15)
-        case .recording: Palette.brandBlue
-        case .captured: Palette.success
-        }
-    }
-
-    private func barHeight(at index: Int) -> CGFloat {
-        guard index < levels.count else { return 3 }
-        return 3 + levels[index] * 40
-    }
-
-    private func clock(_ seconds: Double) -> String {
-        let whole = Int(seconds)
-        return String(format: "%02d:%02d", whole / 60, whole % 60)
-    }
-
-    /// Placeholder for AVAudioRecorder: ticks a timer and feeds random levels into the waveform.
+    /// Placeholder for AVAudioRecorder: ticks a timer and feeds random levels into the halo.
     private func startRecording() {
         recordingTask?.cancel()
         elapsed = 0
-        levels = Array(repeating: 0, count: barCount)
+        level = 0
         phase = .recording
 
         recordingTask = Task { @MainActor in
@@ -282,13 +223,14 @@ struct VoiceEnrollmentView: View {
                 try? await Task.sleep(for: .seconds(tick))
                 if Task.isCancelled { return }
                 elapsed = min(elapsed + tick, sampleSeconds)
-                levels = Array(levels.dropFirst()) + [CGFloat.random(in: 0.15...1)]
+                level = CGFloat.random(in: 0.2...1)
             }
+            level = 0
             phase = .captured
         }
     }
 }
 
 #Preview {
-    VoiceEnrollmentView(speakerName: "a", onFinish: {}, onSkip: {})
+    VoiceEnrollmentView(speakerName: "Will Liu", onFinish: {}, onSkip: {})
 }
