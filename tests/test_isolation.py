@@ -109,6 +109,7 @@ OWN_DATA_ROUTES = [
     ("GET", "/api/v1/me/tasks/summary"),
     ("DELETE", "/api/v1/me"),
     ("GET", "/api/v1/projects"),
+    ("GET", "/api/v1/projects/events"),  # nudges about the caller's own projects
     ("POST", "/api/v1/projects"),
     ("GET", "/api/v1/conversations"),
     ("GET", "/api/v1/invitations"),

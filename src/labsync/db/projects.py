@@ -65,6 +65,26 @@ def list_members(conn: Connection, project_id: UUID) -> list[dict]:
     ).fetchall()
 
 
+def member_ids(conn: Connection, project_id: UUID) -> list[UUID]:
+    rows = conn.execute(
+        "SELECT user_id FROM project_members WHERE project_id = %s", (project_id,)
+    ).fetchall()
+    return [row["user_id"] for row in rows]
+
+
+def co_member_ids(conn: Connection, user_id: UUID) -> list[UUID]:
+    """Everyone else who shares at least one project with this user."""
+    rows = conn.execute(
+        """
+        SELECT DISTINCT other.user_id FROM project_members mine
+        JOIN project_members other ON other.project_id = mine.project_id
+        WHERE mine.user_id = %s AND other.user_id <> %s
+        """,
+        (user_id, user_id),
+    ).fetchall()
+    return [row["user_id"] for row in rows]
+
+
 def member_role(conn: Connection, project_id: UUID, user_id: UUID) -> str | None:
     row = conn.execute(
         "SELECT role FROM project_members WHERE project_id = %s AND user_id = %s",

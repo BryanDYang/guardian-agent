@@ -101,6 +101,32 @@ struct MeetingAPIClient {
         try await send(URLRequest(url: baseURL.appending(path: "api/v1/projects")))
     }
 
+    /// Server-sent events for the signed-in user's project list. Calls `onChange`
+    /// for every `data:` line: once right after connecting, then after each
+    /// membership change. Returns when the server ends the stream.
+    func followProjectEvents(onChange: @escaping @MainActor () async -> Void) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/events"))
+        request.setValue("text/event-stream", forHTTPHeaderField: "Accept")
+        // The server sends a heartbeat every 25 s, so a minute of silence means
+        // the connection is gone.
+        request.timeoutInterval = 60
+        request.setValue("Bearer \(try await accessToken())", forHTTPHeaderField: "Authorization")
+        let (bytes, response) = try await session.bytes(for: request)
+        guard let response = response as? HTTPURLResponse else {
+            throw MeetingAPIError.invalidResponse
+        }
+        if response.statusCode == 401 {
+            try? await auth.signOut(scope: .local)
+            throw MeetingAPIError.sessionEnded
+        }
+        guard response.statusCode == 200 else {
+            throw MeetingAPIError.server("Live updates are unavailable (HTTP \(response.statusCode)).")
+        }
+        for try await line in bytes.lines where line.hasPrefix("data:") {
+            await onChange()
+        }
+    }
+
     func deleteProject(_ projectID: String) async throws {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)"))
         request.httpMethod = "DELETE"

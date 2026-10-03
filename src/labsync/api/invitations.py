@@ -6,11 +6,12 @@ from datetime import datetime, timezone
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from ..db import invitations
+from ..db import invitations, projects
 from .deps import Conn, CurrentUser, User, require_member
+from .projects import announce
 
 router = APIRouter(tags=["invitations"])
 
@@ -74,8 +75,9 @@ def mine(conn, user: CurrentUser, invitation_id: UUID) -> dict:
     return invitation
 
 
-def accept(conn, user: CurrentUser, invitation: dict) -> dict:
-    """FR-INV-6: the checks, each with its own reason the app can show."""
+def accept(request: Request, conn, user: CurrentUser, invitation: dict) -> dict:
+    """FR-INV-6: the checks, each with its own reason the app can show.
+    On success every member's app hears about it, so member counts update."""
     if invitations.is_member(conn, invitation["project_id"], user.email):
         raise HTTPException(409, "already_member")
     if invitation["status"] == "revoked":
@@ -86,6 +88,7 @@ def accept(conn, user: CurrentUser, invitation: dict) -> dict:
         raise HTTPException(410, "expired")
     if not invitations.accept(conn, invitation, user.id):
         raise HTTPException(410, "already_used")
+    announce(request, conn, projects.member_ids(conn, invitation["project_id"]))
     return {
         "project_id": invitation["project_id"],
         "project_name": invitation["project_name"],
@@ -93,7 +96,9 @@ def accept(conn, user: CurrentUser, invitation: dict) -> dict:
 
 
 @router.post("/api/v1/invitations/accept-token")
-def accept_by_token(body: InviteToken, user: User, conn: Conn) -> dict:
+def accept_by_token(
+    body: InviteToken, user: User, conn: Conn, request: Request
+) -> dict:
     """From the invite link. Whoever holds the link learns it was for another
     email, which is fine: they already have the link."""
     invitation = invitations.find_by_token(conn, body.token)
@@ -101,12 +106,12 @@ def accept_by_token(body: InviteToken, user: User, conn: Conn) -> dict:
         raise HTTPException(404, "Invitation not found")
     if invitation["email"] != user.email:
         raise HTTPException(403, "email_mismatch")
-    return accept(conn, user, invitation)
+    return accept(request, conn, user, invitation)
 
 
 @router.post("/api/v1/invitations/{invitation_id}/accept")
-def accept_by_id(invitation_id: UUID, user: User, conn: Conn) -> dict:
-    return accept(conn, user, mine(conn, user, invitation_id))
+def accept_by_id(invitation_id: UUID, user: User, conn: Conn, request: Request) -> dict:
+    return accept(request, conn, user, mine(conn, user, invitation_id))
 
 
 @router.post("/api/v1/invitations/{invitation_id}/decline")

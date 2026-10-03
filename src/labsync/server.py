@@ -22,6 +22,7 @@ from .api.deps import Conn, SignedIn, User, require_meeting, require_member
 from .api.invitations import router as invitations_router
 from .api.me import router as me_router
 from .api.meetings import router as meetings_router
+from .api.projects import ProjectEvents
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
 from .auth import InvalidToken, TokenVerifier
@@ -242,6 +243,9 @@ def create_app(
     app.state.pool = None
     app.state.embedder = embedder or OpenAIEmbedder()
     app.state.auth = TokenVerifier(supabase_url, jwt_secret) if supabase_url else None
+    app.state.project_events = ProjectEvents()
+    # Live project-list streams end after this long; the app reconnects.
+    app.state.event_stream_seconds = 600
 
     app.state.chat = {"provider": provider, "model": model}
     app.include_router(projects_router)
@@ -388,6 +392,7 @@ def create_app(
     @app.delete("/api/v1/projects/{project_id}")
     def delete_project(project_id: UUID, user: User, conn: Conn):
         require_member(conn, user, project_id)
+        recipients = project_store.member_ids(conn, project_id)
         with lock:
             records = [
                 json.loads(path.read_text()) for path in storage.glob("*/meeting.json")
@@ -406,6 +411,8 @@ def create_app(
                     ) from exc
                 if not deleted:
                     raise HTTPException(404, "Project not found")
+            # Committed when the block above closed its connection.
+            app.state.project_events.publish(recipients)
             for record in matching:
                 shutil.rmtree(folder(record["id"]), ignore_errors=True)
         return {"deleted": 1}
@@ -417,6 +424,8 @@ def create_app(
         solo = {
             str(project_id) for project_id in project_store.solo_projects(conn, user.id)
         }
+        # Their shared projects lose a member, so those members' counts change.
+        recipients = project_store.co_member_ids(conn, user.id)
         busy = HTTPException(
             409, "Wait for your meetings to finish processing, then try again"
         )
@@ -435,6 +444,7 @@ def create_app(
             profiles.delete_account(conn, user.id)
             # Commit before removing recordings, so a failed delete keeps them.
             conn.commit()
+            app.state.project_events.publish(recipients)
             for record in matching:
                 shutil.rmtree(folder(record["id"]), ignore_errors=True)
         return {"deleted_projects": len(solo)}

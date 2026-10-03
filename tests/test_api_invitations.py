@@ -6,7 +6,7 @@ Never point this at the Supabase project."""
 
 import os
 from urllib.parse import parse_qs, urlparse
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 import psycopg
 import pytest
@@ -67,6 +67,8 @@ def test_invite_then_accept_by_link(client, team):
     assert body["invitation"]["email"] == carol_email  # trimmed and lowercased
     assert body["invitation"]["invited_by_name"] == "Alice"
 
+    published = []
+    client.app.state.project_events.publish = lambda ids: published.append(set(ids))
     accepted = client.post(
         "/api/v1/invitations/accept-token",
         json={"token": token_of(body)},
@@ -74,6 +76,10 @@ def test_invite_then_accept_by_link(client, team):
     )
     assert accepted.status_code == 200
     assert accepted.json()["project_name"] == "pytest invites"
+    # Both members' apps are told, so their member counts update live.
+    members = client.get(f"/api/v1/projects/{project_id}/members", headers=alice)
+    assert published == [{UUID(m["user_id"]) for m in members.json()}]
+    assert len(published[0]) == 2
     projects = client.get("/api/v1/projects", headers=carol).json()
     assert project_id in [project["id"] for project in projects]
 

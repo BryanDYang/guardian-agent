@@ -9,6 +9,8 @@ final class Project {
     var colorHex: String
     var iconSystemName: String
     var createdAt: Date
+    /// People who have joined, from GET /api/v1/projects. nil for sample projects.
+    var memberCount: Int?
 
     /// Replaces `meetingIds: string[]` and `Meeting.projectId`.
     @Relationship(inverse: \Meeting.project) var meetings: [Meeting] = []

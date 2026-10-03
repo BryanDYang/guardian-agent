@@ -113,7 +113,11 @@ struct MeetingsListView: View {
             Text(errorMessage ?? "")
         }
         .task(id: projectID) {
-            if projectID == nil { await refreshProjects() }
+            if projectID == nil {
+                await refreshProjects()
+                // Runs until the project list leaves the screen.
+                await followProjectEvents()
+            }
             await refreshMeetings()
         }
     }
@@ -131,6 +135,27 @@ struct MeetingsListView: View {
             )
         } catch {
             // Keep the on-device list when the backend cannot be reached.
+        }
+    }
+
+    /// Keeps member counts live while the project list is on screen. The server
+    /// nudges on every membership change and the list re-fetches. Reconnects when
+    /// the stream ends (every 10 minutes) or drops, waiting longer after each error.
+    private func followProjectEvents() async {
+        var delay: Duration = .seconds(1)
+        while !Task.isCancelled {
+            do {
+                try await MeetingAPIClient.shared.followProjectEvents {
+                    await refreshProjects()
+                }
+                delay = .seconds(1)
+            } catch MeetingAPIError.sessionEnded {
+                return
+            } catch {
+                // Offline, or the backend restarted: try again later.
+                delay = min(delay * 2, .seconds(60))
+            }
+            try? await Task.sleep(for: delay)
         }
     }
 
@@ -227,6 +252,10 @@ struct MeetingsListView: View {
                     .foregroundStyle(.primary)
                 if !isServerID(project.id) {
                     Text("Sample project · unavailable in Chat")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else if let count = project.memberCount {
+                    Text(count == 1 ? "1 member" : "\(count) members")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
