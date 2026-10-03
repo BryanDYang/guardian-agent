@@ -53,6 +53,53 @@ def create_project(
     }
 
 
+def list_members(conn: Connection, project_id: UUID) -> list[dict]:
+    return conn.execute(
+        """
+        SELECT pm.user_id, p.display_name, p.email, pm.role
+        FROM project_members pm JOIN profiles p ON p.id = pm.user_id
+        WHERE pm.project_id = %s
+        ORDER BY lower(coalesce(p.display_name, p.email)), pm.user_id
+        """,
+        (project_id,),
+    ).fetchall()
+
+
+def member_role(conn: Connection, project_id: UUID, user_id: UUID) -> str | None:
+    row = conn.execute(
+        "SELECT role FROM project_members WHERE project_id = %s AND user_id = %s",
+        (project_id, user_id),
+    ).fetchone()
+    return row["role"] if row else None
+
+
+def lock_owners(conn: Connection, project_id: UUID) -> list[UUID]:
+    """The project's owners, locked so two owners can't remove each other at once."""
+    rows = conn.execute(
+        "SELECT user_id FROM project_members "
+        "WHERE project_id = %s AND role = 'owner' FOR UPDATE",
+        (project_id,),
+    ).fetchall()
+    return [row["user_id"] for row in rows]
+
+
+def remove_member(conn: Connection, project_id: UUID, user_id: UUID) -> int:
+    """End the membership and unassign the member's tasks in this project, in
+    the caller's transaction. Returns how many tasks became unassigned."""
+    conn.execute(
+        "DELETE FROM project_members WHERE project_id = %s AND user_id = %s",
+        (project_id, user_id),
+    )
+    return conn.execute(
+        """
+        UPDATE tasks SET assignee_user_id = NULL, owner_label = NULL,
+            updated_at = now()
+        WHERE project_id = %s AND assignee_user_id = %s
+        """,
+        (project_id, user_id),
+    ).rowcount
+
+
 def solo_projects(conn: Connection, user_id: UUID) -> list[UUID]:
     """Projects where this user is the only member."""
     rows = conn.execute(

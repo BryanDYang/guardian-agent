@@ -8,6 +8,10 @@ from psycopg.types.json import Jsonb
 
 from ..extraction import Evidence, Extraction, Transcript
 
+# A pending task matches an open task when their title embeddings are at
+# least this similar (cosine). Provisional: tune it on real project data.
+TASK_MATCH_MIN_SIMILARITY = 0.80
+
 RESULT_TABLES = (
     "tasks",
     "meeting_decisions",
@@ -71,15 +75,38 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
         """,
         (meeting_id,),
     ).fetchall()
+    # For each pending task, the closest approved, still-open task created
+    # earlier in the same project from another meeting, if it is similar enough.
     tasks = conn.execute(
         """
-        SELECT id, title, owner_label, due_date, due_date_text, review_status, category
-        FROM tasks
-        WHERE meeting_id = %s
-        ORDER BY created_at, id
+        SELECT t.id, t.title, t.owner_label, t.assignee_user_id,
+               (SELECT p.display_name FROM profiles p
+                WHERE p.id = t.assignee_user_id) AS assignee_name,
+               t.due_date, t.due_date_text, t.review_status, t.category,
+               match.id AS match_id, match.title AS match_title
+        FROM tasks t
+        LEFT JOIN LATERAL (
+            SELECT o.id, o.title
+            FROM tasks o
+            WHERE t.review_status = 'pending' AND t.embedding IS NOT NULL
+              AND o.project_id = t.project_id
+              AND o.meeting_id IS DISTINCT FROM t.meeting_id
+              AND o.created_at < t.created_at
+              AND o.review_status = 'approved' AND o.lifecycle_status = 'open'
+              AND o.embedding <=> t.embedding <= %s
+            ORDER BY o.embedding <=> t.embedding
+            LIMIT 1
+        ) match ON true
+        WHERE t.meeting_id = %s
+        ORDER BY t.created_at, t.id
         """,
-        (meeting_id,),
+        (1 - TASK_MATCH_MIN_SIMILARITY, meeting_id),
     ).fetchall()
+    for task in tasks:
+        match_id, match_title = task.pop("match_id"), task.pop("match_title")
+        task["matches_task"] = (
+            {"id": match_id, "title": match_title} if match_id else None
+        )
     storylines = conn.execute(
         """
         SELECT id, attendee_id, what_they_want, what_they_see, what_they_discuss

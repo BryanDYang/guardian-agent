@@ -15,6 +15,11 @@ final class CandidateTask {
     var assignee: Attendee?
     /// Replaces `duplicateOf?: string` (id of an existing task).
     var duplicateOf: TaskItem?
+    /// Project member the candidate is assigned to. Wins over `assignee`, a speaker.
+    var assigneeUserID: String?
+    var assigneeName: String?
+    /// Title of an open task from an earlier meeting that this candidate looks like.
+    var matchedTaskTitle: String?
     /// Owning meeting. Inverse declared on Meeting.candidateTasks.
     var meeting: Meeting?
 

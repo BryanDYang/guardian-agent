@@ -141,12 +141,14 @@ struct MeetingAPIClient {
         return try await send(URLRequest(url: url))
     }
 
+    /// Pass `assignee: .some(choice)` to change the assignee (`.some(nil)` unassigns).
+    /// Leaving it out keeps the stored assignee.
     func reviewTask(
         id: String,
         action: String,
         title: String? = nil,
         dueDate: Date? = nil,
-        assigneeID: String? = nil
+        assignee: AssigneeChoice?? = nil
     ) async throws -> TaskMutationResponse {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/review"))
         request.httpMethod = "PATCH"
@@ -156,10 +158,37 @@ struct MeetingAPIClient {
                 action: action,
                 title: title,
                 dueDate: dueDate.map(LabSyncDate.string(from:)),
-                assigneeID: assigneeID
+                assignee: assignee
             )
         )
         return try await send(request)
+    }
+
+    /// Edits an approved task. nil assignee unassigns it.
+    func editTask(
+        id: String,
+        title: String,
+        dueDate: Date,
+        assignee: AssigneeChoice?
+    ) async throws -> TaskMutationResponse {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)"))
+        request.httpMethod = "PATCH"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(
+            TaskEditBody(
+                title: title,
+                dueDate: LabSyncDate.string(from: dueDate),
+                assignee: assignee
+            )
+        )
+        return try await send(request)
+    }
+
+    /// Everyone a task in this project can be assigned to.
+    func projectMembers(projectID: String) async throws -> [RemoteMember] {
+        try await send(URLRequest(
+            url: baseURL.appending(path: "api/v1/projects/\(projectID)/members")
+        ))
     }
 
     func changeTaskState(id: String, state: String) async throws -> TaskMutationResponse {
@@ -521,18 +550,29 @@ struct RemoteTask: Decodable {
     let meetingID: String?
     let title: String
     let ownerLabel: String?
+    /// Set when a project member owns the task. Wins over ownerLabel.
+    let assigneeUserID: String?
+    let assigneeName: String?
     let dueDate: String?
     let reviewStatus: String
     let lifecycleStatus: String
+    /// Where the task came from: its meeting and first evidence quote.
+    let meetingName: String?
+    let quote: String?
+    let timestampMilliseconds: Int?
 
     enum CodingKeys: String, CodingKey {
-        case id, title
+        case id, title, quote
         case projectID = "project_id"
         case meetingID = "meeting_id"
         case ownerLabel = "owner_label"
+        case assigneeUserID = "assignee_user_id"
+        case assigneeName = "assignee_name"
         case dueDate = "due_date"
         case reviewStatus = "review_status"
         case lifecycleStatus = "lifecycle_status"
+        case meetingName = "meeting_name"
+        case timestampMilliseconds = "timestamp_ms"
     }
 }
 
@@ -562,15 +602,71 @@ struct RemoteStoredTask: Decodable {
     let id: String
     let title: String
     let ownerLabel: String?
+    let assigneeUserID: String?
+    let assigneeName: String?
     let dueDate: String?
     let reviewStatus: String
     let evidence: [RemoteTaskEvidence]
+    /// An open task from an earlier meeting that this pending task looks like.
+    let matchesTask: RemoteTaskMatch?
 
     enum CodingKeys: String, CodingKey {
         case id, title, evidence
         case ownerLabel = "owner_label"
+        case assigneeUserID = "assignee_user_id"
+        case assigneeName = "assignee_name"
         case dueDate = "due_date"
         case reviewStatus = "review_status"
+        case matchesTask = "matches_task"
+    }
+}
+
+struct RemoteTaskMatch: Decodable {
+    let id: String
+    let title: String
+}
+
+struct RemoteMember: Decodable, Identifiable {
+    let userID: String
+    let displayName: String?
+    let email: String
+    let role: String
+    let isMe: Bool
+
+    var id: String { userID }
+
+    /// "Will Liu (Me)". The email stands in when no name is set.
+    var pickerName: String {
+        let name = displayName.flatMap { $0.isEmpty ? nil : $0 } ?? email
+        return isMe ? "\(name) (Me)" : name
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case email, role
+        case userID = "user_id"
+        case displayName = "display_name"
+        case isMe = "is_me"
+    }
+}
+
+/// Who a task belongs to: a project member, or a speaker the diarizer found who
+/// isn't a member (e.g. SPEAKER_1). nil means unassigned.
+enum AssigneeChoice: Hashable {
+    case member(String)
+    case speaker(String)
+
+    var userID: String? {
+        switch self {
+        case .member(let id): id
+        case .speaker: nil
+        }
+    }
+
+    var speakerLabel: String? {
+        switch self {
+        case .member: nil
+        case .speaker(let label): label
+        }
     }
 }
 
@@ -694,12 +790,14 @@ private struct ReviewBody: Encodable {
     let action: String
     let title: String?
     let dueDate: String?
-    let assigneeID: String?
+    /// nil leaves the stored assignee alone; .some(nil) unassigns.
+    let assignee: AssigneeChoice??
 
     enum CodingKeys: String, CodingKey {
         case action, title
         case dueDate = "due_date"
-        case assigneeID = "assignee_id"
+        case assigneeUserID = "assignee_user_id"
+        case ownerLabel = "owner_label"
     }
 
     func encode(to encoder: Encoder) throws {
@@ -708,7 +806,33 @@ private struct ReviewBody: Encodable {
         try container.encodeIfPresent(title, forKey: .title)
         // Null clears the due date. Omitting the key would leave the stored date in place.
         try container.encode(dueDate, forKey: .dueDate)
-        try container.encodeIfPresent(assigneeID, forKey: .assigneeID)
+        if let assignee {
+            // Both keys go together, so the server replaces the whole assignment.
+            try container.encode(assignee?.userID, forKey: .assigneeUserID)
+            try container.encode(assignee?.speakerLabel, forKey: .ownerLabel)
+        }
+    }
+}
+
+private struct TaskEditBody: Encodable {
+    let title: String
+    let dueDate: String
+    let assignee: AssigneeChoice?
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case dueDate = "due_date"
+        case assigneeUserID = "assignee_user_id"
+        case ownerLabel = "owner_label"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(title, forKey: .title)
+        try container.encode(dueDate, forKey: .dueDate)
+        // Always sent, so a nil assignee unassigns the task.
+        try container.encode(assignee?.userID, forKey: .assigneeUserID)
+        try container.encode(assignee?.speakerLabel, forKey: .ownerLabel)
     }
 }
 

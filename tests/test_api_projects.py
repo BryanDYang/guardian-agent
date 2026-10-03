@@ -148,3 +148,42 @@ def test_cannot_delete_project_with_active_meeting(client, make_user, status):
     assert project["id"] in [
         p["id"] for p in client.get("/api/v1/projects", headers=auth).json()
     ]
+
+
+def test_members_list_and_removal_rules(client, make_user):
+    alice_id, alice = make_user("Alice")
+    bob_id, bob = make_user("Bob")
+    carol_id, carol = make_user("Carol")
+    project = client.post(
+        "/api/v1/projects", json={"name": "pytest team"}, headers=alice
+    ).json()
+    with psycopg.connect(DATABASE_URL) as conn:
+        for user_id in (bob_id, carol_id):
+            conn.execute(
+                "INSERT INTO project_members (project_id, user_id, role) "
+                "VALUES (%s, %s, 'member')",
+                (project["id"], user_id),
+            )
+    members_url = f"/api/v1/projects/{project['id']}/members"
+
+    listed = client.get(members_url, headers=bob).json()
+    assert [(m["display_name"], m["role"], m["is_me"]) for m in listed] == [
+        ("Alice", "owner", False),
+        ("Bob", "member", True),
+        ("Carol", "member", False),
+    ]
+
+    # A member can't remove someone else, and nobody can remove a stranger.
+    assert client.delete(f"{members_url}/{carol_id}", headers=bob).status_code == 403
+    stranger = uuid.uuid4()
+    assert client.delete(f"{members_url}/{stranger}", headers=alice).status_code == 404
+    # The last owner can't leave.
+    assert client.delete(f"{members_url}/{alice_id}", headers=alice).status_code == 409
+
+    # The owner removes Carol; Bob leaves on his own.
+    assert client.delete(f"{members_url}/{carol_id}", headers=alice).status_code == 200
+    assert client.delete(f"{members_url}/{bob_id}", headers=bob).status_code == 200
+    assert [
+        m["display_name"] for m in client.get(members_url, headers=alice).json()
+    ] == ["Alice"]
+    assert client.get(members_url, headers=bob).status_code == 404

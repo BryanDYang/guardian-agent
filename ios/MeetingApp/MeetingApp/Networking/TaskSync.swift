@@ -16,7 +16,22 @@ enum TaskSync {
         let task = try context.fetch(descriptor).first ?? insert(remote, meetings: meetings, context: context)
         task.title = remote.title
         task.dueDate = remote.dueDate.flatMap(LabSyncDate.day(from:))
-        task.ownerLabel = remote.ownerLabel ?? task.ownerLabel
+        // The server decides the assignee. The local speaker below only adds an avatar.
+        task.ownerLabel = remote.ownerLabel ?? ""
+        task.assigneeUserID = remote.assigneeUserID
+        task.assigneeName = remote.assigneeName
+        task.assignee = nil
+        if let quote = remote.quote {
+            task.sourceQuote = quote
+        }
+        if let milliseconds = remote.timestampMilliseconds {
+            let seconds = milliseconds / 1_000
+            task.sourceTimestamp = String(format: "%02d:%02d", seconds / 60, seconds % 60)
+        }
+        if let meetingName = remote.meetingName,
+           task.sourceMeetingTitle.isEmpty || task.sourceMeetingTitle == "Meeting" {
+            task.sourceMeetingTitle = meetingName
+        }
         apply(remote.lifecycleStatus, to: task)
         if let revertToken {
             task.revertToken = revertToken
@@ -30,7 +45,7 @@ enum TaskSync {
             if task.sourceMeetingTitle.isEmpty || task.sourceMeetingTitle == "Meeting" {
                 task.sourceMeetingTitle = meeting.title
             }
-            if task.assignee == nil, !task.ownerLabel.isEmpty {
+            if task.assigneeUserID == nil, !task.ownerLabel.isEmpty {
                 task.assignee = meeting.attendees.first {
                     $0.name == task.ownerLabel || $0.id.hasSuffix(":\(task.ownerLabel)")
                 }
