@@ -133,3 +133,15 @@
 - **Evaluation scope:** Extraction results cover 24 synthetic development inputs. Audio results cover a small AMI sample. Neither establishes diarization quality, cross-meeting state tracking, reminder delivery, or full application reliability.
 - **Scoring and contracts:** Lexical task matching and exact deadline comparison can differ from semantic correctness. Joint ownership and task granularity remain unresolved; the offline harness does not enforce application evidence validation uniformly across methods.
 - **Reproduction and integration:** Audio reproduction requires separately supplied CCB source. A completed native build and Simulator end-to-end verification are not established in the report. Saved baseline results should not be treated as measurements of every currently supported backend configuration.
+
+# Week 6 (September 28-October 4, 2026)
+
+**Did:** We integrated project chat with hybrid retrieval and verified citations, and connected more of the iOS app to authenticated backend data. I worked on setup documentation and the Milestone 3 draft, separating implemented features from verified behavior.<br>
+**Blocked on:** A reviewed RAG question set and live retrieval/model evaluation; component tests do not establish answer quality.<br>
+**Next:** Run a controlled comparison of hybrid retrieval against vector-only retrieval on the same labeled questions.
+
+One specific system change was grouping consecutive transcript turns into windows of up to 150 words instead of retrieving each turn separately. Short turns often lack context, while long turns can exceed the embedding model's input limit. The windows aim to preserve enough surrounding discussion to answer questions about decisions and ownership.
+
+We have not measured this change's effect on answer quality. The implementation includes chunking and citation-validation tests, but those check mechanics, not whether real retrieval finds better evidence. Integration and setup received attention before we had a labeled question set ready. That leaves an uncomfortable gap: we can explain why the design seems reasonable, but cannot claim it improved evaluation results. Last week's extraction scores do not answer that question.
+
+Prompt engineering currently feels partly like art: wording and context choices depend on intuition until we test them. To make it engineering, we need versioned prompts and retrieval settings, fixed questions with expected evidence, controlled comparisons, and saved outputs. We should measure evidence retrieval, answer correctness, unsupported answers, and latency, then inspect failures. Even a negative result would tell us more than a convincing demonstration.
