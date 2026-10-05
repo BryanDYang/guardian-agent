@@ -175,3 +175,49 @@ def test_outsiders_and_strangers_cannot_read_meetings(client, seeded):
     for url in (project, meeting):
         assert client.get(url, headers=seeded["outsider"]).status_code == 404
         assert client.get(url).status_code == 401
+
+
+def vector(*values):
+    """A 384-d vector string with these leading values and zeros after."""
+    return "[" + ",".join(str(v) for v in [*values, *[0] * (384 - len(values))]) + "]"
+
+
+def test_pending_task_flags_a_matching_open_task(client, seeded):
+    """The meeting screen warns when a new candidate looks like an open task
+    from an earlier meeting (cosine similarity >= 0.80)."""
+    url = f"/api/v1/meetings/{seeded['newer']}"
+    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        conn.execute(
+            "UPDATE tasks SET embedding = %s::vector WHERE meeting_id = %s",
+            (vector(1, 0), seeded["newer"]),
+        )
+        earlier = conn.execute(
+            """
+            INSERT INTO tasks (project_id, meeting_id, title, review_status,
+                               due_date, embedding, created_at)
+            VALUES (%s, %s, 'Send the recording', 'approved', '2026-10-02',
+                    %s::vector, now() - interval '1 day')
+            RETURNING id
+            """,
+            (seeded["project_id"], seeded["older"], vector(0.95, 0.31)),
+        ).fetchone()["id"]
+
+    def match():
+        [task] = client.get(url, headers=seeded["auth"]).json()["tasks"]
+        return task["matches_task"]
+
+    assert match() == {"id": str(earlier), "title": "Send the recording"}
+
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "UPDATE tasks SET lifecycle_status = 'done' WHERE id = %s", (earlier,)
+        )
+    assert match() is None  # finished tasks aren't matched
+
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "UPDATE tasks SET lifecycle_status = 'open', embedding = %s::vector "
+            "WHERE id = %s",
+            (vector(0, 1), earlier),
+        )
+    assert match() is None  # not similar enough

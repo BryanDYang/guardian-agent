@@ -138,6 +138,12 @@ def test_indexes_every_kind_and_prefers_names(embedder, meeting_id):
     with connect() as conn:
         assert rag.index_meeting(conn, meeting_id, embedder) == 5
         rows = stored(conn, meeting_id)
+        # Task titles are embedded too, shortened to fit tasks.embedding.
+        title_dimensions = conn.execute(
+            "SELECT vector_dims(embedding) AS n FROM tasks WHERE meeting_id = %s",
+            (meeting_id,),
+        ).fetchall()
+    assert [row["n"] for row in title_dimensions] == [384, 384]
     assert [(row["kind"], row["start_time_ms"]) for row in rows] == [
         ("decision", 1000),
         ("summary", None),

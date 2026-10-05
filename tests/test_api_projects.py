@@ -3,6 +3,8 @@ TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 Never point this at the Supabase project."""
 
 import os
+import threading
+import time
 import uuid
 
 import psycopg
@@ -148,3 +150,72 @@ def test_cannot_delete_project_with_active_meeting(client, make_user, status):
     assert project["id"] in [
         p["id"] for p in client.get("/api/v1/projects", headers=auth).json()
     ]
+
+
+def test_members_list_and_removal_rules(client, make_user):
+    alice_id, alice = make_user("Alice")
+    bob_id, bob = make_user("Bob")
+    carol_id, carol = make_user("Carol")
+    project = client.post(
+        "/api/v1/projects", json={"name": "pytest team"}, headers=alice
+    ).json()
+    with psycopg.connect(DATABASE_URL) as conn:
+        for user_id in (bob_id, carol_id):
+            conn.execute(
+                "INSERT INTO project_members (project_id, user_id, role) "
+                "VALUES (%s, %s, 'member')",
+                (project["id"], user_id),
+            )
+    members_url = f"/api/v1/projects/{project['id']}/members"
+    published = []
+    client.app.state.project_events.publish = lambda ids: published.append(set(ids))
+
+    listed = client.get(members_url, headers=bob).json()
+    assert [(m["display_name"], m["role"], m["is_me"]) for m in listed] == [
+        ("Alice", "owner", False),
+        ("Bob", "member", True),
+        ("Carol", "member", False),
+    ]
+
+    # A member can't remove someone else, and nobody can remove a stranger.
+    assert client.delete(f"{members_url}/{carol_id}", headers=bob).status_code == 403
+    stranger = uuid.uuid4()
+    assert client.delete(f"{members_url}/{stranger}", headers=alice).status_code == 404
+    # The last owner can't leave.
+    assert client.delete(f"{members_url}/{alice_id}", headers=alice).status_code == 409
+
+    # The owner removes Carol; Bob leaves on his own. Failed attempts tell no one.
+    assert published == []
+    assert client.delete(f"{members_url}/{carol_id}", headers=alice).status_code == 200
+    # Carol's app hears about it too, so the project leaves her list.
+    assert published == [{alice_id, bob_id, carol_id}]
+    assert client.delete(f"{members_url}/{bob_id}", headers=bob).status_code == 200
+    assert [
+        m["display_name"] for m in client.get(members_url, headers=alice).json()
+    ] == ["Alice"]
+    assert client.get(members_url, headers=bob).status_code == 404
+
+
+def test_project_events_stream_nudges_on_changes(client, make_user):
+    """GET /projects/events: one nudge right away, then one per change."""
+    user_id, auth = make_user()
+    _, other = make_user()
+    client.app.state.event_stream_seconds = 1
+    events = client.app.state.project_events
+
+    def publish_once_subscribed():
+        """Waits for the stream to subscribe, so the test can't race it."""
+        for _ in range(500):
+            if user_id in events._queues:
+                events.publish([uuid.uuid4()])  # someone else's change: ignored
+                events.publish([user_id])
+                return
+            time.sleep(0.01)
+
+    threading.Thread(target=publish_once_subscribed).start()
+    response = client.get("/api/v1/projects/events", headers=auth)
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/event-stream")
+    assert response.text.count("data: projects\n\n") == 2
+    assert client.get("/api/v1/projects/events", headers=other).status_code == 200
+    assert client.get("/api/v1/projects/events").status_code == 401

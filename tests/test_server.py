@@ -360,6 +360,7 @@ def test_delete_project_removes_recordings_only_after_database_success(
         return True
 
     monkeypatch.setattr("labsync.server.project_store.delete_project", delete_project)
+    monkeypatch.setattr("labsync.server.project_store.member_ids", lambda conn, p: [])
     signed_in_member(app, monkeypatch)
     with TestClient(app) as client:
         directory.mkdir()
@@ -403,6 +404,7 @@ def test_delete_project_preserves_recordings_when_database_rejects(
         return False
 
     monkeypatch.setattr("labsync.server.project_store.delete_project", reject)
+    monkeypatch.setattr("labsync.server.project_store.member_ids", lambda conn, p: [])
     signed_in_member(app, monkeypatch)
     with TestClient(app) as client:
         directory = tmp_path / str(meeting_id)

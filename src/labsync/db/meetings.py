@@ -8,11 +8,16 @@ from psycopg.types.json import Jsonb
 
 from ..extraction import Evidence, Extraction, Transcript
 
+# A pending task matches an open task when their title embeddings are at
+# least this similar (cosine). Provisional: tune it on real project data.
+TASK_MATCH_MIN_SIMILARITY = 0.80
+
 RESULT_TABLES = (
     "tasks",
     "meeting_decisions",
     "meeting_summaries",
     "meeting_transcripts",
+    "meeting_attendees",
 )
 
 
@@ -54,8 +59,8 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
     ).fetchone()
     transcript = conn.execute(
         """
-        SELECT speaker_label AS speaker, turn_key, start_time_ms, end_time_ms,
-               content, turn_order
+        SELECT coalesce(speaker_name, speaker_label) AS speaker, turn_key,
+               start_time_ms, end_time_ms, content, turn_order
         FROM meeting_transcripts
         WHERE meeting_id = %s
         ORDER BY turn_order
@@ -71,15 +76,38 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
         """,
         (meeting_id,),
     ).fetchall()
+    # For each pending task, the closest approved, still-open task created
+    # earlier in the same project from another meeting, if it is similar enough.
     tasks = conn.execute(
         """
-        SELECT id, title, owner_label, due_date, due_date_text, review_status, category
-        FROM tasks
-        WHERE meeting_id = %s
-        ORDER BY created_at, id
+        SELECT t.id, t.title, t.owner_label, t.assignee_user_id,
+               (SELECT p.display_name FROM profiles p
+                WHERE p.id = t.assignee_user_id) AS assignee_name,
+               t.due_date, t.due_date_text, t.review_status, t.category,
+               match.id AS match_id, match.title AS match_title
+        FROM tasks t
+        LEFT JOIN LATERAL (
+            SELECT o.id, o.title
+            FROM tasks o
+            WHERE t.review_status = 'pending' AND t.embedding IS NOT NULL
+              AND o.project_id = t.project_id
+              AND o.meeting_id IS DISTINCT FROM t.meeting_id
+              AND o.created_at < t.created_at
+              AND o.review_status = 'approved' AND o.lifecycle_status = 'open'
+              AND o.embedding <=> t.embedding <= %s
+            ORDER BY o.embedding <=> t.embedding
+            LIMIT 1
+        ) match ON true
+        WHERE t.meeting_id = %s
+        ORDER BY t.created_at, t.id
         """,
-        (meeting_id,),
+        (1 - TASK_MATCH_MIN_SIMILARITY, meeting_id),
     ).fetchall()
+    for task in tasks:
+        match_id, match_title = task.pop("match_id"), task.pop("match_title")
+        task["matches_task"] = (
+            {"id": match_id, "title": match_title} if match_id else None
+        )
     storylines = conn.execute(
         """
         SELECT id, attendee_id, what_they_want, what_they_see, what_they_discuss
@@ -151,11 +179,13 @@ def save_results(
     transcript: Transcript,
     result: dict,
     transcription_metadata: dict,
+    identification: dict | None = None,
 ) -> None:
     """Replace this meeting's transcript and extraction rows in one transaction.
 
-    `result` is the extraction.json content; its evidence must already have
-    passed Extraction.check_evidence against `transcript`.
+    `transcript` has the diarizer's tags. `identification` (voice.identify)
+    gives each tag its shown name; extraction ran on the transcript with those
+    names, and its evidence must already have passed Extraction.check_evidence.
     """
     row = conn.execute("SELECT project_id FROM meetings WHERE id = %s", (meeting_id,))
     meeting = row.fetchone()
@@ -167,19 +197,44 @@ def save_results(
     for table in RESULT_TABLES:
         conn.execute(f"DELETE FROM {table} WHERE meeting_id = %s", (meeting_id,))
 
+    speakers = identification["speakers"] if identification else {}
+    attendees = {}  # diarizer tag -> the matched member's attendee row
+    for tag, speaker in speakers.items():
+        if speaker["user_id"] is None:
+            continue
+        attendees[tag] = _member_attendee(conn, speaker["user_id"], speaker["display"])
+        conn.execute(
+            """
+            INSERT INTO meeting_attendees (meeting_id, attendee_id, speaker_label,
+                display_label, match_score, match_method, embedding_model_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                meeting_id,
+                attendees[tag],
+                tag,
+                speaker["display"],
+                speaker["score"],
+                speaker["method"],
+                identification["embedding_model_id"],
+            ),
+        )
+
     with conn.cursor() as cursor:
         cursor.executemany(
             """
             INSERT INTO meeting_transcripts (
-                meeting_id, speaker_label, turn_key,
+                meeting_id, attendee_id, speaker_label, speaker_name, turn_key,
                 start_time_ms, end_time_ms, content, turn_order
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             [
                 (
                     meeting_id,
+                    attendees.get(turn.speaker),
                     turn.speaker,
+                    speakers.get(turn.speaker, {}).get("display"),
                     turn.id,
                     turn.start_time_ms,
                     turn.end_time_ms,
@@ -216,6 +271,8 @@ def save_results(
         ).fetchone()["id"]
         _add_evidence(conn, "decision_id", decision_id, decision.evidence, turns)
 
+    # A commitment owned by a recognized member is assigned to them (FR-SPK-5).
+    members = {s["display"]: s["user_id"] for s in speakers.values() if s["user_id"]}
     tasks = [
         (item.title, item.owner, item.due_date_text, "commitment", item.evidence)
         for item in extraction.commitments
@@ -224,24 +281,45 @@ def save_results(
         for item in extraction.suggestions
     ]
     for title, owner, due_date_text, category, evidence in tasks:
+        assignee = members.get(owner)
         task_id = conn.execute(
             """
-            INSERT INTO tasks (project_id, meeting_id, owner_label, title,
-                               due_date_text, category)
-            VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+            INSERT INTO tasks (project_id, meeting_id, owner_label, assignee_user_id,
+                               title, due_date_text, category)
+            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
             """,
-            (meeting["project_id"], meeting_id, owner, title, due_date_text, category),
+            (
+                meeting["project_id"],
+                meeting_id,
+                None if assignee else owner,
+                assignee,
+                title,
+                due_date_text,
+                category,
+            ),
         ).fetchone()["id"]
         _add_evidence(conn, "task_id", task_id, evidence, turns)
 
     metadata = {key: value for key, value in result.items() if key != "extraction"}
+    model_metadata = {"transcription": transcription_metadata, "extraction": metadata}
+    if identification is not None:
+        model_metadata["speaker_identification"] = identification  # FR-SPK-6, 7
     conn.execute(
         "UPDATE meetings SET model_metadata = %s, updated_at = now() WHERE id = %s",
-        (
-            Jsonb({"transcription": transcription_metadata, "extraction": metadata}),
-            meeting_id,
-        ),
+        (Jsonb(model_metadata), meeting_id),
     )
+
+
+def _member_attendee(conn: Connection, user_id: str, name: str) -> UUID:
+    """The member's one attendee row, created on first match (FR-SPK-4)."""
+    return conn.execute(
+        """
+        INSERT INTO attendees (name, user_id) VALUES (%s, %s)
+        ON CONFLICT (user_id) DO UPDATE SET name = EXCLUDED.name
+        RETURNING id
+        """,
+        (name, user_id),
+    ).fetchone()["id"]
 
 
 def _evidence(conn: Connection, parent_column: str, parent_id: UUID) -> list[dict]:

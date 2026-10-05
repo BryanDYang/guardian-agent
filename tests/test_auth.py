@@ -150,7 +150,7 @@ def test_onboarding_completes_once(client, make_user):
     url = "/api/v1/me/onboarding/complete"
     first = client.post(url, json={"voice_step": "skipped"}, headers=auth).json()
     assert first["onboarding_step"] == "complete"
-    again = client.post(url, json={"voice_step": "placeholder"}, headers=auth).json()
+    again = client.post(url, json={"voice_step": "skipped"}, headers=auth).json()
     assert again["onboarding_completed_at"] == first["onboarding_completed_at"]
 
 
@@ -161,8 +161,9 @@ def test_onboarding_needs_a_name_and_a_known_voice_step(client, make_user):
     response = client.post(url, json={"voice_step": "skipped"}, headers=nameless)
     assert (response.status_code, response.json()["detail"]) == (409, "needs_profile")
     _, auth = make_user(onboarded=False)
-    response = client.post(url, json={"voice_step": "enrolled"}, headers=auth)
-    assert response.status_code == 422
+    for unknown in ["enrolled", "placeholder"]:  # enrollment completes it itself
+        response = client.post(url, json={"voice_step": unknown}, headers=auth)
+        assert response.status_code == 422
 
 
 @needs_db

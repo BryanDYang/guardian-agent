@@ -91,10 +91,17 @@ class Extraction(Record):
                         )
                     else:
                         repairs.append(f"{label}: dropped quote {cited.quote!r}")
-                if evidence:
-                    kept.append(item.model_copy(update={"evidence": evidence}))
-                else:
+                if not evidence:
                     repairs.append(f"{label}: dropped item with no verifiable evidence")
+                    continue
+                update = {"evidence": evidence}
+                deadline = getattr(item, "due_date_text", None)
+                if deadline and not any(deadline in e.quote for e in evidence):
+                    # A reworded deadline ("by next week" for "by hopefully next
+                    # week") is cleared, not guessed; the reviewer sets the date.
+                    repairs.append(f"{label}: cleared unquoted deadline {deadline!r}")
+                    update["due_date_text"] = None
+                kept.append(item.model_copy(update=update))
             return kept
 
         extraction = self.model_copy(

@@ -26,6 +26,11 @@ final class TaskItem {
     var isCompleted: Bool = false
     /// Raw diarizer owner when the task has no linked attendee yet.
     var ownerLabel: String = ""
+    /// Project member the task is assigned to, from the server. Wins over ownerLabel.
+    var assigneeUserID: String?
+    var assigneeName: String?
+    /// First evidence quote, shown when the row is expanded in the Tasks tab.
+    var sourceQuote: String = ""
     /// Latest audit token from a lifecycle change, used by Undo.
     var revertToken: String?
 

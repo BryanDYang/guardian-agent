@@ -60,6 +60,7 @@ PROJECT_ROUTES = [
         "/api/v1/tasks/{task_id}/review",
         lambda ids: {"json": {"action": "dismiss"}},
     ),
+    ("PATCH", "/api/v1/tasks/{task_id}", lambda ids: {"json": {"title": "Hijacked"}}),
     ("POST", "/api/v1/tasks/{task_id}/state", lambda ids: {"json": {"state": "done"}}),
     ("POST", "/api/v1/tasks/revert/{revert_token}", lambda ids: {}),
     (
@@ -83,6 +84,8 @@ PROJECT_ROUTES = [
         lambda ids: {"json": {"email": "eve@example.com"}},
     ),
     ("GET", "/api/v1/projects/{project_id}/invitations", lambda ids: {}),
+    ("GET", "/api/v1/projects/{project_id}/members", lambda ids: {}),
+    ("DELETE", "/api/v1/projects/{project_id}/members/{member_id}", lambda ids: {}),
     (
         "DELETE",
         "/api/v1/projects/{project_id}/invitations/{invitation_id}",
@@ -104,8 +107,13 @@ OWN_DATA_ROUTES = [
     ("PATCH", "/api/v1/me"),
     ("POST", "/api/v1/me/onboarding/complete"),
     ("GET", "/api/v1/me/tasks/summary"),
+    ("GET", "/api/v1/me/voice"),
+    ("POST", "/api/v1/me/voice-consent"),
+    ("DELETE", "/api/v1/me/voice-consent"),
+    ("POST", "/api/v1/me/voice-enrollments"),
     ("DELETE", "/api/v1/me"),
     ("GET", "/api/v1/projects"),
+    ("GET", "/api/v1/projects/events"),  # nudges about the caller's own projects
     ("POST", "/api/v1/projects"),
     ("GET", "/api/v1/conversations"),
     ("GET", "/api/v1/invitations"),
@@ -189,6 +197,7 @@ def seeded(make_user):
         "revert_token": str(revert_token),
         "conversation_id": str(conversation_id),
         "invitation_id": str(invitation_id),
+        "member_id": str(alice_id),
     }
     yield ids, alice, bob
     with psycopg.connect(DATABASE_URL) as conn:

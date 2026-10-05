@@ -13,6 +13,9 @@ struct TasksView: View {
     /// nil = "All"
     @State private var selectedProjectID: String?
     @State private var pendingTaskID: String?
+    /// One card is open at a time; opening another closes it.
+    @State private var expandedTaskID: String?
+    @State private var editingTask: TaskItem?
     @State private var loadError: String?
     @State private var actionError: String?
 
@@ -57,6 +60,9 @@ struct TasksView: View {
         }
         .task(id: calendarRequestID) {
             await refreshCalendar()
+        }
+        .sheet(item: $editingTask) { task in
+            EditTaskSheet(task: task, onSaved: applyEdit)
         }
     }
 
@@ -138,7 +144,10 @@ struct TasksView: View {
                 ForEach(pendingTasks) { task in
                     TaskRow(
                         task: task,
+                        isExpanded: expandedTaskID == task.id,
+                        onTap: { toggleExpanded(task) },
                         onToggleComplete: { Task { await markDone(task) } },
+                        onEdit: { editingTask = task },
                         onDelete: { Task { await drop(task) } }
                     )
                     .disabled(pendingTaskID == task.id)
@@ -157,6 +166,8 @@ struct TasksView: View {
                     ForEach(completedTasks) { task in
                         TaskRow(
                             task: task,
+                            isExpanded: expandedTaskID == task.id,
+                            onTap: { toggleExpanded(task) },
                             onToggleComplete: { Task { await undo(task) } },
                             onDelete: { }
                         )
@@ -252,6 +263,22 @@ struct TasksView: View {
         }
     }
 
+    private func toggleExpanded(_ task: TaskItem) {
+        withAnimation(.snappy(duration: 0.25)) {
+            expandedTaskID = expandedTaskID == task.id ? nil : task.id
+        }
+    }
+
+    private func applyEdit(_ remote: RemoteTask) {
+        do {
+            try TaskSync.upsert(remote, projects: projects, meetings: meetings, context: context)
+            try context.save()
+            actionError = nil
+        } catch {
+            actionError = error.localizedDescription
+        }
+    }
+
     private func markDone(_ task: TaskItem) async {
         guard isServerID(task.id) else {
             task.isCompleted = true
@@ -262,6 +289,7 @@ struct TasksView: View {
         }
     }
 
+    /// "Move to Trash": the task becomes dropped and leaves the list.
     private func drop(_ task: TaskItem) async {
         guard isServerID(task.id) else {
             context.delete(task)
@@ -312,6 +340,115 @@ struct TasksView: View {
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }()
+}
+
+/// Edits an approved task from the Tasks tab: title, assignee, and due date.
+/// An approved task always keeps a due date, so there's no "no date" option.
+private struct EditTaskSheet: View {
+    let task: TaskItem
+    let onSaved: (RemoteTask) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var title: String
+    @State private var assignee: AssigneeChoice?
+    @State private var dueDate: Date
+    @State private var members: [RemoteMember] = []
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    init(task: TaskItem, onSaved: @escaping (RemoteTask) -> Void) {
+        self.task = task
+        self.onSaved = onSaved
+        _title = State(initialValue: task.title)
+        _assignee = State(
+            initialValue: task.assigneeUserID.map(AssigneeChoice.member)
+                ?? (task.ownerLabel.isEmpty ? nil : AssigneeChoice.speaker(task.ownerLabel))
+        )
+        _dueDate = State(initialValue: task.dueDate ?? Calendar.current.startOfDay(for: .now))
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section("Task") {
+                    TextField("Task", text: $title, axis: .vertical)
+                        .lineLimit(2...6)
+                }
+
+                Section("Assignee") {
+                    AssigneePicker(
+                        selection: $assignee,
+                        members: members,
+                        speakers: speakers,
+                        currentMemberName: task.assigneeName
+                    )
+                }
+
+                Section("Due Date") {
+                    DatePicker("Date", selection: $dueDate, displayedComponents: .date)
+                }
+
+                if let errorMessage {
+                    Section {
+                        Text(errorMessage)
+                            .foregroundStyle(.red)
+                    }
+                }
+            }
+            .navigationTitle("Edit Task")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                        .disabled(isSaving)
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { Task { await save() } }
+                        .disabled(trimmedTitle.isEmpty || isSaving)
+                }
+            }
+            .task { members = await AssigneePicker.loadMembers(projectID: task.project?.id) }
+        }
+    }
+
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Speakers from the task's meeting when it's on this device, plus the
+    /// current one.
+    private var speakers: [String] {
+        var labels = AssigneePicker.speakers(of: task.sourceMeeting?.sortedAttendees ?? [])
+        if !task.ownerLabel.isEmpty, !labels.contains(task.ownerLabel) {
+            labels.insert(task.ownerLabel, at: 0)
+        }
+        return labels
+    }
+
+    private func save() async {
+        guard isServerID(task.id) else {
+            // Sample tasks only live on this device.
+            task.title = trimmedTitle
+            task.dueDate = dueDate
+            dismiss()
+            return
+        }
+        isSaving = true
+        errorMessage = nil
+        defer { isSaving = false }
+        do {
+            let response = try await MeetingAPIClient.shared.editTask(
+                id: task.id,
+                title: trimmedTitle,
+                dueDate: dueDate,
+                assignee: assignee
+            )
+            onSaved(response.task)
+            dismiss()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
 }
 
 #Preview {

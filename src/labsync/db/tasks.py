@@ -6,10 +6,20 @@ from uuid import UUID
 from psycopg import Connection
 from psycopg.types.json import Jsonb
 
+# A task is assigned to a project member (assignee_user_id), to a speaker the
+# diarizer found who isn't a member (owner_label, e.g. SPEAKER_1), or to nobody.
+# The source fields let the Tasks tab show where a task came from.
 COLUMNS = """
     t.id, t.project_id, t.meeting_id, t.title, t.category, t.owner_label,
-    t.attendee_id, t.due_date, t.due_date_text, t.review_status,
-    t.lifecycle_status, t.updated_at
+    t.attendee_id, t.assignee_user_id, t.due_date, t.due_date_text,
+    t.review_status, t.lifecycle_status, t.updated_at,
+    (SELECT p.display_name FROM profiles p WHERE p.id = t.assignee_user_id)
+        AS assignee_name,
+    (SELECT m.name FROM meetings m WHERE m.id = t.meeting_id) AS meeting_name,
+    (SELECT e.quote FROM item_evidence e WHERE e.task_id = t.id
+     ORDER BY e.position LIMIT 1) AS quote,
+    (SELECT e.timestamp_ms FROM item_evidence e WHERE e.task_id = t.id
+     ORDER BY e.position LIMIT 1) AS timestamp_ms
 """
 
 
@@ -43,7 +53,8 @@ def update_review(
     *,
     review_status: str,
     title: str,
-    attendee_id: UUID | None,
+    assignee_user_id: UUID | None,
+    owner_label: str | None,
     due_date: date | None,
     approved_by: UUID | None,
 ) -> dict:
@@ -51,8 +62,8 @@ def update_review(
     return conn.execute(
         f"""
         UPDATE tasks t
-        SET review_status = %s, title = %s, attendee_id = %s, due_date = %s,
-            approved_by = %s,
+        SET review_status = %s, title = %s, assignee_user_id = %s,
+            owner_label = %s, due_date = %s, approved_by = %s,
             approved_at = CASE WHEN %s::uuid IS NULL THEN NULL ELSE now() END,
             updated_at = now()
         WHERE t.id = %s
@@ -61,13 +72,51 @@ def update_review(
         (
             review_status,
             title,
-            attendee_id,
+            assignee_user_id,
+            owner_label,
             due_date,
             approved_by,
             approved_by,
             task_id,
         ),
     ).fetchone()
+
+
+def update_details(
+    conn: Connection,
+    task_id: UUID,
+    *,
+    title: str,
+    assignee_user_id: UUID | None,
+    owner_label: str | None,
+    due_date: date,
+) -> dict:
+    """Edit an approved task without touching its review or lifecycle status."""
+    return conn.execute(
+        f"""
+        UPDATE tasks t
+        SET title = %s, assignee_user_id = %s, owner_label = %s, due_date = %s,
+            updated_at = now()
+        WHERE t.id = %s
+        RETURNING {COLUMNS}
+        """,
+        (title, assignee_user_id, owner_label, due_date, task_id),
+    ).fetchone()
+
+
+def is_speaker(conn: Connection, meeting_id: UUID | None, label: str) -> bool:
+    """An unrecognized speaker (e.g. SPEAKER_1) in this meeting. UNKNOWN is an
+    unresolved label, so it can't own a task. A recognized member is assigned
+    by user id instead."""
+    if meeting_id is None or label.upper() == "UNKNOWN":
+        return False
+    row = conn.execute(
+        "SELECT 1 FROM meeting_transcripts "
+        "WHERE meeting_id = %s AND attendee_id IS NULL "
+        "AND coalesce(speaker_name, speaker_label) = %s LIMIT 1",
+        (meeting_id, label),
+    ).fetchone()
+    return row is not None
 
 
 def set_lifecycle(

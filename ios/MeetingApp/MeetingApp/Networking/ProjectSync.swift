@@ -31,11 +31,14 @@ enum ProjectSync {
             let name = displayName(item.name)
             if let project = existing.first(where: { $0.id == item.id }) {
                 project.title = name
+                project.memberCount = item.memberCount
                 if let color = sampleColor(name) { project.colorHex = color }
             } else {
-                context.insert(Project(id: item.id, title: name,
-                                       colorHex: sampleColor(name) ?? "#5E5CE6",
-                                       iconSystemName: "folder", createdAt: .now))
+                let project = Project(id: item.id, title: name,
+                                      colorHex: sampleColor(name) ?? "#5E5CE6",
+                                      iconSystemName: "folder", createdAt: .now)
+                project.memberCount = item.memberCount
+                context.insert(project)
             }
         }
         try context.save()

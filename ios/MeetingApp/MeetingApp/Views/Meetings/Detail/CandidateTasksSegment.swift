@@ -58,11 +58,11 @@ struct CandidateTasksSegment: View {
 
     private func card(for candidate: CandidateTask) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            if candidate.duplicateOf != nil {
+            if let matchedTitle = matchedTitle(of: candidate) {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
-                    Text("Matches Open Task from Prev Sync. Update existing status or track as new?")
+                    Text("Matches an open task from an earlier meeting: \u{201C}\(matchedTitle)\u{201D}. Dismiss this one if it's the same task.")
                 }
                 .font(.caption)
                 .padding(10)
@@ -75,11 +75,11 @@ struct CandidateTasksSegment: View {
 
             HStack(spacing: 8) {
                 AvatarView(
-                    initials: candidate.assignee?.initials ?? "?",
+                    initials: candidate.assigneeName.map(initials(of:)) ?? candidate.assignee?.initials ?? "?",
                     colorHex: candidate.assignee?.colorHex ?? "#9CA3AF",
                     size: 24
                 )
-                Text(candidate.assignee?.name ?? "Unassigned")
+                Text(candidate.assigneeName ?? candidate.assignee?.name ?? "Unassigned")
                     .font(.subheadline.weight(.medium))
 
                 Spacer(minLength: 8)
@@ -191,8 +191,17 @@ struct CandidateTasksSegment: View {
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(candidate.duplicateOf != nil ? Color.orange.opacity(0.5) : Color(.systemGray5))
+                .strokeBorder(matchedTitle(of: candidate) != nil ? Color.orange.opacity(0.5) : Color(.systemGray5))
         )
+    }
+
+    /// From the server's similarity check, or the sample data's duplicate link.
+    private func matchedTitle(of candidate: CandidateTask) -> String? {
+        candidate.matchedTaskTitle ?? candidate.duplicateOf?.title
+    }
+
+    private func initials(of name: String) -> String {
+        String(name.split(separator: " ").prefix(2).compactMap(\.first)).uppercased()
     }
 
     /// Turns the candidate into a real task, then removes it from the review list.
@@ -233,8 +242,7 @@ struct CandidateTasksSegment: View {
                 id: candidate.id,
                 action: action,
                 title: candidate.taskDescription,
-                dueDate: dueDate,
-                assigneeID: serverAssigneeID(candidate.assignee)
+                dueDate: dueDate
             )
             if action == "approve" {
                 let task = try TaskSync.upsert(
@@ -243,7 +251,6 @@ struct CandidateTasksSegment: View {
                     meetings: meetings,
                     context: context
                 )
-                task.assignee = candidate.assignee
                 task.project = meeting.project
                 task.sourceMeeting = meeting
                 task.sourceMeetingTitle = meeting.title
@@ -258,11 +265,6 @@ struct CandidateTasksSegment: View {
         } catch {
             actionError = error.localizedDescription
         }
-    }
-
-    private func serverAssigneeID(_ attendee: Attendee?) -> String? {
-        guard let id = attendee?.id, isServerID(id) else { return nil }
-        return id
     }
 }
 

@@ -120,6 +120,8 @@ struct SpeakerIdentityView: View {
     @Environment(AppSession.self) private var session
     @State private var showingRecorder = false
     @State private var confirmingRevoke = false
+    @State private var isRevoking = false
+    @State private var revokeError: String?
 
     var body: some View {
         List {
@@ -158,27 +160,45 @@ struct SpeakerIdentityView: View {
                     Button("Revoke consent & delete voiceprint", role: .destructive) {
                         confirmingRevoke = true
                     }
+                    .disabled(isRevoking)
+                } footer: {
+                    if let revokeError {
+                        Text(revokeError)
+                            .foregroundStyle(Palette.danger)
+                    }
                 }
             }
         }
         .navigationTitle("Speaker Identity")
         .fullScreenCover(isPresented: $showingRecorder) {
             VoiceEnrollmentView(
-                speakerName: session.user.name,
                 skipTitle: "Cancel",
                 onFinish: {
-                    session.user.voiceprintEnrolledAt = .now
                     showingRecorder = false
+                    Task { await session.refreshProfile() }
                 },
                 onSkip: { showingRecorder = false }
             )
         }
         .confirmationDialog("Delete your voiceprint?", isPresented: $confirmingRevoke, titleVisibility: .visible) {
             Button("Revoke & Delete", role: .destructive) {
-                session.user.voiceprintEnrolledAt = nil
+                Task { await revoke() }
             }
         } message: {
             Text("You'll appear as SPEAKER_N in future meetings until you record again.")
+        }
+    }
+
+    /// FR-VOICE-8: the server deletes the voiceprint along with the consent.
+    private func revoke() async {
+        isRevoking = true
+        revokeError = nil
+        defer { isRevoking = false }
+        do {
+            _ = try await MeetingAPIClient.shared.revokeVoiceConsent()
+            await session.refreshProfile()
+        } catch {
+            revokeError = error.localizedDescription
         }
     }
 }

@@ -9,6 +9,10 @@ from urllib.request import Request, urlopen
 API_URL = "https://api.openai.com/v1/embeddings"
 MODEL = "text-embedding-3-small"
 DIMENSIONS = 1536  # must match vector(1536) in the rag_chunks migration
+# Task titles keep only the first 384 numbers, to fit tasks.embedding vector(384).
+# text-embedding-3 vectors stay meaningful when shortened this way, and cosine
+# distance ignores the shorter vector's length.
+TASK_DIMENSIONS = 384
 BATCH_SIZE = 256  # inputs per request; the API accepts up to 2048
 TIMEOUT = 60
 

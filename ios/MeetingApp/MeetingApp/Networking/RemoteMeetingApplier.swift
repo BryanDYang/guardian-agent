@@ -132,7 +132,12 @@ enum RemoteMeetingApplier {
             )
             context.insert(candidate)
             candidate.meeting = meeting
-            candidate.assignee = attendee(named: task.ownerLabel, on: meeting)
+            candidate.assigneeUserID = task.assigneeUserID
+            candidate.assigneeName = task.assigneeName
+            if task.assigneeUserID == nil {
+                candidate.assignee = attendee(named: task.ownerLabel, on: meeting)
+            }
+            candidate.matchedTaskTitle = task.matchesTask?.title
         }
         try context.save()
     }

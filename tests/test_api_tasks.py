@@ -25,7 +25,7 @@ def seeded(make_user):
     """One meeting with two extracted tasks, neither with a due date, plus a
     project member and a signed-in outsider."""
     member_id, member = make_user("Member")
-    _, outsider = make_user("Outsider")
+    outsider_id, outsider = make_user("Outsider")
     with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         project_id = conn.execute(
             "INSERT INTO projects (name) VALUES ('pytest tasks') RETURNING id"
@@ -91,6 +91,7 @@ def seeded(make_user):
         "project_id": str(project_id),
         "member_id": member_id,
         "member": member,
+        "outsider_id": outsider_id,
         "outsider": outsider,
         **ids,
     }
@@ -223,9 +224,105 @@ def test_errors(client, seeded):
     )
     assert calendar(client, unknown).status_code == 404
     bad_assignee = review(
-        client, seeded["Share the recording"], action="edit", assignee_id=unknown
+        client, seeded["Share the recording"], action="edit", assignee_user_id=unknown
     )
     assert bad_assignee.status_code == 400
+
+
+def summary(client):
+    return client.get("/api/v1/me/tasks/summary").json()
+
+
+def test_assigning_to_me_counts_in_my_task_summary(client, seeded):
+    task_id = seeded["Share the recording"]
+    assert summary(client) == {"open": 0, "overdue": 0, "done": 0}
+    mine = review(
+        client, task_id, action="edit", assignee_user_id=str(seeded["member_id"])
+    ).json()["task"]
+    assert mine["assignee_user_id"] == str(seeded["member_id"])
+    assert mine["assignee_name"] == "Member"
+    assert mine["owner_label"] is None  # a member replaces the speaker label
+    assert summary(client)["open"] == 0  # pending tasks don't count yet
+    approve(client, task_id, "2099-01-01")  # never overdue, whatever today is
+    assert summary(client) == {"open": 1, "overdue": 0, "done": 0}
+
+
+def test_assign_to_a_speaker_or_nobody(client, seeded):
+    task_id = seeded["Share the recording"]
+    speaker = review(client, task_id, action="edit", owner_label="SPEAKER_01")
+    assert speaker.json()["task"]["owner_label"] == "SPEAKER_01"
+    assert speaker.json()["task"]["assignee_user_id"] is None
+
+    for bad in [
+        {"owner_label": "SPEAKER_09"},  # not in this meeting
+        {"owner_label": "UNKNOWN"},
+        {"assignee_user_id": str(seeded["outsider_id"])},  # not a project member
+        {"assignee_user_id": str(seeded["member_id"]), "owner_label": "SPEAKER_01"},
+    ]:
+        assert review(client, task_id, action="edit", **bad).status_code == 400, bad
+
+    # Leaving both fields out keeps the assignee; nulls clear it.
+    kept = review(client, task_id, action="edit", title="Share the recording")
+    assert kept.json()["task"]["owner_label"] == "SPEAKER_01"
+    nobody = review(
+        client, task_id, action="edit", assignee_user_id=None, owner_label=None
+    ).json()["task"]
+    assert (nobody["assignee_user_id"], nobody["owner_label"]) == (None, None)
+
+
+def test_edit_an_approved_task(client, seeded):
+    task_id = seeded["Share the recording"]
+    url = f"/api/v1/tasks/{task_id}"
+    assert client.patch(url, json={"title": "Too early"}).status_code == 409
+    approve(client, task_id, "2026-10-02")
+
+    edited = client.patch(
+        url,
+        json={
+            "title": " Share the edited recording ",
+            "due_date": "2026-10-09",
+            "assignee_user_id": str(seeded["member_id"]),
+        },
+    )
+    assert edited.status_code == 200
+    task = edited.json()["task"]
+    assert task["title"] == "Share the edited recording"
+    assert task["due_date"] == "2026-10-09"
+    assert task["review_status"] == "approved"
+    assert task["lifecycle_status"] == "open"
+    assert task["meeting_name"] == "TA check-in"
+    assert task["quote"] == "share the recording"
+    assert task["timestamp_ms"] == 0
+    assert summary(client)["open"] == 1
+
+    assert client.patch(url, json={"due_date": None}).status_code == 422
+    assert client.patch(url, json={"title": "  "}).status_code == 400
+    assert client.patch(url, json={"owner_label": "SPEAKER_09"}).status_code == 400
+    outsider = client.patch(url, json={"title": "x"}, headers=seeded["outsider"])
+    assert outsider.status_code == 404
+    [listed] = calendar(client, seeded["project_id"]).json()
+    assert listed["title"] == "Share the edited recording"
+    assert listed["due_date"] == "2026-10-09"
+
+
+def test_removed_member_tasks_become_unassigned(client, seeded, make_user):
+    owner_id, owner = make_user("Owner")
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "INSERT INTO project_members (project_id, user_id, role) "
+            "VALUES (%s, %s, 'owner')",
+            (seeded["project_id"], owner_id),
+        )
+    task_id = seeded["Share the recording"]
+    review(client, task_id, action="edit", assignee_user_id=str(seeded["member_id"]))
+    approve(client, task_id)
+
+    url = f"/api/v1/projects/{seeded['project_id']}/members/{seeded['member_id']}"
+    removed = client.delete(url, headers=owner)
+    assert removed.json() == {"removed": 1, "unassigned_tasks": 1}
+    [task] = calendar(client, seeded["project_id"], headers=owner).json()
+    assert (task["assignee_user_id"], task["owner_label"]) == (None, None)
+    assert task["review_status"] == "approved"
 
 
 def test_approver_and_actor_are_recorded(client, seeded):

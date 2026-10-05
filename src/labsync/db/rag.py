@@ -6,7 +6,7 @@ from uuid import UUID
 from psycopg import Connection
 
 from ..chunking import Turn, windows
-from ..embeddings import to_pgvector
+from ..embeddings import TASK_DIMENSIONS, to_pgvector
 
 RRF_K = 60  # Reciprocal Rank Fusion smoothing constant
 LEG_DEPTH = 40  # candidates each leg contributes before fusion
@@ -20,7 +20,10 @@ class Embedder(Protocol):
 
 def index_meeting(conn: Connection, meeting_id: str | UUID, embedder: Embedder) -> int:
     """Rebuild one meeting's rag_chunks from its stored results and return how
-    many chunks were written. Safe to run again: old chunks are replaced."""
+    many chunks were written. Safe to run again: old chunks are replaced.
+
+    Also stores each task's title embedding, which the meeting screen uses to
+    flag a new task that matches an open task from an earlier meeting."""
     meeting = conn.execute(
         "SELECT project_id FROM meetings WHERE id = %s", (meeting_id,)
     ).fetchone()
@@ -80,15 +83,17 @@ def index_meeting(conn: Connection, meeting_id: str | UUID, embedder: Embedder) 
             )
         )
 
-    # Tasks start at their first evidence quote. An attendee's name wins over
-    # the raw diarizer owner label.
+    # Tasks start at their first evidence quote. The assigned member's name wins,
+    # then an attendee's name, then the raw diarizer owner label.
     for t in conn.execute(
         """
         SELECT t.id, t.title, t.category, t.due_date_text,
-               coalesce(a.name, t.owner_label) AS owner,
+               coalesce(pr.display_name, a.name, t.owner_label) AS owner,
                (SELECT e.timestamp_ms FROM item_evidence e
                 WHERE e.task_id = t.id ORDER BY e.position LIMIT 1) AS timestamp_ms
-        FROM tasks t LEFT JOIN attendees a ON a.id = t.attendee_id
+        FROM tasks t
+        LEFT JOIN profiles pr ON pr.id = t.assignee_user_id
+        LEFT JOIN attendees a ON a.id = t.attendee_id
         WHERE t.meeting_id = %s
         """,
         (meeting_id,),
@@ -101,7 +106,20 @@ def index_meeting(conn: Connection, meeting_id: str | UUID, embedder: Embedder) 
             text += f"\nDeadline: {t['due_date_text']}"
         rows.append(("task", t["id"], None, None, t["timestamp_ms"], text))
 
-    vectors = embedder.encode([row[-1] for row in rows])
+    titles = conn.execute(
+        "SELECT id, title FROM tasks WHERE meeting_id = %s", (meeting_id,)
+    ).fetchall()
+    # One request for both: chunk texts first, then task titles.
+    vectors = embedder.encode([row[-1] for row in rows] + [t["title"] for t in titles])
+    vectors, title_vectors = vectors[: len(rows)], vectors[len(rows) :]
+    with conn.cursor() as cursor:
+        cursor.executemany(
+            "UPDATE tasks SET embedding = %s::vector WHERE id = %s",
+            [
+                (to_pgvector(vector[:TASK_DIMENSIONS]), task["id"])
+                for task, vector in zip(titles, title_vectors, strict=True)
+            ],
+        )
     conn.execute("DELETE FROM rag_chunks WHERE meeting_id = %s", (meeting_id,))
     with conn.cursor() as cursor:
         cursor.executemany(
@@ -238,8 +256,10 @@ def task(conn: Connection, task_id: UUID) -> dict | None:
         """
         SELECT t.title, t.category, t.due_date, t.due_date_text,
             t.review_status, t.lifecycle_status,
-            coalesce(a.name, t.owner_label) AS owner
-        FROM tasks t LEFT JOIN attendees a ON a.id = t.attendee_id
+            coalesce(pr.display_name, a.name, t.owner_label) AS owner
+        FROM tasks t
+        LEFT JOIN profiles pr ON pr.id = t.assignee_user_id
+        LEFT JOIN attendees a ON a.id = t.attendee_id
         WHERE t.id = %s
         """,
         (task_id,),
