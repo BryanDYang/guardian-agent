@@ -4,7 +4,7 @@ Source of truth: [Workflow.md](writeups/Workflow.md). User-facing behavior: [Sto
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
-**Current state:** Sign-in, profiles, project membership, invitations, upload, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Voice enrollment still records nothing and counts as skipped. Playback, storylines, speaker identity, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
+**Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. When the worker is started with `--diarize`, enrolled project members can be named on the transcript and everyone else stays `SPEAKER_N`. Match thresholds are provisional and not calibrated. Playback, storylines, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
 
 Legend: `[x]` implementation exists in the repo · `[ ]` implementation still required. A checked item is not acceptance evidence. Use the [UI demo walkthrough](demo_walkthrough.md) to record the build, backend, observed behavior, and remaining gaps before claiming a user journey works.
 
@@ -13,6 +13,7 @@ Legend: `[x]` implementation exists in the repo · `[ ]` implementation still re
 ## Phase 1 — Contract & Interface Freeze
 
 - [x] Author PostgreSQL DDL (`db/schema.sql`, 13 tables including `item_evidence`) and apply it on Supabase
+- [x] Later migrations for accounts and membership, voice consent and voiceprints, and speaker-match columns (`20261001181443_accounts_and_membership.sql`, `20261003200000_voice_enrollment.sql`, `20261004120000_speaker_identification.sql`)
 - [x] Foreign keys with `ON DELETE CASCADE` / `SET NULL` as specified
 - [x] HNSW vector indexes (`vector_cosine_ops`) on attendees, transcripts, tasks
 - [x] GIN full-text index (`tsvector`) on transcripts
@@ -34,8 +35,9 @@ Postgres is used for projects, meeting rows, pipeline results, and hybrid search
 - [x] Hosted Postgres with `pgvector` on Supabase; local tests use `supabase start` and `TEST_DATABASE_URL`
 - [x] Schema applied (`supabase db push` / `supabase/migrations/20260927033954_initial_schema.sql`)
 - [x] `psycopg_pool.ConnectionPool` and FastAPI `get_conn` (`src/labsync/db/connection.py`, `src/labsync/api/deps.py`)
-- [x] Repositories in use: `projects`, `meetings`, `transcripts`, `meeting_summaries`, `meeting_decisions`, `item_evidence`, `tasks`, `task_audit_log`, `chat_conversations`, `chat_messages`, `rag_chunks`
-- [ ] Repositories still unused for writes: `attendees`, `meeting_attendees`, `attendee_storylines` (detail reads return an empty list)
+- [x] Repositories in use: `projects`, `meetings`, `meeting_transcripts`, `meeting_summaries`, `meeting_decisions`, `item_evidence`, `tasks`, `task_audit_log`, `chat_conversations`, `chat_messages`, `rag_chunks`, `profiles`, `invitations`, `voice_consents`, `voice_profiles`
+- [x] A voice match writes the member's `attendees` row and a `meeting_attendees` row (`display_label`, `match_score`, `match_method`, `embedding_model_id`). Unmatched speakers get no attendee row
+- [ ] `meeting_attendee_storylines` is still unused for writes (detail reads return an empty list)
 - [x] Lifecycle changes (`open` / `done` / `dropped` and revert) append `task_audit_log` with a unique `revert_token`
 - [ ] Review edits (title, assignee, due date, approve, dismiss) are not written to `task_audit_log`
 - [x] Hybrid search CTE: pgvector cosine + `tsvector` RRF at `k=60`, scoped by `WHERE project_id = :project_id`
@@ -47,23 +49,26 @@ Postgres is used for projects, meeting rows, pipeline results, and hybrid search
 
 ## Phase 3 — Headless Audio & Extraction Pipeline (Systems 6 & 7)
 
-Whisper, optional diarization, and Codex/Claude extraction run, and completed v1 uploads persist summary, decisions, transcript turns, and pending tasks. Storylines, embeddings, and dedup do not.
+Whisper, optional diarization, and Codex/Claude extraction run, and completed v1 uploads persist summary, decisions, transcript turns, and pending tasks. Passage embeddings, shortened task-title embeddings, and voiceprints are written. Storylines are not. Speaker naming runs only when diarization wrote `speakers.json`.
 
 - [x] Audio ingest + Whisper transcription with timestamps (`labsync transcribe`)
 - [x] Optional `pyannote.audio` diarization (`--diarize`)
 - [x] FFmpeg normalization to 16 kHz mono WAV before Whisper (`src/labsync/ccb.py`)
 - [x] LLM structured extraction for summary, decisions, commitments, suggestions with quote checks
-- [x] Persist turns into `transcripts` (content, `speaker_label`, `turn_key`, `start_time_ms`, `end_time_ms`)
+- [x] Persist turns into `meeting_transcripts` (content, `speaker_label`, `speaker_name`, `turn_key`, `start_time_ms`, `end_time_ms`)
 - [x] Persist summaries into `meeting_summaries` and decisions into `meeting_decisions`, with evidence rows
 - [x] Insert extracted commitments and suggestions as `tasks` with `review_status = pending`
 - [x] Approval requires an explicit due date from the reviewer; `due_date_text` is stored verbatim and is not parsed into a date
 - [x] Passage embeddings (OpenAI text-embedding-3-small, 1536-d) and `tsv` stored in `rag_chunks`
 - [ ] `meeting_transcripts.embedding` is not written. Search uses `rag_chunks`, not the 384-d transcript column
 - [ ] Token-level timestamps suitable for sub-second `AVPlayer` seek
-- [ ] Voice embedding extraction and cosine match against `attendees.voice_embedding`
-- [ ] Map diarized speakers to named attendees (calendar + voice profile). The app currently invents a local attendee per speaker label
-- [ ] Extract and persist attendee storylines into `attendee_storylines`
-- [ ] Task dedup: `sentence-transformers/all-MiniLM-L6-v2` embeddings, pgvector cosine vs open tasks, LLM arbitration above 0.80 similarity
+- [x] Voiceprints: three clips (A, B, C), quality gates, and one L2-normalized 256-d WeSpeaker embedding in `voice_profiles` (`pyannote/wespeaker-voxceleb-resnet34-LM`). Raw clips are deleted. The API returns enrollment status, not the embedding. `attendees.voice_embedding` is unused
+- [x] Cosine match of diarized speaker centroids against enrolled members of that project (`voice.identify`). One-to-one assignment uses a provisional threshold of 0.60 and a margin of 0.10, which are not calibrated. A failure leaves everyone as `SPEAKER_N` and does not fail the meeting. Speaker embeddings are deleted after matching
+- [x] A match snapshots `profiles.display_name` into `speaker_name` and `meeting_attendees.display_label`. Extraction runs on that labeled transcript. A commitment owned by a matched member sets `assignee_user_id`
+- [ ] Diarization is still opt-in (`labsync serve --diarize`). Without `speakers.json`, every speaker stays unmatched
+- [ ] Calendar attendees are not used for speaker identity
+- [ ] Extract and persist attendee storylines into `meeting_attendee_storylines`
+- [x] Task similarity flag: a pending task whose title embedding (first 384 dimensions of `text-embedding-3-small`, stored on `tasks.embedding`) has cosine similarity of at least 0.80 with an earlier approved open task in the same project returns `matches_task`. The candidate is still inserted. There is no LLM arbiter, and `sentence-transformers/all-MiniLM-L6-v2` is not used
 - [ ] `meetings.duration_seconds` is never written
 
 **Owner hint:** Engineer 3 (pipeline) + Engineer 2 (writes into repositories).
@@ -72,7 +77,7 @@ Whisper, optional diarization, and Codex/Claude extraction run, and completed v1
 
 ## Phase 4 — Sequential Queue & API Gateway (Systems 4 & 5)
 
-v1 project, meeting, task, and chat routes talk to Postgres. Legacy `/api/meetings` routes still serve the JSON worker record, which is what the iOS status poll uses. No WebSocket or summary edit.
+v1 project, meeting, task, chat, profile, invitation, and voice routes talk to Postgres. Legacy `/api/meetings` routes still serve the JSON worker record, which is what the iOS status poll uses. No WebSocket or summary edit. Voice enrollment runs inside the request, not in the meeting queue.
 
 - [x] Sequential worker so only one meeting processes at a time
 - [x] `POST /api/v1/meetings/upload` with consent, title, `project_id` (UUID), and date. Legacy `POST /api/meetings` removed
@@ -90,6 +95,7 @@ v1 project, meeting, task, and chat routes talk to Postgres. Legacy `/api/meetin
 - [x] Drop the legacy free-text project name on `/api/meetings` (part 5 deleted that route)
 - [ ] Summary edit/save API
 - [x] Chat/RAG API: create conversation, list history (all vs project), query with citations or `"I don't know"`
+- [x] Profile and voice API: `GET` / `PATCH /api/v1/me`, `POST /api/v1/me/onboarding/complete` with `voice_step: skipped`, grant and revoke voice consent, `GET /api/v1/me/voice`, and `POST /api/v1/me/voice-enrollments`. A quality failure is HTTP 422 with per-clip reasons. Revoke deletes the voiceprint and does not lock the account
 - [ ] `WS /ws/pipeline/{job_id}` for live stage cards (queued → transcribing → diarizing → extracting → complete)
 - [ ] Selective transcript exclusion/redaction (the Privacy sheet button is a no-op)
 
@@ -122,9 +128,10 @@ Partial: [CCB transcription measurements](milestone_2/transcription_results.md) 
 
 ## Phase 6 — iOS Networking & Playback (Systems 2 & 3)
 
-The client signs in, lists projects from the API, uploads, polls, retries, purges, and syncs tasks. Playback, WebSocket progress, and calendar ingest are still open. `SeedData` remains for previews and tests only.
+The client signs in, lists projects from the API, enrolls or skips a voiceprint, uploads, polls, retries, purges, and syncs tasks. Playback, WebSocket progress, and calendar ingest are still open. `SeedData` remains for previews and tests only.
 
 - [x] Swift models for meetings, transcript turns, decisions, commitments, tasks, and chat (create conversation, ask, history)
+- [x] Onboarding records three voice clips and uploads them, or skips. Profile can re-record or revoke consent. The client shows enrolled or not enrolled and never receives the embedding
 - [x] `MeetingAPIClient` against the configured base URL: upload, poll, retry, purge, create project, list meetings, review tasks, change state, revert
 - [x] `RemoteMeetingApplier` mapping remote JSON → SwiftData
 - [x] Base URL from `LabSyncConfig.plist` (`BaseURL`); every request sends the signed-in user's Supabase access token
@@ -146,16 +153,16 @@ The client signs in, lists projects from the API, uploads, polls, retries, purge
 
 ## Phase 7 — Native Presentation (System 1)
 
-Meetings, task review, the calendar, and project chat have connected code paths that require UI acceptance testing. The signed-in project list comes from Postgres. Storylines and audio playback remain placeholders.
+Meetings, task review, the calendar, project chat, and voice enrollment have connected code paths that require UI acceptance testing. The signed-in project list comes from Postgres. A transcript speaker string can be a member's display name when the server matched a voiceprint. Storylines and audio playback remain placeholders.
 
 ### Meetings
 
-- [x] Tab bar: Meetings (default), Tasks, Chat
+- [x] Tab bar: Meetings (default), Tasks, Chat, Profile
 - [x] Add project writes `projects` and stores the returned UUID locally
 - [x] Meeting list per project + add meeting with consent required on upload
 - [x] Upload audio and show queued / transcribing / extracting / failed + retry
 - [x] Render backend summary, decisions, transcript, and candidate tasks after completion
-- [x] Transcript rows show the diarized speaker label and initials
+- [x] Transcript rows show the server speaker string and initials: a member's display name when voice matching succeeded, otherwise `SPEAKER_N` or the diarizer label. The client still creates one local `Attendee` per displayed string
 - [x] Task review: Approve, Edit, Dismiss persist through `/api/v1/tasks/{id}/review` when the candidate id is a server UUID
 - [x] Approve requires a due date, then the task is `approved` / `open` and shows on the Tasks calendar
 - [x] Approve writes an EventKit reminder
@@ -163,10 +170,11 @@ Meetings, task review, the calendar, and project chat have connected code paths 
 - [x] Project list reloads from Postgres when Meetings opens (`ProjectSync.refreshProjects`). Leftover seed ids are removed
 - [ ] Project image stored on `projects.image_url` and shown on the row (the row uses initials)
 - [ ] Meeting row duration comes from audio. After a completed poll it is the last transcript timestamp; rows inserted from the meeting list stay `"Processing"` until that poll, and the waveform is random
-- [ ] Named attendees from calendar or voice profiles
+- [x] A pending candidate can show the title of an earlier open task when `matches_task` is set. The candidate is still created
+- [ ] Named attendees from a calendar event. Voice names arrive as the transcript speaker string, not from EventKit
 - [ ] Playhead highlight on the active transcript turn
 - [ ] Timestamp chip seeks audio (it only switches to the transcript tab)
-- [ ] Storylines from `attendee_storylines` (the three perspective cards are hardcoded)
+- [ ] Storylines from `meeting_attendee_storylines` (the three perspective cards are hardcoded)
 - [ ] Manual summary notes edit + save
 - [ ] Share formatted notes + action items (ShareLink payload is title + summary only)
 - [ ] Redaction tool (button is a no-op)
@@ -219,9 +227,9 @@ From the Story Writeup: transcript encryption, push/SMS notification infrastruct
 ## Suggested build order
 
 1. Finish the Phase 1 storyline contract and the golden fixture. The RAG contract is already in the repo
-2. Phase 2–3 leftovers: write `duration_seconds`, storylines, speaker identity, and task dedup; make Postgres the worker's source of truth. Passage embeddings already live in `rag_chunks`
-3. Phase 4 leftovers: poll the v1 meeting route, summary edit, WebSocket or keep poll as the documented fallback, redaction. Chat/RAG is already in the repo
-4. Phase 5: human review, then DER and RAGAS once those pipelines exist
-5. Phase 6–7: AVPlayer seek and EventKit calendar read. Listing projects from the API and keeping `SeedData` off real launches are already in the repo
+2. Phase 2–3 leftovers: write `duration_seconds` and storylines, calibrate speaker-match thresholds, and make Postgres the worker's source of truth. Voiceprints, speaker naming, passage embeddings, and the task-similarity flag are already in the repo
+3. Phase 4 leftovers: poll the v1 meeting route, summary edit, WebSocket or keep poll as the documented fallback, redaction. Start the shared server with `--diarize` when a demo should show speaker names. Chat/RAG and voice enrollment are already in the repo
+4. Phase 5: human review, then DER, a speaker-identification benchmark, and RAGAS once those pipelines exist
+5. Phase 6–7: AVPlayer seek and EventKit calendar read. Listing projects from the API, voice enrollment, and keeping `SeedData` off real launches are already in the repo
 
 The transcript-only extraction subset in Phase 5 can keep running without Postgres.
