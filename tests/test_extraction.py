@@ -98,6 +98,17 @@ def test_repair_drops_unverifiable_evidence(transcript, prediction):
     ]
 
 
+def test_repair_clears_a_reworded_deadline(transcript, prediction):
+    prediction["commitments"][0]["due_date_text"] = "by this Friday"
+    extraction, repairs = Extraction.model_validate(prediction).repair_evidence(
+        transcript
+    )
+    extraction.check_evidence(transcript)
+    assert extraction.commitments[0].due_date_text is None
+    assert extraction.commitments[0].title == prediction["commitments"][0]["title"]
+    assert repairs == ["commitments[0]: cleared unquoted deadline 'by this Friday'"]
+
+
 def test_repair_leaves_valid_extraction_unchanged(transcript, prediction):
     original = Extraction.model_validate(prediction)
     extraction, repairs = original.repair_evidence(transcript)

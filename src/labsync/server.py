@@ -17,6 +17,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse, JSONResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from . import voice
 from .api.chat import router as chat_router
 from .api.deps import Conn, SignedIn, User, require_meeting, require_member
 from .api.invitations import router as invitations_router
@@ -26,6 +27,7 @@ from .api.projects import ProjectEvents
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
 from .auth import InvalidToken, TokenVerifier
+from .ccb import SPEAKERS_FILE
 from .db import meetings as meeting_store
 from .db import profiles, rag
 from .db import projects as project_store
@@ -101,6 +103,7 @@ def create_app(
         transcript=None,
         result=None,
         transcription=None,
+        identification=None,
     ):
         """Mirror pipeline state into Postgres when this meeting has a row."""
         pool = app.state.pool
@@ -116,10 +119,34 @@ def create_app(
                 return
             if transcript is not None and result is not None:
                 meeting_store.save_results(
-                    conn, meeting_id, transcript, result, transcription or {}
+                    conn,
+                    meeting_id,
+                    transcript,
+                    result,
+                    transcription or {},
+                    identification,
                 )
                 rag.index_meeting(conn, meeting_id, app.state.embedder)
             meeting_store.update_status(conn, meeting_id, status, attempt, error)
+
+    def identify_speakers(project_id, transcript, work: Path) -> dict:
+        """Match the diarized speakers to the project's enrolled members. Any
+        failure leaves everyone as SPEAKER_N, never fails the meeting (FR-SPK-7)."""
+        path = work / SPEAKERS_FILE
+        try:
+            diarized = json.loads(path.read_text()) if path.is_file() else None
+            candidates = []
+            if diarized is not None and app.state.pool is not None:
+                with app.state.pool.connection() as conn:
+                    candidates = profiles.voice_candidates(
+                        conn, project_id, voice.EMBEDDING_MODEL_ID
+                    )
+            return voice.identify(transcript, diarized, candidates)
+        except Exception as exc:
+            return voice.unidentified(transcript, f"error: {type(exc).__name__}")
+        finally:
+            # Speaker embeddings, guests' included, are not kept after matching.
+            path.unlink(missing_ok=True)
 
     def process(meeting_id):
         record = read(meeting_id)
@@ -158,7 +185,12 @@ def create_app(
                 transcript = Transcript.model_validate_json(
                     (work / "transcript.json").read_text()
                 )
-                update(meeting_id, transcript_path=str(work / "transcript.json"))
+                identification = identify_speakers(record["project"], transcript, work)
+                # Extraction sees names and SPEAKER_N, not diarizer tags (FR-SPK-9).
+                named = voice.relabel(transcript, identification)
+                labeled = work / "labeled-transcript.json"
+                labeled.write_text(named.model_dump_json(indent=2) + "\n")
+                update(meeting_id, transcript_path=str(labeled))
                 stage = "extracting"
                 update(meeting_id, status=stage)
                 sync_database(meeting_id, stage, attempt, None)
@@ -168,7 +200,7 @@ def create_app(
                         "-m",
                         "labsync",
                         "extract",
-                        str(work / "transcript.json"),
+                        str(labeled),
                         "--provider",
                         provider,
                         "--model",
@@ -184,9 +216,7 @@ def create_app(
                     timeout=330,
                 )
                 result = json.loads((work / "extraction.json").read_text())
-                Extraction.model_validate(result["extraction"]).check_evidence(
-                    transcript
-                )
+                Extraction.model_validate(result["extraction"]).check_evidence(named)
                 sync_database(
                     meeting_id,
                     "completed",
@@ -195,6 +225,7 @@ def create_app(
                     transcript=transcript,
                     result=result,
                     transcription=transcription_metadata(work),
+                    identification=identification,
                 )
                 update(
                     meeting_id,

@@ -107,6 +107,10 @@ OWN_DATA_ROUTES = [
     ("PATCH", "/api/v1/me"),
     ("POST", "/api/v1/me/onboarding/complete"),
     ("GET", "/api/v1/me/tasks/summary"),
+    ("GET", "/api/v1/me/voice"),
+    ("POST", "/api/v1/me/voice-consent"),
+    ("DELETE", "/api/v1/me/voice-consent"),
+    ("POST", "/api/v1/me/voice-enrollments"),
     ("DELETE", "/api/v1/me"),
     ("GET", "/api/v1/projects"),
     ("GET", "/api/v1/projects/events"),  # nudges about the caller's own projects

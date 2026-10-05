@@ -24,6 +24,7 @@ MLX_WEIGHTS = {
     "turbo": "mlx-community/whisper-large-v3-turbo",
 }
 MERGE_GAP_MS = 1500
+SPEAKERS_FILE = "speakers.json"
 
 
 def import_transcript(path: Path, *, project_id: str, meeting_id: str) -> Transcript:
@@ -192,10 +193,12 @@ def transcribe(
             result = module.transcribe_audio(
                 wav, model, condition_on_previous_text=False
             )
+            speakers = None
             if diarize:
                 pipeline = module.load_diarization_pipeline(os.environ["HF_TOKEN"])
-                annotation, _ = module.diarize_audio(wav, pipeline)
+                annotation, centroids = module.diarize_audio(wav, pipeline)
                 result = module.align_transcription_with_diarization(result, annotation)
+                speakers = speaker_centroids(annotation, centroids, pipeline)
         finally:
             os.environ["PATH"] = original_path
 
@@ -226,6 +229,27 @@ def transcribe(
     (output / "turn-sources.json").write_text(
         json.dumps(sources, indent=2) + "\n", encoding="utf-8"
     )
+    if speakers is not None:
+        # Read and deleted by the server once it has matched the speakers.
+        (output / SPEAKERS_FILE).write_text(json.dumps(speakers), encoding="utf-8")
     normalized = output / "transcript.json"
     normalized.write_text(transcript.model_dump_json(indent=2) + "\n", encoding="utf-8")
     return normalized
+
+
+def speaker_centroids(annotation, centroids: dict, pipeline) -> dict:
+    """Per diarized speaker: the centroid embedding and seconds of speech
+    (FR-SPK-2). Speakers without a usable embedding are left out."""
+    speakers = {}
+    for label, centroid in centroids.items():
+        embedding = [float(x) for x in centroid]
+        if all(math.isfinite(x) for x in embedding) and any(embedding):
+            speakers[label] = {
+                "embedding": embedding,
+                "speech_seconds": round(float(annotation.label_duration(label)), 2),
+            }
+    return {
+        # The checkpoint the pipeline embeds with (FR-SPK-8).
+        "embedding_model_id": str(getattr(pipeline, "embedding", "")),
+        "speakers": speakers,
+    }

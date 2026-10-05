@@ -6,6 +6,7 @@ struct MeetingAPIClient {
 
     private static let uploadTimeout: TimeInterval = 15 * 60
     private static let answerTimeout: TimeInterval = 100
+    private static let voiceTimeout: TimeInterval = 120
 
     let baseURL: URL
     private let auth: AuthClient
@@ -287,7 +288,7 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
-    /// voiceStep is "skipped", or "placeholder" until voice enrollment ships (FR-ONB-2a).
+    /// voiceStep is "skipped". Enrolling a voice completes onboarding on its own.
     func completeOnboarding(voiceStep: String) async throws -> RemoteMe {
         var request = URLRequest(
             url: baseURL.appending(path: "api/v1/me/onboarding/complete")
@@ -348,6 +349,50 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
+    /// FR-VOICE-1: agree to the voiceprint consent text with this version.
+    func grantVoiceConsent(version: String) async throws -> RemoteVoiceStatus {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me/voice-consent"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["consent_version": version])
+        return try await send(request)
+    }
+
+    /// FR-VOICE-8: revoking consent deletes the voiceprint on the server.
+    func revokeVoiceConsent() async throws -> RemoteVoiceStatus {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me/voice-consent"))
+        request.httpMethod = "DELETE"
+        return try await send(request)
+    }
+
+    /// FR-VOICE-2: uploads clips A, B and C in that order. Throws
+    /// `MeetingAPIError.voiceQuality` naming the clips to record again.
+    func enrollVoice(clips: [URL]) async throws -> RemoteVoiceStatus {
+        let boundary = UUID().uuidString
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/me/voice-enrollments"))
+        request.httpMethod = "POST"
+        // The server checks and embeds the clips before replying, and its first
+        // enrollment also loads the speaker model.
+        request.timeoutInterval = Self.voiceTimeout
+        request.setValue(
+            "multipart/form-data; boundary=\(boundary)",
+            forHTTPHeaderField: "Content-Type"
+        )
+        var body = Data()
+        for (name, url) in zip(["clip_a", "clip_b", "clip_c"], clips) {
+            body.appendFile(
+                name: name,
+                filename: url.lastPathComponent,
+                mimeType: Self.mimeType(for: url),
+                contents: try Data(contentsOf: url),
+                boundary: boundary
+            )
+        }
+        body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+        request.httpBody = body
+        return try await send(request)
+    }
+
     /// FR-ACCT: deletes the signed-in user's account on the server.
     func deleteAccount() async throws {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/me"))
@@ -374,6 +419,11 @@ struct MeetingAPIClient {
             // Signing out returns the app to log in and clears the local cache.
             try? await auth.signOut(scope: .local)
             throw MeetingAPIError.sessionEnded
+        }
+        if response.statusCode == 422,
+           let quality = try? JSONDecoder().decode(VoiceQualityResponse.self, from: data),
+           quality.detail == "voice_quality" {
+            throw MeetingAPIError.voiceQuality(quality.failures)
         }
         guard (200..<300).contains(response.statusCode) else {
             let detail = try? JSONDecoder().decode(ErrorResponse.self, from: data).detail
@@ -412,6 +462,8 @@ enum MeetingAPIError: LocalizedError {
     /// The backend returned 401 and the app has already signed out locally.
     case sessionEnded
     case server(String)
+    /// Enrollment clips that need recording again.
+    case voiceQuality([RemoteVoiceFailure])
 
     var errorDescription: String? {
         switch self {
@@ -421,6 +473,8 @@ enum MeetingAPIError: LocalizedError {
             "Your session ended. Sign in again."
         case .server(let detail):
             detail
+        case .voiceQuality(let failures):
+            failures.first?.message ?? "Please record again."
         }
     }
 }
@@ -457,12 +511,53 @@ struct RemoteMe: Decodable {
     let title: String?
     let onboardingStep: String
     let pendingInvitationCount: Int
+    let voiceEnrolledAt: String?
 
     enum CodingKeys: String, CodingKey {
         case title
         case displayName = "display_name"
         case onboardingStep = "onboarding_step"
         case pendingInvitationCount = "pending_invitation_count"
+        case voiceEnrolledAt = "voice_enrolled_at"
+    }
+}
+
+struct RemoteVoiceStatus: Decodable {
+    let consented: Bool
+    let enrolled: Bool
+    let enrolledAt: String?
+    /// The voiceprint came from an older speaker model, so it no longer matches
+    /// meeting speakers and the user should record again (FR-SPK-8).
+    let needsRerecord: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case consented, enrolled
+        case enrolledAt = "enrolled_at"
+        case needsRerecord = "needs_rerecord"
+    }
+}
+
+struct RemoteVoiceFailure: Decodable {
+    /// "A", "B" or "C".
+    let clip: String?
+    /// too_short, too_quiet, too_loud, noisy, or inconsistent.
+    let reason: String
+
+    /// The clip's position in the recorder, from 0.
+    var clipIndex: Int? {
+        clip.flatMap { ["A", "B", "C"].firstIndex(of: $0) }
+    }
+
+    var message: String {
+        let clip = clipIndex.map { "Clip \($0 + 1)" } ?? "A clip"
+        return switch reason {
+        case "too_short": "\(clip) needs more speech. Keep talking until the time is up."
+        case "too_quiet": "\(clip) was too quiet. Hold the phone closer and speak up."
+        case "too_loud": "\(clip) was too loud. Hold the phone a little farther away."
+        case "noisy": "\(clip) had too much background noise. Try a quieter room."
+        case "inconsistent": "\(clip) didn't sound like the others. Make sure only you are speaking."
+        default: "\(clip) couldn't be used. Please record it again."
+        }
     }
 }
 
@@ -897,6 +992,11 @@ func isServerID(_ value: String) -> Bool {
 
 private struct ErrorResponse: Decodable {
     let detail: String
+}
+
+private struct VoiceQualityResponse: Decodable {
+    let detail: String
+    let failures: [RemoteVoiceFailure]
 }
 
 private struct PurgeResponse: Decodable {

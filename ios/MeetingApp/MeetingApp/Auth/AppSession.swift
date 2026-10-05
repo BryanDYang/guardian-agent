@@ -21,8 +21,7 @@ final class AppSession {
 
     var stage: Stage
     /// Shown in the Profile tab. Email and sign-in methods come from Supabase;
-    /// name and title from /api/v1/me. The voiceprint stays placeholder until
-    /// voice enrollment ships.
+    /// name, title and when the voiceprint was saved from /api/v1/me.
     var user: PlaceholderUser
     /// From /api/v1/me; the dot on Profile > Workspaces.
     var pendingInvitationCount = 0
@@ -176,12 +175,19 @@ final class AppSession {
         _ = try await auth.update(user: UserAttributes(password: new))
     }
 
-    // The recorder is still a placeholder, so Continue sends "placeholder" and
-    // no voice profile is stored (FR-ONB-2a).
+    /// The server saved the voiceprint and completed onboarding with it, so this
+    /// only reloads /api/v1/me to move on (FR-ONB-2).
     @MainActor
     func finishVoiceEnrollment() async {
-        user.voiceprintEnrolledAt = .now
-        await completeOnboarding(voiceStep: "placeholder")
+        guard auth != nil else {
+            stage = .signedIn
+            return
+        }
+        do {
+            show(try await MeetingAPIClient.shared.me())
+        } catch {
+            showFailure(error)
+        }
     }
 
     @MainActor
@@ -226,6 +232,7 @@ final class AppSession {
             user.name = name
         }
         user.title = me.title ?? ""
+        user.voiceprintEnrolledAt = me.voiceEnrolledAt.flatMap(LabSyncDate.timestamp)
         pendingInvitationCount = me.pendingInvitationCount
     }
 }

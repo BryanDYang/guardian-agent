@@ -43,7 +43,6 @@ struct MeetingAppApp: App {
                     ProfileSetupView()
                 case .voiceEnrollment:
                     VoiceEnrollmentView(
-                        speakerName: session.user.name,
                         onFinish: { Task { await session.finishVoiceEnrollment() } },
                         onSkip: { Task { await session.skipVoiceEnrollment() } }
                     )

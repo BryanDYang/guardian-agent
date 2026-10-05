@@ -158,12 +158,23 @@ struct AssigneePicker: View {
                     }
                 }
             }
-            if !speakers.isEmpty {
+            if !otherSpeakers.isEmpty {
                 Section("Other speakers") {
-                    ForEach(speakers, id: \.self) { label in
+                    ForEach(otherSpeakers, id: \.self) { label in
                         Text(label).tag(AssigneeChoice?.some(.speaker(label)))
                     }
                 }
+            }
+        }
+    }
+
+    /// A speaker recognized by voice is labeled with the member's name, and is
+    /// already listed under Project members.
+    private var otherSpeakers: [String] {
+        speakers.filter { label in
+            selection == .speaker(label) || !members.contains { member in
+                guard let name = member.displayName else { return false }
+                return label == name || label == "\(name) (\(member.email))"
             }
         }
     }

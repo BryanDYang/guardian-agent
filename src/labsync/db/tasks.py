@@ -105,13 +105,15 @@ def update_details(
 
 
 def is_speaker(conn: Connection, meeting_id: UUID | None, label: str) -> bool:
-    """A diarizer label (e.g. SPEAKER_1) that speaks in this meeting. UNKNOWN is
-    an unresolved label, so it can't own a task."""
+    """An unrecognized speaker (e.g. SPEAKER_1) in this meeting. UNKNOWN is an
+    unresolved label, so it can't own a task. A recognized member is assigned
+    by user id instead."""
     if meeting_id is None or label.upper() == "UNKNOWN":
         return False
     row = conn.execute(
         "SELECT 1 FROM meeting_transcripts "
-        "WHERE meeting_id = %s AND speaker_label = %s LIMIT 1",
+        "WHERE meeting_id = %s AND attendee_id IS NULL "
+        "AND coalesce(speaker_name, speaker_label) = %s LIMIT 1",
         (meeting_id, label),
     ).fetchone()
     return row is not None

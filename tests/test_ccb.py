@@ -327,3 +327,46 @@ def test_diarization_missing_token_fails_before_model_load(tmp_path, monkeypatch
             backend="openai",
             diarize=True,
         )
+
+
+def test_diarization_keeps_each_speakers_centroid(tmp_path, monkeypatch):
+    """FR-SPK-2: the centroids pyannote returns are saved for speaker matching."""
+    source, recording = fake_audio_stack(tmp_path, monkeypatch)
+    with (source / "meeting_transcriber.py").open("a") as module:
+        module.write(
+            "DIARIZATION_AVAILABLE = True\n"
+            "class Annotation:\n"
+            "    def label_duration(self, label):\n"
+            "        return {'SPEAKER_00': 12.345, 'SPEAKER_01': 3.0}[label]\n"
+            "class Pipeline:\n"
+            "    embedding = 'pyannote/wespeaker-voxceleb-resnet34-LM'\n"
+            "def load_diarization_pipeline(token):\n"
+            "    return Pipeline()\n"
+            "def diarize_audio(path, pipeline):\n"
+            "    nan = float('nan')\n"
+            "    return Annotation(), {\n"
+            "        'SPEAKER_00': [0.5, -0.5], 'SPEAKER_01': [0.0, 0.0],\n"
+            "        'SPEAKER_02': [nan, 1.0]}\n"
+            "def align_transcription_with_diarization(result, annotation):\n"
+            "    result['timestamped'][0]['speaker'] = 'SPEAKER_00'\n"
+            "    return result\n"
+        )
+    monkeypatch.setenv("HF_TOKEN", "token")
+    output = tmp_path / "output"
+    transcribe(
+        recording,
+        source=source,
+        output=output,
+        project_id="p",
+        meeting_id="m",
+        whisper_model="base",
+        backend="openai",
+        diarize=True,
+    )
+    # Padding rows (all zeros) and broken embeddings are dropped.
+    assert json.loads((output / "speakers.json").read_text()) == {
+        "embedding_model_id": "pyannote/wespeaker-voxceleb-resnet34-LM",
+        "speakers": {"SPEAKER_00": {"embedding": [0.5, -0.5], "speech_seconds": 12.35}},
+    }
+    turn = json.loads((output / "transcript.json").read_text())["turns"][0]
+    assert turn["speaker"] == "SPEAKER_00"

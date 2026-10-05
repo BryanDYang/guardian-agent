@@ -4,7 +4,9 @@ Never point this at the Supabase project."""
 
 import json
 import os
+import sys
 import time
+from decimal import Decimal
 from pathlib import Path
 
 import psycopg
@@ -14,6 +16,7 @@ from fastapi.testclient import TestClient
 from psycopg.rows import dict_row
 
 import labsync.server
+from labsync import voice
 from labsync.server import create_app
 
 DATABASE_URL = os.environ.get("TEST_DATABASE_URL")
@@ -23,6 +26,11 @@ pytestmark = pytest.mark.skipif(not DATABASE_URL, reason="TEST_DATABASE_URL not 
 def query(sql, *params):
     with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         return conn.execute(sql, params).fetchall()
+
+
+# What the fake transcription writes as speakers.json; None means diarization
+# didn't run.
+DIARIZED = None
 
 
 def fake_pipeline(command, **kwargs):
@@ -54,10 +62,14 @@ def fake_pipeline(command, **kwargs):
         (work / "ccb-transcript.json").write_text(
             json.dumps({"metadata": {"whisper_model": "medium"}, "segments": []})
         )
+        if DIARIZED is not None:
+            (work / "speakers.json").write_text(json.dumps(DIARIZED))
     else:
-        transcript = Path(command[command.index("extract") + 1])
-        meeting = json.loads(transcript.read_text())["meeting_id"]
+        transcript = json.loads(Path(command[command.index("extract") + 1]).read_text())
+        meeting = transcript["meeting_id"]
         turn = f"{meeting}:turn:"
+        # Like the model, the owner is the label shown for the speaker.
+        owner = transcript["turns"][0]["speaker"]
         extraction = {
             "summary": "TA check-in.",
             "decisions": [
@@ -71,7 +83,7 @@ def fake_pipeline(command, **kwargs):
             "commitments": [
                 {
                     "title": "Share the recording",
-                    "owner": "SPEAKER_01",
+                    "owner": owner,
                     "due_date_text": None,
                     "evidence": [
                         {"transcript_id": turn + "0", "quote": "I will share"},
@@ -159,15 +171,18 @@ def test_upload_processes_and_saves_results(client, project_id, member):
     assert meeting["uploaded_by"] == user_id
     assert meeting["model_metadata"]["transcription"] == {"whisper_model": "medium"}
 
+    # Without diarization nobody can be recognized; speakers are numbered.
+    identification = meeting["model_metadata"]["speaker_identification"]
+    assert identification["reason"] == "diarization_not_run"
     turns = query(
-        "SELECT speaker_label, turn_key FROM meeting_transcripts WHERE meeting_id = %s "
-        "ORDER BY turn_order",
+        "SELECT speaker_label, speaker_name FROM meeting_transcripts "
+        "WHERE meeting_id = %s ORDER BY turn_order",
         meeting_id,
     )
-    assert [t["speaker_label"] for t in turns] == [
-        "SPEAKER_01",
-        "SPEAKER_04",
-        "SPEAKER_01",
+    assert [(t["speaker_label"], t["speaker_name"]) for t in turns] == [
+        ("SPEAKER_01", "SPEAKER_1"),
+        ("SPEAKER_04", "SPEAKER_2"),
+        ("SPEAKER_01", "SPEAKER_1"),
     ]
     summary = query(
         "SELECT overview FROM meeting_summaries WHERE meeting_id = %s", meeting_id
@@ -180,7 +195,7 @@ def test_upload_processes_and_saves_results(client, project_id, member):
         meeting_id,
     )
     assert [(t["title"], t["owner_label"], t["category"]) for t in tasks] == [
-        ("Share the recording", "SPEAKER_01", "commitment"),
+        ("Share the recording", "SPEAKER_1", "commitment"),
         ("Try S3 vector indexing", None, "advisor_suggestion"),
     ]
     evidence = query(
@@ -214,6 +229,72 @@ def test_upload_processes_and_saves_results(client, project_id, member):
         ("task", 2000),
         ("transcript", 0),
     ]
+
+
+def test_enrolled_member_is_recognized_by_voice(
+    client, project_id, member, tmp_path, monkeypatch
+):
+    """Acceptance criterion 5 with synthetic embeddings: the enrolled member is
+    named and owns their commitment; the guest is SPEAKER_1."""
+    user_id, headers = member
+    voiceprint = [1.0] + [0.0] * 255
+    query(
+        "WITH consent AS (INSERT INTO voice_consents (user_id, consent_version) "
+        "VALUES (%s, 'test') RETURNING user_id) "
+        "INSERT INTO voice_profiles (user_id, embedding, embedding_model_id, quality) "
+        "SELECT user_id, %s::vector, %s, '{}' FROM consent RETURNING user_id",
+        user_id,
+        str(voiceprint),
+        voice.EMBEDDING_MODEL_ID,
+    )
+    near = [0.9, 0.1] + [0.0] * 254
+    monkeypatch.setattr(
+        sys.modules[__name__],
+        "DIARIZED",
+        {
+            "embedding_model_id": voice.EMBEDDING_MODEL_ID,
+            "speakers": {
+                "SPEAKER_01": {"embedding": near, "speech_seconds": 40.0},
+                "SPEAKER_04": {"embedding": voiceprint[::-1], "speech_seconds": 30.0},
+            },
+        },
+    )
+    meeting_id = upload(client, project_id, headers).json()["job_id"]
+    meeting = wait_for(meeting_id, "completed")
+
+    detail = client.get(f"/api/v1/meetings/{meeting_id}", headers=headers).json()
+    assert [t["speaker"] for t in detail["transcript"]] == [
+        "Pytest User",
+        "SPEAKER_1",
+        "Pytest User",
+    ]
+    task = next(t for t in detail["tasks"] if t["category"] == "commitment")
+    assert (task["assignee_user_id"], task["owner_label"]) == (str(user_id), None)
+    # The guest can own a task by label; the member is assigned by user id.
+    review = f"/api/v1/tasks/{task['id']}/review"
+    for label, status in [("SPEAKER_1", 200), ("Pytest User", 400)]:
+        body = {"action": "edit", "owner_label": label}
+        assert client.patch(review, json=body, headers=headers).status_code == status
+    attendee = query(
+        "SELECT a.name, a.user_id, ma.speaker_label, ma.display_label, "
+        "ma.match_method, round(ma.match_score::numeric, 3) AS score "
+        "FROM meeting_attendees ma JOIN attendees a ON a.id = ma.attendee_id "
+        "WHERE ma.meeting_id = %s",
+        meeting_id,
+    )
+    assert attendee == [
+        {
+            "name": "Pytest User",
+            "user_id": user_id,
+            "speaker_label": "SPEAKER_01",
+            "display_label": "Pytest User",
+            "match_method": "voice",
+            "score": Decimal("0.994"),
+        }
+    ]
+    speakers = meeting["model_metadata"]["speaker_identification"]["speakers"]
+    assert speakers["SPEAKER_04"]["method"] == "none"
+    assert not list(tmp_path.glob("*/attempt-*/speakers.json"))  # not kept
 
 
 def test_retry_replaces_results_and_mirrors_attempt(
