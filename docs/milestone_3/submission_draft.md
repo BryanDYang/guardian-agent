@@ -5,7 +5,7 @@
 **Team:** Will Liu, Guadalupe Cantera, and Bryan Yang
 **Repository:** https://github.com/BryanDYang/guardian-agent
 **Draft updated:** October 6, 2026
-**Planned submission date:** October 26, 2026 (confirm in Canvas; assignment PDF defers to Canvas)
+**Planned submission date:** October 26, 2026
 
 > **Draft status:** This document follows the AI Engineering requirements and 100-point rubric in `contexts/milestone_3/Milestone 3.pdf`. It records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The final deliverable must be submitted as a single PDF unless the teaching staff directs otherwise.
 
@@ -45,14 +45,14 @@ The main development changes beyond the Milestone 2 baselines are:
 
 ### Decision log
 
-| Design question | What we considered | Decision and rationale | Evidence still needed |
-| --- | --- | --- | --- |
-| Retrieval strategy | Dense-only, sparse-only, and hybrid retrieval | Use dense and PostgreSQL full-text retrieval fused with reciprocal rank fusion. Dense search handles paraphrases while sparse search preserves exact terminology. | Required retrieval ablation |
-| Retrieval index | HNSW approximate search or exact project-scoped cosine search | Use exact cosine search at the current alpha scale to avoid filtered approximate-search recall loss. | Query latency and corpus-size measurement |
-| Retrieval unit | Individual turns or bounded multi-turn windows | Pack complete turns into windows up to 150 words and index summaries, decisions, and tasks separately. | Chunking comparison if time permits |
-| Citation format | Model-generated database IDs or temporary source handles | Give the model temporary handles, then map verified quotes to stored IDs and timestamps on the server. | Human faithfulness review and live-model test |
-| Unsupported questions | Best-effort answer or evidence requirement | Return a fixed refusal when no verified citation remains. | Refusal-accuracy evaluation |
-| Model adaptation | Fine-tuning or constrained provider models | Use provider models with Pydantic contracts because current data volume does not justify fine-tuning and the task depends on grounding and workflow integration. | Final prompts, versions, settings, and hashes |
+| Design question       | What we considered                                            | Decision and rationale                                                                                                                                            | Evidence still needed                         |
+| --------------------- | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Retrieval strategy    | Dense-only, sparse-only, and hybrid retrieval                 | Use dense and PostgreSQL full-text retrieval fused with reciprocal rank fusion. Dense search handles paraphrases while sparse search preserves exact terminology. | Required retrieval ablation                   |
+| Retrieval index       | HNSW approximate search or exact project-scoped cosine search | Use exact cosine search at the current alpha scale to avoid filtered approximate-search recall loss.                                                              | Query latency and corpus-size measurement     |
+| Retrieval unit        | Individual turns or bounded multi-turn windows                | Pack complete turns into windows up to 150 words and index summaries, decisions, and tasks separately.                                                            | Chunking comparison if time permits           |
+| Citation format       | Model-generated database IDs or temporary source handles      | Give the model temporary handles, then map verified quotes to stored IDs and timestamps on the server.                                                            | Human faithfulness review and live-model test |
+| Unsupported questions | Best-effort answer or evidence requirement                    | Return a fixed refusal when no verified citation remains.                                                                                                         | Refusal-accuracy evaluation                   |
+| Model adaptation      | Fine-tuning or constrained provider models                    | Use provider models with Pydantic contracts because current data volume does not justify fine-tuning and the task depends on grounding and workflow integration.  | Final prompts, versions, settings, and hashes |
 
 ## 2. Progress Since Milestone 2
 
@@ -146,16 +146,16 @@ Voice enrollment records three clips after separate consent, applies speech/qual
 
 The alpha consists of the following integrated systems:
 
-| Layer              | Current implementation                                                    | Current limitation                                                  |
-| ------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Native client      | SwiftUI and SwiftData iOS application                                     | Static playback UI remains; clean-install journey unverified                             |
-| Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication                        | Project membership is enforced; live authorization checks remain |
-| API and worker     | FastAPI routes and one-at-a-time meeting worker                           | Legacy JSON status path remains                                     |
-| Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain                    |
-| Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Cross-meeting reconciliation is not implemented                     |
-| Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused                       |
-| Retrieval and chat | Hybrid dense/full-text retrieval, structured answers, verified citations  | Live model and embedding checks remain; no streaming                |
-| Evaluation         | Offline ASR and extraction harnesses with saved predictions               | RAG and sequence evaluations are incomplete                         |
+| Layer              | Current implementation                                                    | Current limitation                                               |
+| ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Native client      | SwiftUI and SwiftData iOS application                                     | Static playback UI remains; clean-install journey unverified     |
+| Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication               | Project membership is enforced; live authorization checks remain |
+| API and worker     | FastAPI routes and one-at-a-time meeting worker                           | Legacy JSON status path remains                                  |
+| Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain   |
+| Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Cross-meeting reconciliation is not implemented                  |
+| Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused    |
+| Retrieval and chat | Hybrid dense/full-text retrieval, structured answers, verified citations  | Live model and embedding checks remain; no streaming             |
+| Evaluation         | Offline ASR and extraction harnesses with saved predictions               | RAG and sequence evaluations are incomplete                      |
 
 The architecture intentionally separates audio recognition, structured extraction, storage, retrieval, and presentation. This lets us measure failure sources independently instead of attributing every downstream error to one model call.
 
@@ -223,11 +223,11 @@ The prior error review identified candidate issues involving negated promises, q
 
 The rubric requires at least one targeted comparison that isolates a key design choice. Dense-only versus hybrid is our primary two-version ablation; sparse-only is an optional diagnostic. Our proposed comparison evaluates retrieval strategies on the same frozen question set, indexed corpus, answer model, prompt, and top-K setting.
 
-| Variant | Dense retrieval | Full-text retrieval | RRF fusion | Recall@K | MRR | Faithful answers | Refusal accuracy | Median latency |
-| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| Dense only | Yes | No | No | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] |
-| Sparse only | No | Yes | No | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] |
-| Hybrid | Yes | Yes | Yes | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] | [PLACEHOLDER] |
+| Variant     | Dense retrieval | Full-text retrieval | RRF fusion |      Recall@K |           MRR | Faithful answers | Refusal accuracy | Median latency |
+| ----------- | --------------- | ------------------- | ---------- | ------------: | ------------: | ---------------: | ---------------: | -------------: |
+| Dense only  | Yes             | No                  | No         | [PLACEHOLDER] | [PLACEHOLDER] |    [PLACEHOLDER] |    [PLACEHOLDER] |  [PLACEHOLDER] |
+| Sparse only | No              | Yes                 | No         | [PLACEHOLDER] | [PLACEHOLDER] |    [PLACEHOLDER] |    [PLACEHOLDER] |  [PLACEHOLDER] |
+| Hybrid      | Yes             | Yes                 | Yes        | [PLACEHOLDER] | [PLACEHOLDER] |    [PLACEHOLDER] |    [PLACEHOLDER] |  [PLACEHOLDER] |
 
 This comparison will show whether hybrid retrieval improves evidence recall or ranking enough to justify its added complexity and latency. If time permits, a secondary comparison will test individual transcript turns against 150-word complete-turn windows.
 
@@ -381,14 +381,14 @@ Current limits must be stated clearly:
 
 ### Required for a credible Milestone 3 alpha
 
-- [x] Identify the official Milestone 3 rubric and required components.
+- [X] Identify the official Milestone 3 rubric and required components.
 - [ ] Confirm the Canvas deadline, page limit if any, and any TA check-in expectations.
 - [ ] Run and record the complete Python tests and lint checks on the submission commit.
 - [ ] Build and test the current SwiftUI application.
 - [ ] Complete one clean recording-to-results-to-task-to-chat user journey.
-- [x] Remove seed data from real app launches; keep preview/test fixtures.
+- [X] Remove seed data from real app launches; keep preview/test fixtures.
 - [ ] Verify the recorded clean-install demonstration contains no seed data.
-- [x] Implement server project refresh through `GET /api/v1/projects`.
+- [X] Implement server project refresh through `GET /api/v1/projects`.
 - [ ] Verify project persistence after relaunch and reinstall.
 - [ ] Test real embeddings and one live Codex or Claude chat response.
 - [ ] Create a supported-query and unsupported-query RAG evaluation set.
@@ -419,11 +419,11 @@ Cross-meeting task reconciliation is the core distinction between LabSync and an
 
 The rubric requires a substantive advanced-extension write-up and metrics for each team member. The following table is a draft based on repository history and the previous milestone plan. Every team member should review and correct it before submission.
 
-| Team member | Current contribution summary | Proposed advanced extension and required evidence |
-| --- | --- | --- |
-| Will Liu | PostgreSQL/API integration, iOS and backend data flow, Supabase accounts and membership, voice enrollment and speaker matching, task-similarity flags, setup documentation, and project chat with hybrid RAG and verified citations | **Integrated RAG/native chat and consent-based speaker identity.** Add speaker correct/false-match and abstention counts if claimed as an extension, plus retrieval comparison results, live-query success count, latency, citation validity, Swift build result, PRs/commits, and a substantive explanation of design choices and failures. |
-| Guadalupe Cantera | Database/schema work and data research from earlier milestones | **Reviewed data and human evaluation.** Add number of labels reviewed, agreement and disagreement results, finalized policies, error categories, privacy checks, PRs/commits, and a substantive explanation of how review changed the system. |
-| Bryan Yang | Audio/extraction integration, evaluation harness and reports, backend/client integration, and submission synthesis | **Evaluation and cross-meeting continuity.** Add sequence and RAG results, latency/cost instrumentation, end-to-end checks, PRs/commits, and a substantive explanation of the comparison design and resulting changes. |
+| Team member       | Current contribution summary                                                                                                                                                                                                        | Proposed advanced extension and required evidence                                                                                                                                                                                                                                                                                                  |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Will Liu          | PostgreSQL/API integration, iOS and backend data flow, Supabase accounts and membership, voice enrollment and speaker matching, task-similarity flags, setup documentation, and project chat with hybrid RAG and verified citations | **Integrated RAG/native chat and consent-based speaker identity.** Add speaker correct/false-match and abstention counts if claimed as an extension, plus retrieval comparison results, live-query success count, latency, citation validity, Swift build result, PRs/commits, and a substantive explanation of design choices and failures. |
+| Guadalupe Cantera | Database/schema work and data research from earlier milestones                                                                                                                                                                      | **Reviewed data and human evaluation.** Add number of labels reviewed, agreement and disagreement results, finalized policies, error categories, privacy checks, PRs/commits, and a substantive explanation of how review changed the system.                                                                                                |
+| Bryan Yang        | Audio/extraction integration, evaluation harness and reports, backend/client integration, and submission synthesis                                                                                                                  | **Evaluation and cross-meeting continuity.** Add sequence and RAG results, latency/cost instrumentation, end-to-end checks, PRs/commits, and a substantive explanation of the comparison design and resulting changes.                                                                                                                       |
 
 [PLACEHOLDER: replace contribution summaries with team-confirmed descriptions and include the required individual/group reporting format from the rubric.]
 
@@ -433,17 +433,17 @@ Each team member must separately submit the non-graded reflection survey coverin
 
 ## 11. Work Plan for the Next Milestone
 
-| Task                                                                | Proposed owner                   | Completion evidence                                                                               |
-| ------------------------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Confirm remaining submission logistics                              | Team                             | Canvas deadline, any page limit, and check-in expectations recorded                               |
-| Verify current backend, database, tunnel, and iOS build             | Will                             | Dated clean-run log, screenshots, device/configuration details, and demo clip                     |
-| Implement and evaluate the narrow three-meeting reconciliation path | Will and Bryan                   | Reviewed sequence, saved outputs, baseline comparison, state metrics, and failures                |
-| Calibrate and evaluate speaker identity and task-similarity flags | Will with independent team review | Reviewed identities/task pairs, held-out recordings, false matches, abstentions, and threshold decisions |
-| Complete human label and error review                               | Guadalupe with a second reviewer | Filled review records, adjudication notes, and 3-5 supported failure patterns                     |
-| Build RAG question set and score retrieval/answers                  | Bryan with team review           | Versioned inputs, expected sources, saved outputs, metrics, and examples                          |
-| Collect latency, token, and cost measurements                       | Bryan and Will                   | Reproducible measurement table with versions and workload descriptions                            |
-| Finalize privacy and deletion verification                          | Team                             | Recorded isolation, refusal, purge, and credential-handling checks                                |
-| Assemble and review final submission                                | Team                             | PDF or required artifact, repository link, demo link, contribution statement, and final proofread |
+| Task                                                                | Proposed owner                    | Completion evidence                                                                                      |
+| ------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Confirm remaining submission logistics                              | Team                              | Canvas deadline, any page limit, and check-in expectations recorded                                      |
+| Verify current backend, database, tunnel, and iOS build             | Will                              | Dated clean-run log, screenshots, device/configuration details, and demo clip                            |
+| Implement and evaluate the narrow three-meeting reconciliation path | Will and Bryan                    | Reviewed sequence, saved outputs, baseline comparison, state metrics, and failures                       |
+| Calibrate and evaluate speaker identity and task-similarity flags   | Will with independent team review | Reviewed identities/task pairs, held-out recordings, false matches, abstentions, and threshold decisions |
+| Complete human label and error review                               | Guadalupe with a second reviewer  | Filled review records, adjudication notes, and 3-5 supported failure patterns                            |
+| Build RAG question set and score retrieval/answers                  | Bryan with team review            | Versioned inputs, expected sources, saved outputs, metrics, and examples                                 |
+| Collect latency, token, and cost measurements                       | Bryan and Will                    | Reproducible measurement table with versions and workload descriptions                                   |
+| Finalize privacy and deletion verification                          | Team                              | Recorded isolation, refusal, purge, and credential-handling checks                                       |
+| Assemble and review final submission                                | Team                              | PDF or required artifact, repository link, demo link, contribution statement, and final proofread        |
 
 Assignments remain proposed until confirmed by the team.
 
@@ -479,22 +479,22 @@ The current evidence does not yet establish reliable cross-meeting reconciliatio
 
 ## 14. Rubric Coverage
 
-| Official requirement | Draft section | Status |
-| --- | --- | --- |
-| Track declaration | Front matter and Section 1 | Complete |
-| Development path, M2 changes, and decision log | Sections 1 and 2 | Draft complete; evidence pending |
-| Configuration and reproducibility | Sections 3-7 and 15 | Partial; exact final settings pending |
-| At least one ablation | Section 5.2 | Planned; results required |
-| Targeted tests, robustness, bias, safety, and hallucination | Sections 4, 5.3, and 8 | Partial; updated results required |
-| Latency and cost | Section 5.3 | Planned; measurements required |
-| Updated results and error analysis | Section 5 | Partial; M3 results and human adjudication required |
-| Alpha flow and inference service | Sections 1-4 | Implemented in parts; recorded end-to-end evidence required |
-| README run instructions and examples | Section 15 references | Present; clean-run verification required |
-| Model Card and System Card drafts | Sections 6 and 7 | Drafted; exact settings and results pending |
-| Weekly check-in, team roles, and work plan | Sections 10-12 | Team confirmation required |
-| Per-member extension write-up and metrics | Section 10 | Placeholders require completion |
-| GitHub link | Front matter | Complete |
-| Single PDF | Submission packaging | Not yet exported |
+| Official requirement                                        | Draft section              | Status                                                      |
+| ----------------------------------------------------------- | -------------------------- | ----------------------------------------------------------- |
+| Track declaration                                           | Front matter and Section 1 | Complete                                                    |
+| Development path, M2 changes, and decision log              | Sections 1 and 2           | Draft complete; evidence pending                            |
+| Configuration and reproducibility                           | Sections 3-7 and 15        | Partial; exact final settings pending                       |
+| At least one ablation                                       | Section 5.2                | Planned; results required                                   |
+| Targeted tests, robustness, bias, safety, and hallucination | Sections 4, 5.3, and 8     | Partial; updated results required                           |
+| Latency and cost                                            | Section 5.3                | Planned; measurements required                              |
+| Updated results and error analysis                          | Section 5                  | Partial; M3 results and human adjudication required         |
+| Alpha flow and inference service                            | Sections 1-4               | Implemented in parts; recorded end-to-end evidence required |
+| README run instructions and examples                        | Section 15 references      | Present; clean-run verification required                    |
+| Model Card and System Card drafts                           | Sections 6 and 7           | Drafted; exact settings and results pending                 |
+| Weekly check-in, team roles, and work plan                  | Sections 10-12             | Team confirmation required                                  |
+| Per-member extension write-up and metrics                   | Section 10                 | Placeholders require completion                             |
+| GitHub link                                                 | Front matter               | Complete                                                    |
+| Single PDF                                                  | Submission packaging       | Not yet exported                                            |
 
 The rubric allocates 60 points to core progress and evidence quality and 40 points to the alpha deliverable and documentation artifacts. Missing the ablation, updated results, Model Card, System Card, or per-member extension evidence would directly leave graded requirements incomplete.
 
