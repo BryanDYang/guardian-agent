@@ -4,8 +4,8 @@
 **Track:** AI Engineering
 **Team:** Will Liu, Guadalupe Cantera, and Bryan Yang
 **Repository:** https://github.com/BryanDYang/guardian-agent
-**Draft updated:** October 1, 2026
-**Submission date:** October 26, 2026
+**Draft updated:** October 6, 2026
+**Planned submission date:** October 26, 2026 (confirm in Canvas; assignment PDF defers to Canvas)
 
 > **Draft status:** This document follows the AI Engineering requirements and 100-point rubric in `contexts/milestone_3/Milestone 3.pdf`. It records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The final deliverable must be submitted as a single PDF unless the teaching staff directs otherwise.
 
@@ -40,6 +40,8 @@ The main development changes beyond the Milestone 2 baselines are:
 - Adding hybrid dense and full-text retrieval over transcripts, summaries, decisions, and tasks.
 - Verifying model citations against retrieved sources and refusing unsupported answers.
 - Adding task review, lifecycle transitions, audit records, undo, and Apple Reminders export.
+- Adding Supabase sign-in, profiles, project membership and invitations, consent-based voice enrollment, and project-member speaker matching.
+- Flagging candidate tasks similar to earlier approved open tasks without automatically merging or updating them.
 
 ### Decision log
 
@@ -84,7 +86,9 @@ The persistence layer writes:
 
 Evidence quotes are checked against source turns before extracted records are accepted. Missing owners and deadlines remain nullable instead of being invented.
 
-Remaining pipeline work includes named-speaker identification, attendee storylines, task deduplication and cross-meeting reconciliation, meeting duration persistence, and removal of the JSON status dependency.
+With `--diarize`, the pipeline now matches speaker centroids against enrolled project members using WeSpeaker voiceprints and cosine similarity. A match supplies a display name to the transcript and extraction input; a matched commitment owner can receive `assignee_user_id`. Unmatched speakers remain anonymous. Match thresholds are provisional and recognition quality has not been measured.
+
+Remaining pipeline work includes calibrated speaker identification, attendee storylines, task deduplication and cross-meeting reconciliation, meeting duration persistence, and removal of the JSON status dependency.
 
 ### 2.3 Human review and task lifecycle
 
@@ -97,7 +101,7 @@ Current limitations are:
 - Edits made during candidate review are not yet included in the task audit log.
 - Editing an already approved task is not implemented.
 - Calendar-event creation and ingest-time calendar matching are not implemented.
-- Task deduplication and reconciliation against previously open tasks are not implemented.
+- A candidate can return `matches_task` when its title embedding has cosine similarity of at least 0.80 with an earlier approved open task in the same project. The candidate is still inserted; duplicate prevention, deadline updates, completion inference, and ambiguous-match arbitration are not implemented.
 - Scheduled follow-up beyond the one-time Apple Reminder created at approval is not implemented.
 
 ### 2.4 Project chat with hybrid retrieval and verified citations
@@ -121,15 +125,22 @@ Citation badges can navigate toward a meeting transcript, but audio playback and
 
 ### 2.5 iOS alpha application
 
-The SwiftUI client currently provides three main areas:
+The SwiftUI client currently provides four main areas:
 
 - **Meetings:** project creation, meeting upload with consent, processing status, retry, purge, and rendering of stored summaries, decisions, transcripts, and candidate tasks.
 - **Tasks:** a year and month calendar, project filters, approved server tasks, lifecycle changes, undo, and Apple Reminders export.
 - **Chat:** project and meeting scope selection, new conversations, saved history, grounded answers, refusal behavior, and citation badges.
+- **Profile:** account details, workspaces and invitations, sign-in methods, account deletion, and voice enrollment or consent revocation.
 
-The client uses a configurable base URL and API token and can connect to the backend through a Cloudflare Tunnel. The repository includes scripts that configure and check the remote connection.
+The client uses a configurable base URL and the signed-in user's Supabase access token and can connect to the backend through a Cloudflare Tunnel. The repository includes scripts that configure and check the remote connection.
 
-The client still loads seed data, does not reload the full project list from the server after a clean reinstall, and uses a static audio dock. These gaps prevent us from claiming a clean, persistent, seed-free alpha journey until they are resolved and tested.
+The client no longer seeds sample projects on launch. It refreshes projects from `GET /api/v1/projects`, and cache preparation removes legacy seed project IDs. Seed data remains for previews and tests. Audio playback still uses a static dock. Clean-install persistence and the complete native journey still require recorded verification.
+
+### 2.6 Accounts, membership, and voice consent
+
+Supabase sign-in replaces shared-secret authentication. Profiles, project membership, invitations, and account deletion have connected client/API paths. Project access is restricted to members. Profile displays account and workspace data from the backend.
+
+Voice enrollment records three clips after separate consent, applies speech/quality and cross-clip consistency checks, and stores an L2-normalized 256-dimensional voiceprint. Raw enrollment clips are deleted. Users can skip enrollment, re-record, or revoke consent; revocation deletes the voiceprint without locking the account. The client receives enrollment status rather than the embedding. Quality gates and speaker-match thresholds still need calibration on real phone recordings.
 
 ## 3. Alpha Architecture
 
@@ -137,12 +148,12 @@ The alpha consists of the following integrated systems:
 
 | Layer              | Current implementation                                                    | Current limitation                                                  |
 | ------------------ | ------------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| Native client      | SwiftUI and SwiftData iOS application                                     | Seed data and static playback UI remain                             |
-| Remote gateway     | Cloudflare Tunnel with bearer-token authentication                        | Shared-secret authentication is appropriate only for the team alpha |
+| Native client      | SwiftUI and SwiftData iOS application                                     | Static playback UI remains; clean-install journey unverified                             |
+| Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication                        | Project membership is enforced; live authorization checks remain |
 | API and worker     | FastAPI routes and one-at-a-time meeting worker                           | Legacy JSON status path remains                                     |
-| Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Named speaker matching and DER evaluation remain                    |
+| Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain                    |
 | Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Cross-meeting reconciliation is not implemented                     |
-| Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Some attendee and storyline tables are unused                       |
+| Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused                       |
 | Retrieval and chat | Hybrid dense/full-text retrieval, structured answers, verified citations  | Live model and embedding checks remain; no streaming                |
 | Evaluation         | Offline ASR and extraction harnesses with saved predictions               | RAG and sequence evaluations are incomplete                         |
 
@@ -171,31 +182,46 @@ Required verification sequence:
 
 1. Start from a clean app installation or a documented clean local state.
 2. Connect to the configured backend and PostgreSQL database.
-3. Create a project and confirm it is visible after relaunch.
-4. Upload a consented MP3 or WAV recording.
-5. Observe processing and open the completed meeting.
-6. Confirm that the transcript, summary, decisions, evidence, and candidate tasks came from PostgreSQL.
-7. Approve one candidate task, confirm it appears in Tasks and Apple Reminders, change its lifecycle state, and undo that change.
-8. Ask one supported project question and verify every displayed citation.
-9. Ask one unsupported question and verify the fixed refusal.
-10. Relaunch the application and confirm that meeting, task, and chat history persist.
-11. Purge the test project and verify removal of its meeting, task, retrieval, and chat data.
+3. Sign in, create a project, and confirm it is visible after relaunch without seed data. Verify that a non-member cannot access it.
+4. For the voice demonstration, enroll three consented clips, run the worker with `--diarize`, inspect correct and unknown speaker labels, and verify revocation deletes the voiceprint.
+5. Upload a consented MP3 or WAV recording.
+6. Observe processing and open the completed meeting.
+7. Confirm that the transcript, summary, decisions, evidence, and candidate tasks came from PostgreSQL.
+8. Approve one candidate task, confirm it appears in Tasks and Apple Reminders, change its lifecycle state, and undo that change.
+9. Ask one supported project question and verify every displayed citation.
+10. Ask one unsupported question and verify the fixed refusal.
+11. Relaunch the application and confirm that meeting, task, and chat history persist.
+12. Purge the test project and verify removal of its meeting, task, retrieval, and chat data.
 
 [PLACEHOLDER: add date, tester, commit SHA, device, backend configuration, input fixture, observed result, screenshots, and demo-video link.]
 
 ## 5. Evaluation and Results
 
+### Evaluation scope for this milestone
+
+Updated evaluation is required for the Milestone 3 changes. Milestone 2 ASR and extraction results remain useful baselines, but do not measure the new retrieval, answers, identity matching, or integrated workflow. We do not need to replace every dataset or repeat every old baseline unchanged.
+
+The smallest coherent evaluation plan is:
+
+1. Freeze one human-reviewed RAG question set with supporting source IDs, supported and unsupported questions, and project-isolation cases. Run dense-only and hybrid retrieval on the same corpus, questions, answer model, prompt, and K. Sparse-only is an additional diagnostic. This supplies the targeted ablation and updated retrieval/answer results together.
+2. Use those same runs to review answer correctness, citation faithfulness, refusals, failures, latency, tokens, and cost. Include ordinary successes and failures in the independent human review. Quote validity alone does not establish that an answer is supported.
+3. Record one clean native end-to-end alpha journey, including sign-in, server project persistence, task review, chat, and deletion. This is integration evidence, separate from model-quality measurements.
+4. Evaluate speaker matching on consented labeled recordings with enrolled and unenrolled speakers if it is presented as an advanced extension. Report correct/incorrect identification, abstentions, unknown-speaker false matches, and downstream owner attribution. Calibrate on development recordings and keep evaluation recordings separate.
+5. Evaluate a reviewed recurring-meeting sequence if we claim cross-meeting reconciliation. Until state-update logic exists, measure only the similarity flag or state explicitly that full continuity remains incomplete.
+
+The RAG set and controlled comparison are the immediate priority. Speaker and sequence evaluations support our feature claims; the assignment does not prescribe these particular datasets. No new Milestone 3 model-quality measurements are recorded in this draft yet.
+
 ### 5.1 Results carried forward from Milestone 2
 
 The ASR pilot compared Whisper tiny and base through the supplied CCB transcription bridge on 12 one-minute AMI clips containing 1,738 reference words. The frozen test subset contained six clips and 705 reference words. Test WER was 28.79% for tiny and 24.54% for base, a 4.26 percentage-point absolute reduction. Test real-time factors were 0.021 and 0.039 respectively. The sample is too small for a general performance claim.
 
-The task-extraction development diagnostic compared promise rules, Codex independent extraction, and Granite Code 8B on 24 synthetic micro-meetings containing 15 labeled obligations. The reported task F1 proxies were 0.710, 0.897, and 0.692 respectively. These labels were AI-authored and the matching protocol was primarily lexical, so the figures remain development diagnostics rather than held-out semantic accuracy.
+The task-extraction development diagnostic compared promise rules, Codex independent extraction, and Qwen3 8B Q4_K_M on 24 synthetic micro-meetings containing 15 labeled obligations. The reported task F1 proxies were 0.710, 0.897, and 0.933 respectively. Qwen3 replaced the earlier code-specialized Granite comparison; the archived results report is authoritative. These labels were AI-authored and the matching protocol was primarily lexical, so the figures remain development diagnostics rather than held-out semantic accuracy.
 
-The prior error review identified candidate issues involving negated promises, quoted examples, cross-turn acceptance, duplicate repetitions, corrections, unknown owners, joint ownership, and merged actions. Human adjudication remains incomplete.
+The prior error review identified candidate issues involving negated promises, quoted examples, cross-turn acceptance, duplicate repetitions, corrections, unknown owners, joint ownership, and merged actions. Bryan verified the AI-drafted full review of all 72 outputs on September 26. The independent 12-output spot check and full second independent review remain pending; gold-label review is also incomplete.
 
 ### 5.2 Required ablation
 
-The rubric requires at least one targeted comparison that isolates a key design choice. Our primary proposed ablation compares retrieval strategies on the same frozen question set, indexed corpus, answer model, prompt, and top-K setting.
+The rubric requires at least one targeted comparison that isolates a key design choice. Dense-only versus hybrid is our primary two-version ablation; sparse-only is an optional diagnostic. Our proposed comparison evaluates retrieval strategies on the same frozen question set, indexed corpus, answer model, prompt, and top-K setting.
 
 | Variant | Dense retrieval | Full-text retrieval | RRF fusion | Recall@K | MRR | Faithful answers | Refusal accuracy | Median latency |
 | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
@@ -253,11 +279,19 @@ The intended alpha is English-only and the existing evaluation does not establis
 
 #### D. Human qualitative review
 
-Two team members should independently review a shared sample containing ordinary successes and representative failures. Use the existing dimensions of evidence support, owner attribution, coverage, ambiguity handling, and usefulness. Add Milestone 3 performance dimensions for response time and estimated cost.
+As our chosen reliability protocol, rather than a prescribed reviewer count in the assignment, two team members should independently review a shared sample containing ordinary successes and representative failures. Use the existing dimensions of evidence support, owner attribution, coverage, ambiguity handling, and usefulness. Add Milestone 3 performance dimensions for response time and estimated cost.
 
 [PLACEHOLDER: reviewer names, review date, sample size, scores, disagreements, adjudication, and 3-5 supported failure patterns.]
 
-#### E. Latency, usage, and cost
+#### E. Speaker identification and task-similarity evaluation
+
+Voice matching and candidate similarity introduce separate error risks. For speaker identification, use known identities and unenrolled speakers, report false matches and abstentions with denominators, record consent and revocation behavior, and inspect owner-attribution errors downstream. The current 0.60 threshold and 0.10 margin are implementation defaults, not measured acceptance criteria.
+
+For `matches_task`, label repeated obligations and similar but distinct tasks across meetings. Report flag precision/recall and false matches at the current 0.80 threshold. A flag result must not be counted as a successful merge, deadline update, or completion.
+
+[PLACEHOLDER: reviewed inputs, development/evaluation separation, settings, saved predictions, counts, failures, and calibration decisions.]
+
+#### F. Latency, usage, and cost
 
 The extraction providers already return elapsed time and token usage, and the evaluation harness summarizes observed latency. Milestone 3 should extend this instrumentation to the integrated alpha path and chat queries.
 
@@ -292,9 +326,9 @@ The system is not intended to record people without consent, evaluate employee o
 ### Models and configuration
 
 - Whisper performs English speech recognition through the supplied CCB bridge.
-- Optional pyannote diarization assigns anonymous speaker labels.
+- Optional pyannote diarization assigns speaker labels. Consent-based matching uses `pyannote/wespeaker-voxceleb-resnet34-LM` voiceprints (256 dimensions), with provisional cosine threshold 0.60 and margin 0.10. Without a confident match, labels remain anonymous.
 - Codex or Claude performs schema-constrained meeting extraction and grounded answer generation.
-- `all-MiniLM-L6-v2` produces retrieval embeddings for the current RAG implementation.
+- OpenAI `text-embedding-3-small` produces 1,536-dimensional passage embeddings. Task-title similarity uses the first 384 dimensions; `all-MiniLM-L6-v2` is not used.
 - PostgreSQL full-text search supplies the sparse retrieval leg.
 
 [PLACEHOLDER: record exact final model identifiers, provider or CLI versions, prompts and hashes, temperatures or reasoning settings, embedding version, top K, RRF constant, chunk size, and run date.]
@@ -312,7 +346,8 @@ The SwiftUI client uploads consented audio to an authenticated FastAPI service, 
 ### Guardrails
 
 - Upload requires affirmative consent in the application flow.
-- API routes require a bearer token.
+- API routes except health require Supabase sign-in; project access requires membership, with non-member requests returning 404.
+- Voice enrollment requires separate consent and three quality-checked clips; raw clips are deleted and revocation deletes the stored voiceprint.
 - Database reads and retrieval searches are scoped by project UUID.
 - Structured extraction uses typed contracts and evidence checks.
 - Candidate tasks require human approval.
@@ -323,7 +358,7 @@ The SwiftUI client uploads consented audio to an authenticated FastAPI service, 
 
 ### Operational constraints and mitigations
 
-The backend currently runs on an Apple Silicon Mac, depends on separately supplied transcription code, stores audio locally, and uses a shared team secret rather than multi-user authentication. The first model download is large, chat is not streamed, and some pipeline status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Longer-term mitigations include database-backed status, selective redaction, participant-level consent controls, stronger authentication, audio seeking, and reviewed reconciliation logic.
+The backend currently runs on an Apple Silicon Mac, depends on separately supplied transcription code, stores audio locally, and uses Supabase authentication with project membership checks. The first model download is large, chat is not streamed, and some pipeline status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Longer-term mitigations include database-backed status, selective redaction, broader participant-level recording consent controls, audio seeking, and reviewed reconciliation logic.
 
 ## 8. Privacy, Safety, and Responsible Use
 
@@ -333,10 +368,10 @@ The chat system verifies citations rather than displaying model-supplied identif
 
 Current limits must be stated clearly:
 
-- The team authentication model uses a shared secret and is not production multi-user authorization.
+- Supabase sign-in, project membership, and invitations are implemented; production security and live end-to-end authorization have not been established.
 - Selective transcript redaction is not implemented.
-- Participant-level consent and voice-profile controls are not implemented.
-- Voice embeddings and named-speaker matching are not active.
+- Voice enrollment consent, skip, re-record, and revocation are implemented. Broader participant-level recording consent controls remain incomplete.
+- Voice embeddings and named-speaker matching are implemented when diarization is enabled, but thresholds and recognition accuracy remain uncalibrated.
 - Audio deletion and database deletion must be verified together in the purge test.
 - Project-scope unit tests exist, but an end-to-end isolation test must still be recorded.
 
@@ -347,12 +382,14 @@ Current limits must be stated clearly:
 ### Required for a credible Milestone 3 alpha
 
 - [x] Identify the official Milestone 3 rubric and required components.
-- [ ] Confirm the Canvas deadline, page limit if any, and required TA check-in.
+- [ ] Confirm the Canvas deadline, page limit if any, and any TA check-in expectations.
 - [ ] Run and record the complete Python tests and lint checks on the submission commit.
 - [ ] Build and test the current SwiftUI application.
 - [ ] Complete one clean recording-to-results-to-task-to-chat user journey.
-- [ ] Remove or gate seed data for the recorded alpha demonstration.
-- [ ] Load projects from PostgreSQL after relaunch and verify persistence.
+- [x] Remove seed data from real app launches; keep preview/test fixtures.
+- [ ] Verify the recorded clean-install demonstration contains no seed data.
+- [x] Implement server project refresh through `GET /api/v1/projects`.
+- [ ] Verify project persistence after relaunch and reinstall.
 - [ ] Test real embeddings and one live Codex or Claude chat response.
 - [ ] Create a supported-query and unsupported-query RAG evaluation set.
 - [ ] Run and interpret at least one targeted ablation.
@@ -366,7 +403,7 @@ Current limits must be stated clearly:
 
 ### Central product claim that remains incomplete
 
-Cross-meeting task reconciliation is the core distinction between LabSync and an independent meeting summarizer. The current application stores task state and lets users change it, but it does not yet automatically match a later statement to an existing open task, arbitrate ambiguous matches, update a deadline, or flag a duplicate. The team should either implement and evaluate a narrow three-meeting reconciliation path before submission or explicitly present it as the highest-priority limitation. It must not be described as completed without measured sequence evidence.
+Cross-meeting task reconciliation is the core distinction between LabSync and an independent meeting summarizer. The current application stores task state and lets users change it, and flags title-similar candidates against earlier approved open tasks. It does not yet merge duplicates, arbitrate ambiguous matches, update a deadline, or infer completion from later meetings. The team should either implement and evaluate a narrow three-meeting reconciliation path before submission or explicitly present it as the highest-priority limitation. It must not be described as completed without measured sequence evidence.
 
 ### Valuable alpha improvements if time permits
 
@@ -376,7 +413,7 @@ Cross-meeting task reconciliation is the core distinction between LabSync and an
 - Save meeting duration and display a real waveform or deterministic progress UI.
 - Add summary editing and formatted sharing.
 - Add transcript redaction.
-- Add attendee storylines and named-speaker matching only after consent and evaluation rules are settled.
+- Add attendee storylines; calibrate and evaluate the implemented consent-based speaker matching.
 
 ## 10. Team Contributions and Advanced Extensions
 
@@ -384,7 +421,7 @@ The rubric requires a substantive advanced-extension write-up and metrics for ea
 
 | Team member | Current contribution summary | Proposed advanced extension and required evidence |
 | --- | --- | --- |
-| Will Liu | PostgreSQL/API integration, iOS and backend data flow, setup documentation, and project chat with hybrid RAG and verified citations | **Integrated RAG and native chat.** Add retrieval comparison results, live-query success count, latency, citation validity, Swift build result, PRs/commits, and a substantive explanation of design choices and failures. |
+| Will Liu | PostgreSQL/API integration, iOS and backend data flow, Supabase accounts and membership, voice enrollment and speaker matching, task-similarity flags, setup documentation, and project chat with hybrid RAG and verified citations | **Integrated RAG/native chat and consent-based speaker identity.** Add speaker correct/false-match and abstention counts if claimed as an extension, plus retrieval comparison results, live-query success count, latency, citation validity, Swift build result, PRs/commits, and a substantive explanation of design choices and failures. |
 | Guadalupe Cantera | Database/schema work and data research from earlier milestones | **Reviewed data and human evaluation.** Add number of labels reviewed, agreement and disagreement results, finalized policies, error categories, privacy checks, PRs/commits, and a substantive explanation of how review changed the system. |
 | Bryan Yang | Audio/extraction integration, evaluation harness and reports, backend/client integration, and submission synthesis | **Evaluation and cross-meeting continuity.** Add sequence and RAG results, latency/cost instrumentation, end-to-end checks, PRs/commits, and a substantive explanation of the comparison design and resulting changes. |
 
@@ -401,6 +438,7 @@ Each team member must separately submit the non-graded reflection survey coverin
 | Confirm remaining submission logistics                              | Team                             | Canvas deadline, any page limit, and check-in expectations recorded                               |
 | Verify current backend, database, tunnel, and iOS build             | Will                             | Dated clean-run log, screenshots, device/configuration details, and demo clip                     |
 | Implement and evaluate the narrow three-meeting reconciliation path | Will and Bryan                   | Reviewed sequence, saved outputs, baseline comparison, state metrics, and failures                |
+| Calibrate and evaluate speaker identity and task-similarity flags | Will with independent team review | Reviewed identities/task pairs, held-out recordings, false matches, abstentions, and threshold decisions |
 | Complete human label and error review                               | Guadalupe with a second reviewer | Filled review records, adjudication notes, and 3-5 supported failure patterns                     |
 | Build RAG question set and score retrieval/answers                  | Bryan with team review           | Versioned inputs, expected sources, saved outputs, metrics, and examples                          |
 | Collect latency, token, and cost measurements                       | Bryan and Will                   | Reproducible measurement table with versions and workload descriptions                            |
@@ -418,15 +456,16 @@ Assignments remain proposed until confirmed by the team.
 - Added hybrid project-scoped retrieval, structured answers, verified citations, grounded refusal, and persistent conversations.
 - Added setup instructions for the team backend, local backend, Supabase, Cloudflare Tunnel, and iOS app.
 - Added automated coverage for chat, retrieval, citation validation, scope isolation, failure behavior, purge, and indexing.
+- Added accounts, membership and invitations, seed-free launch, server project refresh, consent-based voice enrollment, speaker identification, and task-similarity flags. These are implementation changes with acceptance and quality measurements still pending.
 
 ### Top blockers and risks
 
 - No recorded clean end-to-end alpha verification exists yet.
-- Cross-meeting reconciliation, the project's main differentiating claim, is not implemented or measured.
+- Task-similarity flags are implemented, but automatic cross-meeting state reconciliation and its sequence evaluation remain incomplete.
 - Human review of labels and semantic matches is incomplete.
 - The required ablation, updated RAG results, and latency/cost table are not complete.
 - The iOS build and real model/embedding behavior must be verified on the team environment.
-- Seed data and the remaining JSON status dependency weaken the clean alpha path.
+- The remaining JSON status dependency and static playback limit the alpha path; seed-free launch and server project refresh are implemented but need clean-run evidence.
 
 ### Planned next steps
 
@@ -465,6 +504,9 @@ Primary repository documentation:
 
 - `README.md` for installation, backend, tunnel, iOS, and evaluation commands.
 - `docs/checklist.md` for the current end-to-end completion checklist.
+- `docs/demo_walkthrough.md` for recording native acceptance evidence.
+- `docs/weekly_journal.md` for the Week 6 and Week 7 progress/reflections.
+- `src/labsync/voice.py`, `src/labsync/embeddings.py`, and `src/labsync/db/meetings.py` for current speaker and task-similarity settings.
 - `docs/writeups/systems/Chat RAG & Citations.md` for the retrieval, answer, citation, and persistence design.
 - `docs/archive/milestone_2/submission_draft.md` for the prior dataset, baseline, and evaluation record.
 - `docs/archive/milestone_2/results/README.md` for task-extraction measurements.

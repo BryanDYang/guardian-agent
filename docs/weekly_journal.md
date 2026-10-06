@@ -145,3 +145,15 @@ One specific system change was grouping consecutive transcript turns into window
 We have not measured this change's effect on answer quality. The implementation includes chunking and citation-validation tests, but those check mechanics, not whether real retrieval finds better evidence. Integration and setup received attention before we had a labeled question set ready. That leaves an uncomfortable gap: we can explain why the design seems reasonable, but cannot claim it improved evaluation results. Last week's extraction scores do not answer that question.
 
 Prompt engineering currently feels partly like art: wording and context choices depend on intuition until we test them. To make it engineering, we need versioned prompts and retrieval settings, fixed questions with expected evidence, controlled comparisons, and saved outputs. We should measure evidence retrieval, answer correctness, unsupported answers, and latency, then inspect failures. Even a negative result would tell us more than a convincing demonstration.
+
+# Week 7 (October 5-11, 2026)
+
+**Progress so far, based on Will's October 4 implementation and [checklist update](checklist.md).**
+
+**Did:** Will implemented voice enrollment and speaker identification across the iOS client and backend. Enrollment records three clips and stores a voiceprint only after consent and quality checks. Users can skip enrollment, re-record from Profile, or revoke consent to delete their voiceprint. With the worker running with `--diarize`, the pipeline uses cosine similarity to match diarized speakers to enrolled project members; unmatched speakers keep generic `SPEAKER_N` labels.<br>
+**Blocked on:** Speaker-match thresholds are provisional and have not been calibrated. We still need a documented native end-to-end run and a speaker-identification benchmark before claiming reliable recognition.<br>
+**Next:** Verify enrollment, upload, named transcript output, and consent revocation together on a consented recording. Measure correct matches, incorrect matches, and unknown-speaker handling, then calibrate thresholds. Continue the controlled RAG comparison planned last week.
+
+Will also updated the implementation checklist to distinguish connected code paths from accepted user journeys. The current task-similarity flag can show an earlier open task's title on a new candidate, but the candidate is still created. This is progress toward cross-meeting reconciliation; it does not yet establish duplicate prevention or reliable task-state updates across meetings.
+
+The main engineering question is whether a similarity score is strong enough evidence to attach a person's name to a transcript. A wrong name can also misattribute an extracted commitment. Keeping unmatched speakers anonymous is a useful fallback, but we need recordings with known speakers and unenrolled participants to measure how often the system names the right person or should abstain. Existing component tests establish mechanics, not recognition quality. Playback, storylines, summary editing, redaction, and replacing JSON status polling with Postgres-backed status remain open in Will's checklist.
