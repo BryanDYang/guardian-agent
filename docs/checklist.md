@@ -105,7 +105,7 @@ v1 project, meeting, task, chat, profile, invitation, and voice routes talk to P
 
 ## Phase 5 — Offline Evaluation Harness (System 9)
 
-Partial: [CCB transcription measurements](milestone_2/transcription_results.md) cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
+Partial: [CCB transcription measurements](archive/milestone_2/transcription_results.md) cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](archive/milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
 
 - [x] Offline pytest for extraction contract, CLI, and stubbed server workflow
 - [x] Transcript extraction development fixtures: 24 cases, 15 obligations, annotation and matching protocol (`tests/fixtures/evaluation/`)
@@ -123,6 +123,27 @@ Partial: [CCB transcription measurements](milestone_2/transcription_results.md) 
 - [ ] Keep a small live smoke: upload fixture → Postgres rows exist → RAG refuses unknown questions
 
 **Owner hint:** Engineer 3.
+
+### Milestone 3 demo pack and updated evaluation
+
+The current 45-second AMI fixture checks upload/transcription, not project continuity. Swift seed data is for previews/tests. Neither is a complete demo corpus. Use the [submission draft](milestone_3/submission_draft.md) for reporting and the [demo walkthrough](demo_walkthrough.md) for observed native behavior. Owners below are proposed until the team confirms them.
+
+- [ ] **Data selection (Guadalupe, with team review):** Inspect TS3005a-d manual transcripts for meaningful decisions, commitments, deadline changes, and completion before selecting audio. Annotations are local; only TS3005a audio from this series is currently downloaded. Download the missing recordings if the sequence fits
+- [ ] **Coverage fallback (Team):** If AMI lacks the required continuity cases, record a clearly labeled scripted sequence with consenting teammates. Keep scripted demonstration evidence separate from natural-meeting accuracy claims
+- [ ] **Main project (Team):** Assemble three connected meetings with a new owner/deadline commitment, a later deadline change, explicit completion, an unaccepted suggestion, an ambiguous reference, and an unmentioned task that remains open
+- [ ] **Second project (Team):** Add a distinct recording with different facts and commitments for project selection and isolation checks
+- [ ] **Frozen inputs and labels (Guadalupe, second reviewer):** Record provenance, license/consent, meeting order, timestamps, file hashes, reviewed transcripts, expected task state after each meeting, supporting evidence, and review disagreements before comparison runs
+- [ ] **Continuity implementation (Will):** Extend the existing similarity flag to reviewed matching and state updates; preserve ambiguous cases for review. A `matches_task` flag alone is not a merge, deadline update, or completion
+- [ ] **Sequence comparison (Bryan):** Run independent-meeting extraction and the updated reconciliation workflow on the same frozen transcripts and model/extraction settings. Report task-state accuracy, duplicate creation, incorrect updates, unsupported completions, and failures with denominators
+- [ ] **RAG question set (Bryan, team review):** Freeze supported questions with expected source IDs/timestamps, unsupported questions, meeting-scope cases, and cross-project isolation cases
+- [ ] **Required ablation (Bryan):** Compare dense-only against hybrid retrieval on the same corpus, questions, answer model, prompt, and K. Sparse-only is optional. Save raw outputs, versions/settings, Recall@K, ranking, answer correctness, citation faithfulness, refusals, latency, tokens, and estimated cost
+- [ ] **Human error review (Guadalupe, second reviewer):** Review ordinary successes and representative failures; document disagreements, adjudication, and changes. Valid quotation text alone does not prove answer support
+- [ ] **Voice extension evidence (Will, team review):** If speaker identity is claimed, evaluate enrolled and unenrolled speakers, false matches, abstentions, and downstream owner attribution. Separate threshold-calibration recordings from evaluation recordings
+- [ ] **Native end-to-end run (Will):** Create real server projects and upload the pack through the app. Verify results, task review/state changes, supported/unsupported chat, isolation, relaunch persistence, and purge. Record commit, configuration, device, screenshots/video, and observed failures
+- [ ] **Follow-through acceptance (Will and Bryan):** Verify promised reminders and cancellation/rescheduling after task changes. The one-time reminder exported at approval does not establish this behavior
+- [ ] **Submission evidence (Team):** Add measured results, error analysis, exact reproduction instructions, Model/System Cards, and each member's extension write-up and metrics; export and review the final PDF
+
+Retain Milestone 2 results as historical baselines. Do not compare old synthetic-case scores directly with new audio/sequence scores to claim improvement. Both variants must use identical inputs within each comparison. Optional extraction regression runs can reuse the original 24 cases. Run the complete audio-to-app path separately to expose ASR, speaker, persistence, and UI failures. Keep demo/development sequences out of any held-out evaluation claims.
 
 ---
 
@@ -226,10 +247,10 @@ From the Story Writeup: transcript encryption, push/SMS notification infrastruct
 
 ## Suggested build order
 
-1. Finish the Phase 1 storyline contract and the golden fixture. The RAG contract is already in the repo
-2. Phase 2–3 leftovers: write `duration_seconds` and storylines, calibrate speaker-match thresholds, and make Postgres the worker's source of truth. Voiceprints, speaker naming, passage embeddings, and the task-similarity flag are already in the repo
-3. Phase 4 leftovers: poll the v1 meeting route, summary edit, WebSocket or keep poll as the documented fallback, redaction. Start the shared server with `--diarize` when a demo should show speaker names. Chat/RAG and voice enrollment are already in the repo
-4. Phase 5: human review, then DER, a speaker-identification benchmark, and RAGAS once those pipelines exist
-5. Phase 6–7: AVPlayer seek and EventKit calendar read. Listing projects from the API, voice enrollment, and keeping `SeedData` off real launches are already in the repo
+1. Assemble and review the Milestone 3 demo pack and expected task states/questions; confirm owners and the scope promised in the submitted proposal
+2. Complete the narrow cross-meeting reconciliation and follow-through path, then run identical-input sequence comparisons. Voiceprints and task-similarity flags already exist, but their presence does not establish reliable state tracking
+3. Run the dense-only/hybrid RAG comparison and human error review; collect latency/cost and evaluate speaker identity if claimed as an extension
+4. Perform the native walkthrough with real server projects. Fix the earliest blocking failure, add AVPlayer/citation seek for evidence inspection, and replace JSON status polling with Postgres-backed status. Start the worker with `--diarize` for the speaker demo
+5. Complete promised remaining scope or identify deferrals explicitly; freeze the verified configuration and package results, cards, individual contributions, and the final PDF. Storylines, summary editing, redaction, calendar integration, and duration persistence remain tracked above
 
 The transcript-only extraction subset in Phase 5 can keep running without Postgres.
