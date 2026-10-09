@@ -92,12 +92,13 @@ For example:
 
 ```bash
 uv sync --locked --extra dev --extra audio --extra server
-mkdir -p artifacts/asr/data
+mkdir -p contexts/datasets/ami
 curl --fail --location --retry 2 \
   https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/IS1008a/audio/IS1008a.Mix-Headset.wav \
-  -o artifacts/asr/data/IS1008a.Mix-Headset.wav
+  -o contexts/datasets/ami/IS1008a.Mix-Headset.wav
 # Repeat for IS1009a and ES2004a using manifest URLs and paths.
-# TS3005a and the manual annotation ZIP use the existing contexts/datasets/ami paths.
+# All full recordings and the manual annotation ZIP live in contexts/datasets/ami.
+# Generated clips, transcripts, and results remain under artifacts/asr/.
 
 uv run --no-sync python -m labsync.asr_evaluation prepare \
   --output artifacts/asr/prepared

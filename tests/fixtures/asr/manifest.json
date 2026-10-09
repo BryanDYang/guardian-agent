@@ -33,7 +33,7 @@
       "meeting_id": "IS1008a",
       "series": "IS1008",
       "split": "validation",
-      "audio_path": "artifacts/asr/data/IS1008a.Mix-Headset.wav",
+      "audio_path": "contexts/datasets/ami/IS1008a.Mix-Headset.wav",
       "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/IS1008a/audio/IS1008a.Mix-Headset.wav",
       "windows": [
         [
@@ -54,7 +54,7 @@
       "meeting_id": "IS1009a",
       "series": "IS1009",
       "split": "test",
-      "audio_path": "artifacts/asr/data/IS1009a.Mix-Headset.wav",
+      "audio_path": "contexts/datasets/ami/IS1009a.Mix-Headset.wav",
       "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/IS1009a/audio/IS1009a.Mix-Headset.wav",
       "windows": [
         [
@@ -75,7 +75,7 @@
       "meeting_id": "ES2004a",
       "series": "ES2004",
       "split": "test",
-      "audio_path": "artifacts/asr/data/ES2004a.Mix-Headset.wav",
+      "audio_path": "contexts/datasets/ami/ES2004a.Mix-Headset.wav",
       "audio_url": "https://groups.inf.ed.ac.uk/ami/AMICorpusMirror/amicorpus/ES2004a/audio/ES2004a.Mix-Headset.wav",
       "windows": [
         [
