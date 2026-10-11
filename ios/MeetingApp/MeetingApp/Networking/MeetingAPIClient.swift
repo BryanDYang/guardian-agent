@@ -147,6 +147,29 @@ struct MeetingAPIClient {
         baseURL.appending(path: "api/meetings/\(id)/audio")
     }
 
+    /// Download through the authenticated endpoint, following private Storage redirects.
+    func downloadAudio(id: String) async throws -> URL {
+        var request = URLRequest(url: audioURL(id: id))
+        request.timeoutInterval = Self.uploadTimeout
+        request.setValue("Bearer \(try await accessToken())", forHTTPHeaderField: "Authorization")
+        let (temporary, response) = try await session.download(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            try? FileManager.default.removeItem(at: temporary)
+            throw MeetingAPIError.invalidResponse
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            try? FileManager.default.removeItem(at: temporary)
+            throw MeetingAPIError.server("Audio returned HTTP \(http.statusCode).")
+        }
+        let ext = response.url?.pathExtension.lowercased() ?? ""
+        let allowed = ["wav", "flac", "mp3", "m4a", "mp4", "mov", "ogg", "webm"]
+        let destination = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension(allowed.contains(ext) ? ext : "wav")
+        try FileManager.default.moveItem(at: temporary, to: destination)
+        return destination
+    }
+
     func storedDetail(meetingID: String) async throws -> RemoteStoredMeeting {
         let request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(meetingID)"))
         return try await send(request)

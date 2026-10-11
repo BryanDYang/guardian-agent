@@ -4,6 +4,7 @@ import SwiftData
 // MeetingDetailView.tsx → activeSegment === 'transcript'
 struct TranscriptSegment: View {
     let meeting: Meeting
+    var onSeek: (Int) -> Void = { _ in }
 
     var body: some View {
         if meeting.transcript.isEmpty {
@@ -14,7 +15,7 @@ struct TranscriptSegment: View {
             )
             .padding(.top, 48)
         } else {
-            VStack(alignment: .leading, spacing: 16) {
+            LazyVStack(alignment: .leading, spacing: 16) {
                 ForEach(meeting.transcript) { turn in
                     turnRow(turn)
                         .id(turn.id)
@@ -38,9 +39,10 @@ struct TranscriptSegment: View {
                     Text(speaker?.name ?? "Unknown speaker")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
-                    Text(turn.startTime)
+                    Button { onSeek(turn.startSeconds) } label: { Text(turn.startTime) }
+                        .accessibilityLabel("Play from \(turn.startTime)")
                         .font(.system(size: 10).monospaced())
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(.blue)
                 }
 
                 Text(turn.text)

@@ -48,7 +48,7 @@ def create_app(
     model: str | None = None,
     whisper_model: str = "base",
     whisper_backend: str = "openai",
-    diarize: bool = False,
+    diarize: bool = True,
     database_url: str | None = None,
     embedder: rag.Embedder | None = None,
     supabase_url: str | None = None,

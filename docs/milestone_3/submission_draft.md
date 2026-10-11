@@ -4,7 +4,7 @@
 **Track:** AI Engineering
 **Team:** Will Liu, Guadalupe Cantera, and Bryan Yang
 **Repository:** https://github.com/BryanDYang/guardian-agent
-**Draft updated:** October 6, 2026
+**Draft updated:** October 10, 2026
 **Planned submission date:** October 26, 2026
 
 > **Draft status:** This document follows the AI Engineering requirements and 100-point rubric in `contexts/milestone_3/Milestone 3.pdf`. It records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The final deliverable must be submitted as a single PDF unless the teaching staff directs otherwise.
@@ -378,6 +378,8 @@ Current limits must be stated clearly:
 [PLACEHOLDER: document the completed privacy/purge test and any TA guidance received.]
 
 ## 9. What Remains Before Submission
+
+The [execution roadmap](roadmap.md) orders implementation, testing, and validation gates. The [scope and acceptance plan](scope_and_acceptance.md) defines proposed Milestone 3 targets, the engineering sequence, and next-phase boundaries. The [implementation checklist](../checklist.md) tracks code; the [native walkthrough](../demo_walkthrough.md) tracks observed acceptance. Targets are not completed claims.
 
 ### Required for a credible Milestone 3 alpha
 

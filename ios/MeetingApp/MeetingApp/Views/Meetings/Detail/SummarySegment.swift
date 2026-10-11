@@ -4,6 +4,7 @@ import SwiftData
 // MeetingDetailView.tsx → activeSegment === 'summary'
 struct SummarySegment: View {
     let meeting: Meeting
+    var onSeek: (Int) -> Void = { _ in }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -38,9 +39,12 @@ struct SummarySegment: View {
                                 .font(.subheadline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Text("[\(decision.timestamp)]")
+                            Button { onSeek(TranscriptTurn.seconds(from: decision.timestamp)) } label: {
+                                Text("[\(decision.timestamp)]")
+                            }
+                                .accessibilityLabel("Play from \(decision.timestamp)")
                                 .font(.caption.monospaced())
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.blue)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
                                 .background(

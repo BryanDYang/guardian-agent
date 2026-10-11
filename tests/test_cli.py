@@ -28,3 +28,25 @@ def test_unknown_command_fails():
     )
     assert result.returncode == 2
     assert "invalid choice" in result.stderr
+
+
+@pytest.mark.parametrize("flags, expected", [([], True), (["--no-diarize"], False)])
+def test_transcription_separates_speakers_unless_explicitly_disabled(
+    monkeypatch, tmp_path, flags, expected
+):
+    from labsync import ccb, cli
+
+    observed = {}
+
+    def transcribe(*args, **kwargs):
+        observed.update(kwargs)
+        return tmp_path / "transcript.json"
+
+    monkeypatch.setattr(ccb, "transcribe", transcribe)
+    assert cli.main([
+        "transcribe", str(tmp_path / "meeting.wav"),
+        "--project-id", "demo", "--meeting-id", "meeting",
+        "--output-dir", str(tmp_path / "output"),
+        "--whisper-backend", "openai", *flags,
+    ]) == 0
+    assert observed["diarize"] is expected

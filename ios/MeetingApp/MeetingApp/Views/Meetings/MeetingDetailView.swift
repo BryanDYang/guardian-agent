@@ -12,6 +12,8 @@ struct MeetingDetailView: View {
     @State private var showPrivacySettings = false
     @State private var showSessionSetup = false
     @State private var taskLoadError: String?
+    @State private var audio = MeetingAudioPlayer()
+    @State private var audioAttempt = 0
 
     var body: some View {
         @Bindable var navigator = navigator
@@ -49,7 +51,11 @@ struct MeetingDetailView: View {
                         .onChange(of: meeting.transcript.count) { scrollToPendingSeek(in: meeting, proxy: proxy) }
                     }
 
-                    AudioDockView()
+                    AudioDockView(audio: audio) { audioAttempt += 1 }
+                        .task(id: "\(meeting.id)-\(audioAttempt)") {
+                            await audio.load(meetingID: meeting.id)
+                        }
+                        .onDisappear { audio.stop() }
                 }
                 .background(Color(.systemGroupedBackground))
                 .navigationTitle(meeting.title)
@@ -88,13 +94,17 @@ struct MeetingDetailView: View {
     private func segmentContent(for meeting: Meeting) -> some View {
         switch navigator.activeSegment {
         case .summary:
-            SummarySegment(meeting: meeting)
+            SummarySegment(meeting: meeting) { seconds in
+                audio.seek(to: Double(seconds), play: true)
+            }
         case .tasks:
             CandidateTasksSegment(meeting: meeting, loadError: taskLoadError) {
                 Task { await syncServerTasks(meeting) }
             }
         case .transcript:
-            TranscriptSegment(meeting: meeting)
+            TranscriptSegment(meeting: meeting) { seconds in
+                audio.seek(to: Double(seconds), play: true)
+            }
         case .storyline:
             StorylineSegment(meeting: meeting)
         }
@@ -109,6 +119,7 @@ struct MeetingDetailView: View {
               let ms = navigator.pendingSeekMilliseconds,
               let first = meeting.transcript.first else { return }
 
+        audio.seek(to: Double(ms) / 1000)
         let target = ms / 1000
         let turn = meeting.transcript.last { $0.startSeconds <= target } ?? first
         navigator.pendingSeekMilliseconds = nil

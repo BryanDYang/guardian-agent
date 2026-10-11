@@ -44,3 +44,23 @@ Device: iPhone 18 Pro Max simulator, iOS 27.0. Backend: `http://127.0.0.1:8000`,
 - **Not run:** Two-device worker failover, automatic API routing, and external tester availability.
 
 Corpus mapping and local operating commands are in [the shared backend guide](shared_backend.md). Current meeting dates are import dates, not verified corpus dates.
+
+## Playback implementation follow-up
+
+Reproduced the inert Play button and placeholder 14:32/30:40 times on TS3005a. Replaced the static dock with AVPlayer, authenticated audio download, real duration/position, pause, +/-15 seconds, scrubber, loading/error/retry states, and temporary-file cleanup on leaving the meeting. Transcript and decision timestamps seek and play; task/chat citation navigation seeks without automatically playing. Long transcript rows now load lazily.
+
+Observed on the simulator: protected TS3005a WAV loaded with duration 21:58; tapping decision 03:59 moved playback there and displayed Pause; elapsed time advanced to 04:26; pause worked. This verifies player progression, not subjective speaker-volume or output-device audibility. TS3005b FLAC loaded with duration 40:39; tapping decision 20:05 started playback and advanced to 20:08. On the transcript tab, tapping 00:17 moved playback near that position and advanced to 00:22. Pause was verified and the recording was left paused. Slider dragging, retry failures, and physical-device audibility still require acceptance checks.
+
+## Speaker processing checkpoint
+
+Diarization is now the default for CLI transcription and server processing, with
+`--no-diarize` as an explicit opt-out. The existing TS3005a-d development meetings
+remain completed outputs from the earlier run without diarization. Reprocessing
+was not queued: Bryan's environment has neither `HF_TOKEN` nor a cached Hugging
+Face login. Dependencies are installed; model access must be configured and the
+worker restarted before verifying TS3005a and then processing b-d. Name inference
+from introductions is not implemented, and Storyline detail still contains
+placeholder content. Neither is accepted end-to-end behavior.
+
+The larger centered playback controls built successfully and were inspected in
+the simulator; TS3005a loaded its real 21:58 duration.

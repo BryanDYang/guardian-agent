@@ -126,6 +126,16 @@ uv run --locked --env-file .env --extra audio --extra server --extra diarize \
   --storage artifacts/shared-bryan --whisper-backend mlx --whisper-model base
 ```
 
+Speaker diarization is enabled by default for `serve` and `transcribe`.
+`--extra diarize` installs dependencies. Configure the required Hugging Face
+model access and `HF_TOKEN`; processing fails visibly if diarization cannot run.
+Use `--no-diarize` only for an intentional transcription-only run. Existing
+completed recordings are not reprocessed by restarting the worker.
+For AMI fixtures, retain anonymous speaker labels until reviewed against corpus
+annotations. Map corpus speakers to test accounts only for task-routing tests;
+that mapping is not voice recognition and does not mean the account owner
+attended the meeting.
+
 Detach with Ctrl-B, then D. The backend keeps running after the terminal window
 closes. Reattach with `tmux attach -t labsync`; inspect sessions with `tmux ls`.
 To stop it, reattach and press Ctrl-C. To restart, run the same `uv` command.
