@@ -2,6 +2,14 @@
 
 Updated October 10, 2026. Target submission: October 26, subject to confirming Canvas. Stage order is the execution plan; proposed owners and dates need team agreement. See [scope and acceptance](scope_and_acceptance.md) for product boundaries and [submission draft](submission_draft.md) for rubric requirements.
 
+## October 11 checkpoint
+
+Implemented speaker-name proposals with timestamped evidence and optional confirmed account mapping, accepted undated tasks with a native To-do/Calendar switch, and human-confirmed reconciliation against an earlier accepted task. Reconciliation keeps the original task ID, records the source meeting/quote/reviewer, rejects stale changes, and cannot reopen completed work. Similarity never applies an update automatically. A candidate must already exist; completion-only statements are not yet extracted as update proposals.
+
+All 282 backend tests passed on disposable PostgreSQL; Ruff and the simulator build passed. All seven shared development jobs completed before the backend was restarted. Native acceptance results belong in the walkthrough. Implementation does not close the Stage 2 or Stage 3 gates on its own.
+
+Still required: reviewed sequence ledger and independent adjudication, automatic update proposals, reminder lifecycle and deduplication, paired extraction/retrieval evaluations, full native task persistence checks, external testers, two-host recovery, and final submission evidence. No natural-data accuracy or completion percentage is claimed from these tests.
+
 ## Starting point
 
 Shared-mode backend, authenticated native uploads, Google sign-in, project membership, extraction, task review/lifecycle, and cited chat are implemented. Seven AMI meetings completed processing and produced 69 pending candidates at the last inspection. No candidates were approved. The calendar therefore remained empty. Targeted backend tests passed (29), lint passed, and simulator builds passed. Full native acceptance, live two-host recovery, external tester access, sequence accuracy, and automatic follow-through remain unverified.
@@ -26,8 +34,8 @@ Shared-mode backend, authenticated native uploads, Google sign-in, project membe
 **Aim: October 13-16. Proposed lead: Will; Bryan verifies.**
 
 - [ ] Reproduce review/assignment/calendar behavior with one supported candidate in the app.
-- [ ] Implement an accepted-task to-do view that includes undated work; retain dated calendar placement.
-- [ ] Define owner mapping and confirmation behavior. Keep ambiguous owner/deadline cases pending; never invent a deadline.
+- [x] Implement an accepted-task to-do view that includes undated work; retain dated calendar placement. Native acceptance gate remains open.
+- [x] Define owner mapping and confirmation behavior. Names remain suggestions until confirmed; account mapping is explicit and deadlines optional. Native acceptance remains open.
 - [ ] Verify approval, owner selection, date editing, completion, undo, and refresh/relaunch persistence.
 - [ ] Verify project invitations and a non-member's access denial using separate accounts.
 - [ ] Fix the earliest blocking UI/API failure, add a meaningful regression check, and repeat the same native action.

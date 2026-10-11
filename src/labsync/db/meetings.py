@@ -187,7 +187,9 @@ def save_results(
     gives each tag its shown name; extraction ran on the transcript with those
     names, and its evidence must already have passed Extraction.check_evidence.
     """
-    row = conn.execute("SELECT project_id FROM meetings WHERE id = %s", (meeting_id,))
+    row = conn.execute(
+        "SELECT project_id, model_metadata FROM meetings WHERE id = %s", (meeting_id,)
+    )
     meeting = row.fetchone()
     if meeting is None:
         raise ValueError(f"Meeting {meeting_id} has no database row")
@@ -302,6 +304,11 @@ def save_results(
 
     metadata = {key: value for key, value in result.items() if key != "extraction"}
     model_metadata = {"transcription": transcription_metadata, "extraction": metadata}
+    # A new diarization run can change cluster labels. Keep the review audit,
+    # but require fresh confirmation rather than applying an old identity map.
+    history = (meeting.get("model_metadata") or {}).get("speaker_name_review_history")
+    if history:
+        model_metadata["speaker_name_review_history"] = history
     if identification is not None:
         model_metadata["speaker_identification"] = identification  # FR-SPK-6, 7
     conn.execute(

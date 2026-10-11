@@ -6,7 +6,7 @@ Execution order: [Milestone 3 roadmap](milestone_3/roadmap.md). Milestone priori
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
-**Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. Diarization is enabled by default for new processing runs; enrolled project members can be named on the transcript and everyone else stays `SPEAKER_N`. Match thresholds are provisional and not calibrated. Playback and timestamp seeking are implemented and partially verified in the simulator; physical-device audibility remains unverified. Storylines, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
+**Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. Diarization is enabled by default for new processing runs; enrolled project members can be named on the transcript and unmatched speakers stay `SPEAKER_N` until a member confirms a suggested or manually entered name. Account mapping requires explicit confirmation. Match thresholds are provisional and not calibrated. Playback and timestamp seeking are implemented and partially verified in the simulator; physical-device audibility remains unverified. Storylines, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
 
 **Optional shared backend:** `serve --shared --worker-id <unique-name>` implements private Supabase audio, DB-backed polling/jobs, renewable worker claims, fenced result publication, and deferred object cleanup. Local mode still uses JSON status. See [shared backend rollout](shared_backend.md); live two-device acceptance, migration of existing local recordings, and automatic endpoint routing are not established yet.
 
@@ -62,14 +62,14 @@ Whisper, optional diarization, and Codex/Claude extraction run, and completed v1
 - [x] Persist turns into `meeting_transcripts` (content, `speaker_label`, `speaker_name`, `turn_key`, `start_time_ms`, `end_time_ms`)
 - [x] Persist summaries into `meeting_summaries` and decisions into `meeting_decisions`, with evidence rows
 - [x] Insert extracted commitments and suggestions as `tasks` with `review_status = pending`
-- [x] Approval requires an explicit due date from the reviewer; `due_date_text` is stored verbatim and is not parsed into a date
+- [x] Approval allows undated work in the to-do list; dated work also appears in the calendar. `due_date_text` is stored verbatim and is not automatically parsed into a date
 - [x] Passage embeddings (OpenAI text-embedding-3-small, 1536-d) and `tsv` stored in `rag_chunks`
 - [ ] `meeting_transcripts.embedding` is not written. Search uses `rag_chunks`, not the 384-d transcript column
 - [ ] Token-level timestamps suitable for sub-second `AVPlayer` seek
 - [x] Voiceprints: three clips (A, B, C), quality gates, and one L2-normalized 256-d WeSpeaker embedding in `voice_profiles` (`pyannote/wespeaker-voxceleb-resnet34-LM`). Raw clips are deleted. The API returns enrollment status, not the embedding. `attendees.voice_embedding` is unused
 - [x] Cosine match of diarized speaker centroids against enrolled members of that project (`voice.identify`). One-to-one assignment uses a provisional threshold of 0.60 and a margin of 0.10, which are not calibrated. A failure leaves everyone as `SPEAKER_N` and does not fail the meeting. Speaker embeddings are deleted after matching
 - [x] A match snapshots `profiles.display_name` into `speaker_name` and `meeting_attendees.display_label`. Extraction runs on that labeled transcript. A commitment owned by a matched member sets `assignee_user_id`
-- [ ] Diarization is still opt-in (`labsync serve --diarize`). Without `speakers.json`, every speaker stays unmatched
+- [x] Diarization is enabled by default; `--no-diarize` opts out. Missing or failed diarization leaves speakers unmatched
 - [ ] Calendar attendees are not used for speaker identity
 - [ ] Extract and persist attendee storylines into `meeting_attendee_storylines`
 - [x] Task similarity flag: a pending task whose title embedding (first 384 dimensions of `text-embedding-3-small`, stored on `tasks.embedding`) has cosine similarity of at least 0.80 with an earlier approved open task in the same project returns `matches_task`. The candidate is still inserted. There is no LLM arbiter, and `sentence-transformers/all-MiniLM-L6-v2` is not used
@@ -264,3 +264,14 @@ From the Story Writeup: transcript encryption, push/SMS notification infrastruct
 5. Complete promised remaining scope or identify deferrals explicitly; freeze the verified configuration and package results, cards, individual contributions, and the final PDF. Storylines, summary editing, redaction, calendar integration, and duration persistence remain tracked above
 
 The transcript-only extraction subset in Phase 5 can keep running without Postgres.
+
+## October 11 implementation checkpoint
+
+- [x] Evidence-backed self-introduction suggestions and audited human name/account confirmation. Existing account assignments and reviewed tasks are preserved.
+- [x] Accepted undated task API and native To-do/Calendar switch; dates can be added, preserved, or cleared.
+- [x] Human-confirmed later-candidate reconciliation: repeated mention, deadline change, or completion with exact source evidence, stable task identity, optimistic concurrency, and audit history.
+- [ ] Extract completion-only statements as update proposals; evaluate matching and update correctness on a reviewed sequence.
+- [ ] Reminder schedule/reschedule/cancel and retry deduplication. Current EventKit export remains one-time copying.
+- [ ] Full native acceptance, paired evaluations, independent label review, external alpha feedback, and two-host recovery.
+
+Validation: 282 backend tests, Ruff checks, and simulator build passed. See the roadmap and walkthrough for evidence and remaining gates.

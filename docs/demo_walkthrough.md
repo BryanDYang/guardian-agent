@@ -83,3 +83,62 @@ empty local transcript. Updated the refresh path to replace stored turns and
 reuse existing speaker attendees. Simulator build passed. Reopening TS3005a
 showed its new summary and six anonymous speaker cards plus the unknown group
 on Storyline. Storyline detail still contains placeholders.
+
+## Speaker naming and task-owner review implementation
+
+The app now exposes speaker-name review from Tasks, Transcript, and Storyline.
+The API proposes names only from conservative direct self-introductions in
+English, with the source quote and timestamp. Suggestions remain unverified ASR
+text until a project member confirms or corrects them. General name mentions do
+not establish identity; conflicting introductions remain visible for review.
+Names outside this parser's coverage can be entered manually. No account is
+chosen from a name alone.
+
+A reviewer can optionally connect the speaker to an existing project member.
+Pending commitments already owned by that speaker then receive the confirmed
+account assignment automatically. Existing account assignments and reviewed
+tasks remain unchanged. This does not automatically approve a task, invent a
+deadline, or recognize the participant in a later recording. Enrolled-member
+voice matching continues assigning recognized owners through the existing
+pipeline. Speaker reviews are audited in meeting model metadata; reprocessing
+keeps review history but invalidates the old cluster mapping.
+
+Task cards display the evidence quote, provide owner/account review actions, and
+play their timestamp in place instead of switching to the transcript. Storyline's
+hardcoded perspective text has been replaced with an explicit unavailable state.
+A real speaker-specific storyline is still not implemented.
+
+Simulator build, lint, formatting, and all 282 tests passed against disposable
+local PostgreSQL. All seven shared development jobs completed. The idle backend
+was restarted with the updated routes, and the new build installed without
+resetting app data. Native confirmation and task persistence acceptance remain
+open until explicitly recorded below.
+
+### October 11 task-loop and continuity checkpoint
+
+Authenticated API regression tests verify undated approval, absence from the
+calendar, visibility in accepted tasks, completion/undo, adding/clearing a date,
+and outsider denial. Reviewed reconciliation tests preserve a stable task through
+a repeated mention, changed deadline, or completion; exact quote evidence and a
+current task revision are mandatory. Repeated requests, stale reviews, and changes
+to user-completed work are rejected. These tests use scripted disposable data,
+not a human-reviewed AMI sequence or a measure of model accuracy.
+
+The native app exposes To-do and Calendar views, optional deadlines in task edits,
+and Review task update on candidate cards. The reconciliation screen requires a
+selected existing task and explicit evidence confirmation. Completion-only
+utterances are not yet extracted as update candidates. Reminder lifecycle and
+automatic reconciliation remain unfinished.
+
+AMI annotation inspection found gaps where several introduction names would
+appear. Those annotations cannot validate the ASR name spellings. The app keeps
+the suggestions unconfirmed; do not connect corpus participants to Bryan's
+account merely because it is the only available account.
+
+Native inspection on October 11 verified the installed speaker-review sheet
+loads introduction suggestions, leaves account connections unset, and exposes
+Listen/Pause controls. Playing Danny's suggested introduction moved the main
+player to about 03:12; it was paused at 03:19. No guessed name was confirmed.
+The Tasks tab displayed the new To-do/Calendar switch and an accurate empty
+accepted-task state. Full approval/edit/complete/relaunch and reconciliation
+acceptance are still open. Physical-device audibility remains unverified.

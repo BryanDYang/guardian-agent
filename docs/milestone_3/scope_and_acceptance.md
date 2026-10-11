@@ -35,7 +35,7 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - **IS1009a and ES2004a:** separate evaluation projects because they are different trials. Both have prior Milestone 2 ASR exposure. Do not call them untouched held-out inputs. Choose a fresh sequence if a clean held-out claim is required.
 - **Milestone 2:** inventory the 24 extraction cases, ASR fixtures, prompts/settings, labels, and saved outputs. Preserve historical scores. Rerun baseline and updated variants on identical new frozen inputs; do not compare old synthetic scores directly with new AMI scores as an improvement claim.
 - **Coverage gaps:** AMI is a remote-control design scenario. Do not presume it contains explicit completion or deadline changes. Add a clearly labeled scripted, consented sequence for missing acceptance cases and keep its results separate from natural-meeting accuracy.
-- **Speaker identity:** corpus speakers are not signed-in users. Use an explicit mapping to consenting test accounts for assignment demonstrations. This is a fixture mapping, not proof of voice recognition. The current Bryan backend runs without diarization.
+- **Speaker identity:** corpus speakers are not signed-in users. Use an explicit mapping to consenting test accounts for assignment demonstrations. This is a fixture mapping, not proof of voice recognition. The Bryan backend now runs with diarization; TS3005a-d reprocessing completed. Cluster accuracy and name spellings remain unverified.
 
 ## Engineering sequence
 

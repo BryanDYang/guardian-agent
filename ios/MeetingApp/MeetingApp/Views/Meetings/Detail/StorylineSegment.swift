@@ -4,6 +4,7 @@ import SwiftData
 // MeetingDetailView.tsx → activeSegment === 'storyline'
 struct StorylineSegment: View {
     let meeting: Meeting
+    var onReviewSpeakers: () -> Void = {}
 
     @State private var selectedAttendeeID: String?
 
@@ -13,7 +14,12 @@ struct StorylineSegment: View {
         if let attendee = selectedAttendee {
             detail(for: attendee)
         } else {
-            attendeeGrid
+            VStack(alignment: .leading, spacing: 16) {
+                if isServerID(meeting.id) {
+                    Button("Review speaker names", systemImage: "person.crop.circle.badge.questionmark", action: onReviewSpeakers)
+                }
+                attendeeGrid
+            }
         }
     }
 
@@ -66,7 +72,7 @@ struct StorylineSegment: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(attendee.name)'s Storyline")
                         .font(.headline)
-                    Text("Extracted perspective and intent")
+                    Text("Speaker identified in this meeting")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -74,47 +80,15 @@ struct StorylineSegment: View {
 
             Divider()
 
-            VStack(spacing: 16) {
-                perspectiveCard(
-                    title: "WHAT THEY WANT",
-                    tint: .blue,
-                    text: "Looking to streamline the current hardware integration process and reduce friction between the firmware updates and physical testing phases."
-                )
-                perspectiveCard(
-                    title: "WHAT THEY SEE",
-                    tint: .green,
-                    text: "Noticing that current blockages are mainly due to misaligned expectations on delivery timelines for the prototype parts."
-                )
-                perspectiveCard(
-                    title: "TALKING ABOUT",
-                    tint: .purple,
-                    text: "Focused heavily on establishing a stricter milestone schedule and acquiring the new v3 sensory modules before next month."
-                )
-            }
+            ContentUnavailableView(
+                "Storyline not available",
+                systemImage: "text.bubble",
+                description: Text("A speaker-specific summary has not been generated. Read their contributions in the Transcript tab.")
+            )
         }
     }
 
-    private func perspectiveCard(title: String, tint: Color, text: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.caption.weight(.bold))
-                .kerning(0.5)
-                .foregroundStyle(tint)
-            Text(text)
-                .font(.subheadline)
-                .foregroundStyle(.primary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(tint.opacity(0.08))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .strokeBorder(tint.opacity(0.2))
-        )
-    }
+
 }
 
 #Preview {

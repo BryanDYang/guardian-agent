@@ -14,6 +14,7 @@ struct MeetingDetailView: View {
     @State private var taskLoadError: String?
     @State private var audio = MeetingAudioPlayer()
     @State private var audioAttempt = 0
+    @State private var showSpeakerReview = false
 
     var body: some View {
         @Bindable var navigator = navigator
@@ -73,6 +74,11 @@ struct MeetingDetailView: View {
                 .sheet(isPresented: $showPrivacySettings) {
                     PrivacySettingsSheet(project: meeting.project)
                 }
+                .sheet(isPresented: $showSpeakerReview) {
+                    SpeakerReviewSheet(meeting: meeting, audio: audio, onSeek: { seconds in
+                        audio.seek(to: Double(seconds), play: true)
+                    }, onSaved: { Task { await syncServerTasks(meeting) } })
+                }
                 .sheet(isPresented: $showSessionSetup) {
                     SessionSetupSheet(meeting: meeting)
                 }
@@ -98,15 +104,17 @@ struct MeetingDetailView: View {
                 audio.seek(to: Double(seconds), play: true)
             }
         case .tasks:
-            CandidateTasksSegment(meeting: meeting, loadError: taskLoadError) {
+            CandidateTasksSegment(meeting: meeting, onSeek: { seconds in
+                audio.seek(to: Double(seconds), play: true)
+            }, onReviewSpeakers: { showSpeakerReview = true }, loadError: taskLoadError) {
                 Task { await syncServerTasks(meeting) }
             }
         case .transcript:
-            TranscriptSegment(meeting: meeting) { seconds in
+            TranscriptSegment(meeting: meeting, onReviewSpeakers: { showSpeakerReview = true }) { seconds in
                 audio.seek(to: Double(seconds), play: true)
             }
         case .storyline:
-            StorylineSegment(meeting: meeting)
+            StorylineSegment(meeting: meeting, onReviewSpeakers: { showSpeakerReview = true })
         }
     }
 

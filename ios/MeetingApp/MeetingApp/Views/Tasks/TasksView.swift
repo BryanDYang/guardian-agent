@@ -8,6 +8,7 @@ struct TasksView: View {
     @Query(sort: \Project.createdAt) private var projects: [Project]
     @Query private var meetings: [Meeting]
 
+    @State private var showCalendar = false
     @State private var selectedDate = Calendar.current.startOfDay(for: .now)
     @State private var displayedMonth = Date()
     /// nil = "All"
@@ -25,6 +26,15 @@ struct TasksView: View {
         VStack(spacing: 0) {
             header
 
+            Picker("View", selection: $showCalendar) {
+                Text("To-do").tag(false)
+                Text("Calendar").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
+
+            if showCalendar {
             MonthCalendarView(
                 month: $displayedMonth,
                 selectedDate: $selectedDate,
@@ -36,6 +46,7 @@ struct TasksView: View {
             Divider()
             selectedDayBar
             Divider()
+            }
 
             if let loadError {
                 Button(loadError) { Task { await refreshCalendar() } }
@@ -70,6 +81,7 @@ struct TasksView: View {
 
     private var header: some View {
         HStack {
+            if showCalendar {
             Menu {
                 Picker("Year", selection: yearSelection) {
                     ForEach(years, id: \.self) { year in
@@ -84,11 +96,11 @@ struct TasksView: View {
                 }
             }
 
-            Spacer()
-
-            Button { } label: {
-                Image(systemName: "bell")
+            } else {
+                Text("Tasks").font(.title2.bold()).foregroundStyle(.primary)
             }
+
+            Spacer()
 
             Menu {
                 Picker("Project", selection: $selectedProjectID) {
@@ -135,7 +147,7 @@ struct TasksView: View {
         ScrollView {
             VStack(spacing: 12) {
                 if pendingTasks.isEmpty && completedTasks.isEmpty {
-                    Text("No tasks due on this date.")
+                    Text(showCalendar ? "No tasks due on this date." : "No accepted tasks yet. Review a meeting’s suggested tasks to get started.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .padding(.top, 40)
@@ -187,7 +199,7 @@ struct TasksView: View {
 
     private var calendarRequestID: String {
         let month = Self.isoFormatter.string(from: displayedMonth)
-        return "\(selectedProjectID ?? "all")|\(month)"
+        return "\(selectedProjectID ?? "all")|\(month)|\(showCalendar)"
     }
 
     private var serverProjectIDs: [String] {
@@ -196,7 +208,7 @@ struct TasksView: View {
     }
 
     private var tasksOnSelectedDate: [TaskItem] {
-        tasksForSelectedProject.due(on: selectedDate, calendar: calendar)
+        showCalendar ? tasksForSelectedProject.due(on: selectedDate, calendar: calendar) : tasksForSelectedProject
     }
 
     private var pendingTasks: [TaskItem] { tasksOnSelectedDate.pending }
@@ -232,18 +244,10 @@ struct TasksView: View {
             loadError = nil
             return
         }
-        guard let interval = calendar.dateInterval(of: .month, for: displayedMonth),
-              let end = calendar.date(byAdding: .day, value: -1, to: interval.end) else {
-            return
-        }
         do {
             var loaded: [RemoteTask] = []
             for projectID in serverProjectIDs {
-                let page = try await MeetingAPIClient.shared.calendarTasks(
-                    projectID: projectID,
-                    start: interval.start,
-                    end: end
-                )
+                let page = try await MeetingAPIClient.shared.acceptedTasks(projectID: projectID)
                 loaded.append(contentsOf: page)
             }
             for remote in loaded {
@@ -343,7 +347,7 @@ struct TasksView: View {
 }
 
 /// Edits an approved task from the Tasks tab: title, assignee, and due date.
-/// An approved task always keeps a due date, so there's no "no date" option.
+/// A deadline is optional; dated tasks also appear in the calendar.
 private struct EditTaskSheet: View {
     let task: TaskItem
     let onSaved: (RemoteTask) -> Void
@@ -352,6 +356,7 @@ private struct EditTaskSheet: View {
     @State private var title: String
     @State private var assignee: AssigneeChoice?
     @State private var dueDate: Date
+    @State private var hasDueDate: Bool
     @State private var members: [RemoteMember] = []
     @State private var isSaving = false
     @State private var errorMessage: String?
@@ -364,6 +369,7 @@ private struct EditTaskSheet: View {
             initialValue: task.assigneeUserID.map(AssigneeChoice.member)
                 ?? (task.ownerLabel.isEmpty ? nil : AssigneeChoice.speaker(task.ownerLabel))
         )
+        _hasDueDate = State(initialValue: task.dueDate != nil)
         _dueDate = State(initialValue: task.dueDate ?? Calendar.current.startOfDay(for: .now))
     }
 
@@ -385,7 +391,8 @@ private struct EditTaskSheet: View {
                 }
 
                 Section("Due Date") {
-                    DatePicker("Date", selection: $dueDate, displayedComponents: .date)
+                    Toggle("Has a deadline", isOn: $hasDueDate)
+                    if hasDueDate { DatePicker("Date", selection: $dueDate, displayedComponents: .date) }
                 }
 
                 if let errorMessage {
@@ -429,7 +436,7 @@ private struct EditTaskSheet: View {
         guard isServerID(task.id) else {
             // Sample tasks only live on this device.
             task.title = trimmedTitle
-            task.dueDate = dueDate
+            task.dueDate = hasDueDate ? dueDate : nil
             dismiss()
             return
         }
@@ -440,7 +447,7 @@ private struct EditTaskSheet: View {
             let response = try await MeetingAPIClient.shared.editTask(
                 id: task.id,
                 title: trimmedTitle,
-                dueDate: dueDate,
+                dueDate: hasDueDate ? dueDate : nil,
                 assignee: assignee
             )
             onSaved(response.task)

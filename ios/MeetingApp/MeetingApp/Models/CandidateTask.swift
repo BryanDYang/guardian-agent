@@ -20,6 +20,7 @@ final class CandidateTask {
     var assigneeName: String?
     /// Title of an open task from an earlier meeting that this candidate looks like.
     var matchedTaskTitle: String?
+    var sourceTranscriptID: String?
     /// Owning meeting. Inverse declared on Meeting.candidateTasks.
     var meeting: Meeting?
 

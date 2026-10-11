@@ -58,6 +58,12 @@ final class MeetingAudioPlayer {
         isLoading = false
     }
 
+    func pause() {
+        player.pause()
+        isPlaying = false
+        playAfterSeek = false
+    }
+
     func toggle() {
         if player.rate > 0 { player.pause(); isPlaying = false }
         else {

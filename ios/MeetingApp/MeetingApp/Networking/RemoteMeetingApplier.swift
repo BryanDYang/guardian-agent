@@ -146,6 +146,7 @@ enum RemoteMeetingApplier {
                 candidate.assignee = attendee(named: task.ownerLabel, on: meeting)
             }
             candidate.matchedTaskTitle = task.matchesTask?.title
+            candidate.sourceTranscriptID = task.evidence.first?.transcriptID
         }
         try context.save()
     }

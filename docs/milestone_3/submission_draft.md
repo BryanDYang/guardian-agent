@@ -524,3 +524,20 @@ Primary repository documentation:
 The signed-in iOS app created four real AMI projects and uploaded seven recordings: TS3005a-d (one connected dev project), IS1008a (isolation/validation), IS1009a (evaluation candidate), and ES2004a (separate evaluation trial). All uploads were confirmed in shared PostgreSQL job records. At the checkpoint, TS3005a and b had completed processing and other jobs were running or queued. Project-list persistence across app relaunch was observed. The simulator build passed, and Profile was visually verified in light and dark appearances. The third voice-enrollment prompt is now scripted; its effect on retries remains unmeasured.
 
 This is partial native integration evidence. Transcript correctness, task review and continuity, cited answers/refusals, cross-project isolation, purge, clean-install behavior, external tester availability, and live two-host failover still require recorded acceptance runs. IS1009a and ES2004a were used in the Milestone 2 ASR pilot and cannot be presented as untouched evaluation inputs. See [shared backend setup](../shared_backend.md) and [native walkthrough](../demo_walkthrough.md).
+
+## October 11 implementation checkpoint (not final acceptance)
+
+Speaker-name review now proposes direct introductions with source timestamps;
+confirmed account links propagate to matching pending commitments. Accepted
+undated work is supported in a native to-do view, with optional calendar dates.
+A reviewer can reconcile a later candidate against an earlier accepted task as a
+repeated mention, deadline update, or completion. Task identity and audited source
+evidence are retained; similarity alone never changes a task. Stale reviews and
+reopening completed work are rejected.
+
+Validation: 282 backend tests against disposable PostgreSQL, Ruff, and simulator
+build passed. This establishes implementation regressions, not AMI model quality.
+Completion-only update extraction, automatic update proposals, reminder lifecycle,
+reviewed sequence/RAG evaluations, full native acceptance, independent review,
+external testers, and live two-host recovery remain open. Earlier limitations
+and historical Milestone 2 results must not be presented as new improvements.

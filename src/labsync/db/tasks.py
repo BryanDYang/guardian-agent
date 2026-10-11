@@ -27,7 +27,7 @@ def list_calendar_tasks(
     conn: Connection, project_id: UUID, start: date, end: date
 ) -> list[dict]:
     """Approved tasks due within [start, end]. Pending and dismissed tasks never
-    reach the calendar; approval requires a due date."""
+    reach the calendar; undated approved work belongs in the to-do list."""
     return conn.execute(
         f"""
         SELECT {COLUMNS} FROM tasks t
@@ -36,6 +36,17 @@ def list_calendar_tasks(
         ORDER BY t.due_date, t.created_at
         """,
         (project_id, start, end),
+    ).fetchall()
+
+
+def list_accepted_tasks(conn: Connection, project_id: UUID) -> list[dict]:
+    return conn.execute(
+        f"""
+        SELECT {COLUMNS} FROM tasks t
+        WHERE t.project_id = %s AND t.review_status = 'approved'
+        ORDER BY t.due_date NULLS LAST, t.created_at, t.id
+        """,
+        (project_id,),
     ).fetchall()
 
 
@@ -89,7 +100,7 @@ def update_details(
     title: str,
     assignee_user_id: UUID | None,
     owner_label: str | None,
-    due_date: date,
+    due_date: date | None,
 ) -> dict:
     """Edit an approved task without touching its review or lifecycle status."""
     return conn.execute(
@@ -150,7 +161,8 @@ def set_lifecycle(
 
 def find_audit(conn: Connection, revert_token: UUID) -> dict | None:
     return conn.execute(
-        "SELECT id, task_id, old_value FROM task_audit_log WHERE revert_token = %s",
+        "SELECT id, task_id, action, old_value FROM task_audit_log WHERE revert_token "
+        "= %s",
         (revert_token,),
     ).fetchone()
 

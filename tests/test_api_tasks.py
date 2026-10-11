@@ -129,19 +129,36 @@ def approve(client, task_id, due_date="2026-10-02"):
     return response.json()
 
 
-def test_approval_requires_a_due_date(client, seeded):
+def test_undated_task_loop(client, seeded):
     task_id = seeded["Share the recording"]
     response = review(client, task_id, action="approve")
-    assert response.status_code == 422
-    assert "due date" in response.json()["detail"]
+    assert response.status_code == 200
+    assert response.json()["task"]["due_date"] is None
+    assert "eventkit" not in response.json()
     assert calendar(client, seeded["project_id"]).json() == []
-
-    body = approve(client, task_id)
-    assert body["task"]["review_status"] == "approved"
-    assert body["eventkit"] == {
-        "title": "Share the recording",
-        "due_date": "2026-10-02",
-    }
+    url = "/api/v1/tasks/accepted"
+    params = {"project_id": seeded["project_id"]}
+    assert [t["id"] for t in client.get(url, params=params).json()] == [task_id]
+    assert client.get(url, params=params, headers=seeded["outsider"]).status_code == 404
+    done = client.post(f"/api/v1/tasks/{task_id}/state", json={"state": "done"})
+    assert done.status_code == 200
+    assert (
+        client.post(f"/api/v1/tasks/revert/{done.json()['revert_token']}").status_code
+        == 200
+    )
+    assert (
+        client.patch(
+            f"/api/v1/tasks/{task_id}", json={"due_date": "2026-10-02"}
+        ).status_code
+        == 200
+    )
+    assert len(calendar(client, seeded["project_id"]).json()) == 1
+    assert (
+        client.patch(f"/api/v1/tasks/{task_id}", json={"due_date": None}).status_code
+        == 200
+    )
+    assert calendar(client, seeded["project_id"]).json() == []
+    assert client.get(url, params=params).json()[0]["due_date"] is None
 
 
 def test_calendar_shows_only_approved_tasks_in_range(client, seeded):
@@ -295,7 +312,7 @@ def test_edit_an_approved_task(client, seeded):
     assert task["timestamp_ms"] == 0
     assert summary(client)["open"] == 1
 
-    assert client.patch(url, json={"due_date": None}).status_code == 422
+    assert client.patch(url, json={}).json()["task"]["due_date"] == "2026-10-09"
     assert client.patch(url, json={"title": "  "}).status_code == 400
     assert client.patch(url, json={"owner_label": "SPEAKER_09"}).status_code == 400
     outsider = client.patch(url, json={"title": "x"}, headers=seeded["outsider"])

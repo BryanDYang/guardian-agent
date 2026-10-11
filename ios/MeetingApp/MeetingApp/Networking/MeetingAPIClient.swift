@@ -170,9 +170,41 @@ struct MeetingAPIClient {
         return destination
     }
 
+    func speakers(meetingID: String) async throws -> [RemoteSpeaker] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(meetingID)/speakers")))
+    }
+
+    func confirmSpeaker(meetingID: String, label: String, name: String, memberID: String?) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(meetingID)/speakers/\(label)"))
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var payload: [String: Any] = ["name": name]
+        if let memberID { payload["assignee_user_id"] = memberID }
+        request.httpBody = try JSONSerialization.data(withJSONObject: payload)
+        let _: SpeakerConfirmation = try await send(request)
+    }
+
     func storedDetail(meetingID: String) async throws -> RemoteStoredMeeting {
         let request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(meetingID)"))
         return try await send(request)
+    }
+
+    func reconcileTask(candidateID: String, target: RemoteTask, action: String, dueDate: Date?, transcriptID: String, quote: String) async throws -> TaskMutationResponse {
+        guard let updated = target.updatedAt else { throw MeetingAPIError.invalidResponse }
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(candidateID)/reconcile"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var body: [String: String] = ["target_task_id": target.id, "action": action, "expected_updated_at": updated, "transcript_id": transcriptID, "quote": quote]
+        if let dueDate { body["due_date"] = LabSyncDate.string(from: dueDate) }
+        request.httpBody = try JSONEncoder().encode(body)
+        return try await send(request)
+    }
+
+    func acceptedTasks(projectID: String) async throws -> [RemoteTask] {
+        var components = URLComponents(url: baseURL.appending(path: "api/v1/tasks/accepted"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [URLQueryItem(name: "project_id", value: projectID)]
+        guard let url = components.url else { throw MeetingAPIError.invalidResponse }
+        return try await send(URLRequest(url: url))
     }
 
     func calendarTasks(projectID: String, start: Date, end: Date) async throws -> [RemoteTask] {
@@ -218,7 +250,7 @@ struct MeetingAPIClient {
     func editTask(
         id: String,
         title: String,
-        dueDate: Date,
+        dueDate: Date?,
         assignee: AssigneeChoice?
     ) async throws -> TaskMutationResponse {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)"))
@@ -227,7 +259,7 @@ struct MeetingAPIClient {
         request.httpBody = try JSONEncoder().encode(
             TaskEditBody(
                 title: title,
-                dueDate: LabSyncDate.string(from: dueDate),
+                dueDate: dueDate.map(LabSyncDate.string(from:)),
                 assignee: assignee
             )
         )
@@ -689,6 +721,7 @@ struct RemoteEvidence: Decodable {
 }
 
 struct RemoteTask: Decodable {
+    let updatedAt: String?
     let id: String
     let projectID: String
     let meetingID: String?
@@ -706,6 +739,7 @@ struct RemoteTask: Decodable {
     let timestampMilliseconds: Int?
 
     enum CodingKeys: String, CodingKey {
+        case updatedAt = "updated_at"
         case id, title, quote
         case projectID = "project_id"
         case meetingID = "meeting_id"
@@ -815,10 +849,12 @@ enum AssigneeChoice: Hashable {
 }
 
 struct RemoteTaskEvidence: Decodable {
+    let transcriptID: String
     let quote: String
     let timestampMilliseconds: Int?
 
     enum CodingKeys: String, CodingKey {
+        case transcriptID = "turn_key"
         case quote
         case timestampMilliseconds = "timestamp_ms"
     }
@@ -960,7 +996,7 @@ private struct ReviewBody: Encodable {
 
 private struct TaskEditBody: Encodable {
     let title: String
-    let dueDate: String
+    let dueDate: String?
     let assignee: AssigneeChoice?
 
     enum CodingKeys: String, CodingKey {
@@ -1049,4 +1085,24 @@ private extension Data {
         append(contents)
         append("\r\n".data(using: .utf8)!)
     }
+}
+
+struct RemoteSpeaker: Decodable, Identifiable {
+    let label: String
+    let display: String
+    let confirmed: Bool
+    let suggestions: [SpeakerNameSuggestion]
+    let assignee_user_id: String?
+    var id: String { label }
+}
+
+struct SpeakerNameSuggestion: Decodable {
+    let name: String
+    let quote: String
+    let timestamp_ms: Int
+}
+
+private struct SpeakerConfirmation: Decodable {
+    let label: String
+    let name: String
 }

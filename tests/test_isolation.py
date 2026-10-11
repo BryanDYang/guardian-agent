@@ -40,9 +40,33 @@ def upload_form(ids):
 # Routes that act on one project's data. An outsider must get 404 from each.
 # Each entry: (method, route path exactly as declared, request options).
 PROJECT_ROUTES = [
+    (
+        "POST",
+        "/api/v1/tasks/{task_id}/reconcile",
+        lambda ids: {
+            "json": {
+                "target_task_id": ids["task_id"],
+                "action": "duplicate",
+                "expected_updated_at": "2026-01-01T00:00:00Z",
+                "transcript_id": "turn:0",
+                "quote": "test",
+            }
+        },
+    ),
+    (
+        "GET",
+        "/api/v1/tasks/accepted",
+        lambda ids: {"params": {"project_id": ids["project_id"]}},
+    ),
     ("GET", "/api/v1/projects/{project_id}/meetings", lambda ids: {}),
     ("DELETE", "/api/v1/projects/{project_id}", lambda ids: {}),
     ("GET", "/api/v1/meetings/{meeting_id}", lambda ids: {}),
+    ("GET", "/api/v1/meetings/{meeting_id}/speakers", lambda ids: {}),
+    (
+        "PUT",
+        "/api/v1/meetings/{meeting_id}/speakers/{label}",
+        lambda ids: {"json": {"name": "Hijacked"}},
+    ),
     ("POST", "/api/v1/meetings/upload", upload_form),
     (
         "GET",
@@ -192,6 +216,7 @@ def seeded(make_user):
         ).fetchone()[0]
     ids = {
         "project_id": str(project_id),
+        "label": "SPEAKER_00",
         "meeting_id": meeting_id,
         "task_id": str(task_id),
         "revert_token": str(revert_token),
