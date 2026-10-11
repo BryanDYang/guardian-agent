@@ -81,8 +81,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     add_whisper_backend_option(audio)
     audio.add_argument(
-        "--diarize", action=argparse.BooleanOptionalAction, default=True,
-        help="Separate speakers by default; requires pyannote and HF_TOKEN"
+        "--diarize",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Separate speakers by default; requires pyannote and HF_TOKEN",
     )
     index = commands.add_parser(
         "index", help="Rebuild the chat search index from stored meeting results"
@@ -104,7 +106,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     add_whisper_backend_option(server)
     server.add_argument(
-        "--diarize", action=argparse.BooleanOptionalAction, default=True,
+        "--diarize",
+        action=argparse.BooleanOptionalAction,
+        default=True,
         help="Separate speakers by default; --no-diarize is transcription only",
     )
     server.add_argument(

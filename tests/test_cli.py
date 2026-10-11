@@ -43,10 +43,22 @@ def test_transcription_separates_speakers_unless_explicitly_disabled(
         return tmp_path / "transcript.json"
 
     monkeypatch.setattr(ccb, "transcribe", transcribe)
-    assert cli.main([
-        "transcribe", str(tmp_path / "meeting.wav"),
-        "--project-id", "demo", "--meeting-id", "meeting",
-        "--output-dir", str(tmp_path / "output"),
-        "--whisper-backend", "openai", *flags,
-    ]) == 0
+    assert (
+        cli.main(
+            [
+                "transcribe",
+                str(tmp_path / "meeting.wav"),
+                "--project-id",
+                "demo",
+                "--meeting-id",
+                "meeting",
+                "--output-dir",
+                str(tmp_path / "output"),
+                "--whisper-backend",
+                "openai",
+                *flags,
+            ]
+        )
+        == 0
+    )
     assert observed["diarize"] is expected
