@@ -53,7 +53,7 @@ struct EditCandidateTaskSheet: View {
                     Text("Due Date")
                 } footer: {
                     if !hasDueDate {
-                        Text("A due date is required before this task can be approved.")
+                        Text("No deadline is needed to add this task to your to-do list.")
                     }
                 }
 

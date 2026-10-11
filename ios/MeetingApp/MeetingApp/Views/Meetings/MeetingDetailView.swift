@@ -11,6 +11,7 @@ struct MeetingDetailView: View {
 
     @State private var showPrivacySettings = false
     @State private var showSessionSetup = false
+    @State private var loadingTasks = true
     @State private var taskLoadError: String?
     @State private var audio = MeetingAudioPlayer()
     @State private var audioAttempt = 0
@@ -106,7 +107,7 @@ struct MeetingDetailView: View {
         case .tasks:
             CandidateTasksSegment(meeting: meeting, onSeek: { seconds in
                 audio.seek(to: Double(seconds), play: true)
-            }, onReviewSpeakers: { showSpeakerReview = true }, loadError: taskLoadError) {
+            }, onPause: { audio.pause() }, isLoading: loadingTasks, onReviewSpeakers: { showSpeakerReview = true }, loadError: taskLoadError) {
                 Task { await syncServerTasks(meeting) }
             }
         case .transcript:
@@ -163,8 +164,10 @@ struct MeetingDetailView: View {
 
     @MainActor
     private func syncServerTasks(_ meeting: Meeting) async {
-        guard isServerID(meeting.id) else { return }
+        guard isServerID(meeting.id) else { loadingTasks = false; return }
         guard (meeting.processingStatus ?? "completed") == "completed" else { return }
+        loadingTasks = true
+        defer { loadingTasks = false }
         do {
         let detail = try await MeetingAPIClient.shared.storedDetail(meetingID: meeting.id)
         if let overview = detail.summary?.overview, !overview.isEmpty {

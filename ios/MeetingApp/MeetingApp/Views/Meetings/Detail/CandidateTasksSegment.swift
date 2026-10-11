@@ -5,6 +5,8 @@ import SwiftData
 struct CandidateTasksSegment: View {
     let meeting: Meeting
     var onSeek: (Int) -> Void = { _ in }
+    var onPause: () -> Void = {}
+    var isLoading = false
     var onReviewSpeakers: () -> Void = {}
     var loadError: String?
     var retryLoad: () -> Void = {}
@@ -42,11 +44,14 @@ struct CandidateTasksSegment: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            if candidates.isEmpty && loadError == nil {
+            if isLoading && candidates.isEmpty {
+                ProgressView("Loading tasks")
+                    .padding(.top, 48)
+            } else if candidates.isEmpty && loadError == nil {
                 ContentUnavailableView(
-                    "No candidate tasks",
+                    "No pending tasks",
                     systemImage: "checklist",
-                    description: Text("Nothing was extracted from this session.")
+                    description: Text("No tasks are awaiting review. Accepted tasks appear in the Tasks tab.")
                 )
                 .padding(.top, 48)
             } else {
@@ -56,7 +61,7 @@ struct CandidateTasksSegment: View {
             }
         }
         .sheet(item: $reconcilingCandidate) { candidate in
-            ReconcileTaskSheet(candidate: candidate, meeting: meeting, onSeek: onSeek) { remote in
+            ReconcileTaskSheet(candidate: candidate, meeting: meeting, onSeek: onSeek, onPause: onPause) { remote in
                 do {
                     try TaskSync.upsert(remote, projects: projects, meetings: meetings, context: context)
                     context.delete(candidate)
@@ -327,6 +332,8 @@ private struct ReconcileTaskSheet: View {
     let candidate: CandidateTask
     let meeting: Meeting
     let onSeek: (Int) -> Void
+    let onPause: () -> Void
+    @State private var previewing = false
     let onSaved: (RemoteTask) -> Void
     @Environment(\.dismiss) private var dismiss
     @State private var targets: [RemoteTask] = []
@@ -344,9 +351,18 @@ private struct ReconcileTaskSheet: View {
                     Text(candidate.quote)
                     Button("Listen to evidence", systemImage: "play.circle") {
                         let parts = candidate.timestamp.split(separator: ":").compactMap { Int($0) }
-                        if parts.count == 2 { onSeek(parts[0] * 60 + parts[1]) }
+                        if parts.count == 2 {
+                            previewing = true
+                            onSeek(parts[0] * 60 + parts[1])
+                        }
                     }
                 }
+                    if previewing {
+                        Button("Pause audio", systemImage: "pause.circle") {
+                            onPause()
+                            previewing = false
+                        }
+                    }
                 Section("Existing task") {
                     Picker("Task", selection: $targetID) {
                         Text("Choose a task").tag("")
@@ -372,6 +388,7 @@ private struct ReconcileTaskSheet: View {
                 }
             }
             .task { await load() }
+            .onDisappear { if previewing { onPause() } }
         }
     }
 

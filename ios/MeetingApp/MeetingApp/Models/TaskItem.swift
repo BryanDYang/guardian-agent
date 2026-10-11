@@ -33,6 +33,8 @@ final class TaskItem {
     var sourceQuote: String = ""
     /// Latest audit token from a lifecycle change, used by Undo.
     var revertToken: String?
+    /// Server revision associated with the cached task and its undo token.
+    var serverUpdatedAt: String?
 
     // Relationships — set after insert.
     var assignee: Attendee?

@@ -159,6 +159,22 @@ def set_lifecycle(
     return task, token
 
 
+def audit_details(
+    conn: Connection, old: dict, new: dict, action: str, actor_id: UUID
+) -> None:
+    """Keep human review/edit history alongside meeting reconciliation evidence."""
+    keys = ("title", "due_date", "assignee_user_id", "owner_label", "review_status")
+
+    def snapshot(task):
+        return {key: str(task[key]) if task[key] is not None else None for key in keys}
+
+    conn.execute(
+        "INSERT INTO task_audit_log (task_id, action, old_value, new_value, actor_id) "
+        "VALUES (%s, %s, %s, %s, %s)",
+        (new["id"], action, Jsonb(snapshot(old)), Jsonb(snapshot(new)), actor_id),
+    )
+
+
 def find_audit(conn: Connection, revert_token: UUID) -> dict | None:
     return conn.execute(
         "SELECT id, task_id, action, old_value FROM task_audit_log WHERE revert_token "

@@ -43,7 +43,7 @@ Postgres is used for projects, meeting rows, pipeline results, and hybrid search
 - [x] A voice match writes the member's `attendees` row and a `meeting_attendees` row (`display_label`, `match_score`, `match_method`, `embedding_model_id`). Unmatched speakers get no attendee row
 - [ ] `meeting_attendee_storylines` is still unused for writes (detail reads return an empty list)
 - [x] Lifecycle changes (`open` / `done` / `dropped` and revert) append `task_audit_log` with a unique `revert_token`
-- [ ] Review edits (title, assignee, due date, approve, dismiss) are not written to `task_audit_log`
+- [x] Review edits (title, assignee, due date, approve, dismiss) and accepted-task detail edits append actor/old/new snapshots to `task_audit_log`. Undo cannot discard later edits.
 - [x] Hybrid search CTE: pgvector cosine + `tsvector` RRF at `k=60`, scoped by `WHERE project_id = :project_id`
 - [ ] Stop using `artifacts/server/*/meeting.json` as the pipeline source of truth (audio files may still live on disk)
 
@@ -217,7 +217,7 @@ Meetings, task review, the calendar, project chat, and voice enrollment have con
 - [x] Server tasks use `open` / `done` / `dropped`, and Undo calls the revert token
 - [x] "Connection lost. Tap to reconnect." when the calendar or meeting task fetch fails
 - [ ] Non-server tasks still use `isCompleted` and delete. `In-Progress` and `Blocked` are unused. Production no longer inserts seed tasks
-- [ ] Edit an already-approved task (assignee, description, due date) with an audit row. Edit today applies only while `review_status` is `pending`
+- [x] Edit an already-approved task (title, assignee, due date) through the detail API and native task sheet, with actor/old/new audit snapshots. Native accepted-task edit acceptance remains to be recorded separately.
 - [ ] Reminders / approaching-deadline highlighting (the bell button is a no-op; a reminder is created only at approval)
 
 ### Chat
@@ -270,8 +270,9 @@ The transcript-only extraction subset in Phase 5 can keep running without Postgr
 - [x] Evidence-backed self-introduction suggestions and audited human name/account confirmation. Existing account assignments and reviewed tasks are preserved.
 - [x] Accepted undated task API and native To-do/Calendar switch; dates can be added, preserved, or cleared.
 - [x] Human-confirmed later-candidate reconciliation: repeated mention, deadline change, or completion with exact source evidence, stable task identity, optimistic concurrency, and audit history.
+- [x] Scripted native continuity acceptance: undated approval, repeated mention, deadline visible in Calendar, reviewed completion, stable task identity, Undo, and relaunch persistence. Seeded text-only candidates do not establish extraction quality.
 - [ ] Extract completion-only statements as update proposals; evaluate matching and update correctness on a reviewed sequence.
 - [ ] Reminder schedule/reschedule/cancel and retry deduplication. Current EventKit export remains one-time copying.
 - [ ] Full native acceptance, paired evaluations, independent label review, external alpha feedback, and two-host recovery.
 
-Validation: 282 backend tests, Ruff checks, and simulator build passed. See the roadmap and walkthrough for evidence and remaining gates.
+Validation: 283 backend tests, Ruff checks, and simulator build passed. Native follow-up also fixed stale Undo tokens after reviewed updates. See the roadmap and walkthrough for evidence and remaining gates.

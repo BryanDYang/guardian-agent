@@ -72,6 +72,12 @@ Completed implementation includes:
 
 The sequential worker still uses a local `meeting.json` record for part of its status and retry flow. PostgreSQL is therefore the application data store, but it is not yet the only source of truth for pipeline status.
 
+### October 11 native continuity validation
+
+A separate scripted project exercised undated approval, repeated mentions, a reviewed deadline change, and reviewed completion across four meetings. The simulator and PostgreSQL retained one accepted task ID, three evidence-backed reconciliation audits, and the completed state after relaunch. The run exposed date display, review guidance, empty-state, and stale Undo-token issues; the follow-up fixes were validated natively. All 283 backend tests, Ruff checks, and the simulator build passed.
+
+These are deliberately seeded text-only candidates, including the completion candidate. This is workflow and persistence evidence, not audio processing or model accuracy evidence. Completion-only update extraction, independent sequence labels, paired evaluations, reminders, external alpha testing, and two-host recovery remain unfinished. See `docs/demo_walkthrough.md` for the observed steps.
+
 ### 2.2 Structured audio and extraction pipeline
 
 The backend accepts meeting audio, normalizes it to 16 kHz mono WAV, transcribes it with Whisper, optionally applies pyannote diarization, and sends the resulting timestamped turns to a schema-constrained Codex or Claude extraction provider. Extraction produces a summary, decisions, commitments, suggestions, and cited evidence.

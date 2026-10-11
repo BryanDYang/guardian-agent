@@ -1,0 +1,10 @@
+{
+  "version": "scripted-native-v1",
+  "provenance": "AI-authored scripted UI fixture. Reviewed results are seeded deliberately. This is not an audio extraction or model accuracy evaluation.",
+  "meetings": [
+    {"name": "01 - New commitment", "date": "2026-10-11", "quote": "I will draft the alpha test plan.", "title": "Draft the alpha test plan", "expected": "After review: one accepted open task, no deadline."},
+    {"name": "02 - Repeated commitment", "date": "2026-10-12", "quote": "I am still drafting the same alpha test plan.", "title": "Continue drafting the alpha test plan", "expected": "After duplicate confirmation: the same task ID remains open; no duplicate accepted task."},
+    {"name": "03 - Deadline change", "date": "2026-10-13", "quote": "The deadline for the alpha test plan is now October 16, 2026.", "title": "Update the alpha test plan deadline", "expected": "After deadline confirmation: the same task ID is due 2026-10-16."},
+    {"name": "04 - Explicit completion", "date": "2026-10-14", "quote": "I finished the alpha test plan. It is complete.", "title": "Confirm completion of the alpha test plan", "expected": "After completion confirmation: the same task ID is done."}
+  ]
+}

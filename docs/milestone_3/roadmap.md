@@ -1,6 +1,6 @@
 # Milestone 3 execution roadmap
 
-Updated October 10, 2026. Target submission: October 26, subject to confirming Canvas. Stage order is the execution plan; proposed owners and dates need team agreement. See [scope and acceptance](scope_and_acceptance.md) for product boundaries and [submission draft](submission_draft.md) for rubric requirements.
+Updated October 11, 2026. Target submission: October 26, subject to confirming Canvas. Stage order is the execution plan; proposed owners and dates need team agreement. See [scope and acceptance](scope_and_acceptance.md) for product boundaries and [submission draft](submission_draft.md) for rubric requirements.
 
 ## October 11 checkpoint
 
@@ -8,7 +8,21 @@ Implemented speaker-name proposals with timestamped evidence and optional confir
 
 All 282 backend tests passed on disposable PostgreSQL; Ruff and the simulator build passed. All seven shared development jobs completed before the backend was restarted. Native acceptance results belong in the walkthrough. Implementation does not close the Stage 2 or Stage 3 gates on its own.
 
-Still required: reviewed sequence ledger and independent adjudication, automatic update proposals, reminder lifecycle and deduplication, paired extraction/retrieval evaluations, full native task persistence checks, external testers, two-host recovery, and final submission evidence. No natural-data accuracy or completion percentage is claimed from these tests.
+Still required: reviewed sequence ledger and independent adjudication, automatic update proposals, reminder lifecycle and deduplication, paired extraction/retrieval evaluations, real audio-to-task native acceptance, external testers, two-host recovery, and final submission evidence. No natural-data accuracy or completion percentage is claimed from these tests.
+
+## Native inspection follow-up
+
+A separate, versioned scripted fixture exercised account assignment, undated
+approval, To-do visibility, completion/undo, reviewed repeated mentions, a
+deadline change visible in Calendar, explicit completion, and persistence after
+relaunch. PostgreSQL retained one accepted task ID and three evidence audits.
+The native run exposed an obsolete Undo token after reviewed completion; the
+client now clears that token on a newer server revision, and native Undo passed.
+Date/list-status/loading/empty-state fixes and task review/edit auditing are
+implemented. All 283 backend tests, Ruff, and the simulator build passed. This
+text-only fixture uses seeded candidates, including completion. It closes the
+scripted UI path, not real extraction, audio playback, or the full native gate.
+See the walkthrough for evidence and limitations.
 
 ## Starting point
 

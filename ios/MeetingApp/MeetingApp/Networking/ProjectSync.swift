@@ -93,22 +93,17 @@ enum ProjectSync {
                                   processingStatus: item.status)
                 context.insert(meeting)
             }
+            if item.status == "completed", meeting.duration == "Processing" {
+                meeting.duration = "Processed"
+            }
             meeting.project = project
         }
         try context.save()
     }
 
     private static func meetingDate(_ value: String) -> Date {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let date = formatter.date(from: value) { return date }
-        formatter.formatOptions = [.withInternetDateTime]
-        if let date = formatter.date(from: value) { return date }
-        let day = DateFormatter()
-        day.calendar = Calendar(identifier: .iso8601)
-        day.locale = Locale(identifier: "en_US_POSIX")
-        day.timeZone = TimeZone(secondsFromGMT: 0)
-        day.dateFormat = "yyyy-MM-dd"
-        return day.date(from: String(value.prefix(10))) ?? .now
+        // meeting_date is a calendar day, even when Postgres serializes UTC midnight.
+        // Parsing it as an instant moves it to the previous day west of UTC.
+        LabSyncDate.day(from: String(value.prefix(10))) ?? .now
     }
 }

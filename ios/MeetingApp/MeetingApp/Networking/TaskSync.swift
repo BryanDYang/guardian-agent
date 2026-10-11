@@ -14,6 +14,10 @@ enum TaskSync {
         let taskID = remote.id
         let descriptor = FetchDescriptor<TaskItem>(predicate: #Predicate { $0.id == taskID })
         let task = try context.fetch(descriptor).first ?? insert(remote, meetings: meetings, context: context)
+        if let revision = remote.updatedAt, revision != task.serverUpdatedAt {
+            task.revertToken = nil
+            task.serverUpdatedAt = revision
+        }
         task.title = remote.title
         task.dueDate = remote.dueDate.flatMap(LabSyncDate.day(from:))
         // The server decides the assignee. The local speaker below only adds an avatar.

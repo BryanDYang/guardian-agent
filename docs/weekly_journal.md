@@ -184,3 +184,13 @@ The larger TS3005b WAV failed at Storage. Retrying with a smaller lossless FLAC 
 **Next:** Invite teammates to the real projects, align Will's code/migration/configuration with the shared backend guide, finish and inspect the AMI processing outputs, then record the native walkthrough and freeze reviewed task-state labels and questions before comparison runs. This checkpoint records setup and partial native evidence, not Milestone 3 completion.
 
 Checkpoint validation: 29 targeted server/shared-backend/storage tests passed against disposable PostgreSQL with offline storage/inference stand-ins; targeted Ruff checks passed. Simulator builds passed. These checks do not establish live two-device failover or model-output quality.
+
+## October 11 native continuity checkpoint
+
+Bryan tested a separate scripted project with four consecutive text-only meetings: a new commitment, repeated mention, deadline change, and explicit completion. In the simulator, the initial task was assigned to Bryan for this fixture, approved without a deadline, and shown in To-do. Later candidates were linked to the original task through evidence-backed human review. The October 16 deadline appeared in Calendar, completion persisted after relaunch, and PostgreSQL retained one accepted task ID, three dismissed later candidates, and three reconciliation audits with source quotes and reviewer.
+
+The native run exposed a one-day meeting-date shift, completed meetings labeled Processing, outdated deadline guidance, an inaccurate empty review state, and a stale Undo token after reviewed completion. These were fixed and checked in the simulator. Undo after meeting review passed; a valid lifecycle Undo also survived relaunch and was verified in the database. Review and accepted-task detail edits now record actor and old/new values, and Undo cannot discard a later detail edit.
+
+Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/format passed, and the simulator build passed. The existing account/cache survived installation. See the [native walkthrough](demo_walkthrough.md), [scripted fixture](../tests/fixtures/continuity/README.md), and [Milestone 3 roadmap](milestone_3/roadmap.md).
+
+**Limits and next:** Candidates, including completion, were seeded deliberately; this establishes UI and persistence behavior, not extraction accuracy or audio-to-task acceptance. AMI projects were unchanged. Completion-only update extraction, independently reviewed sequence labels, paired evaluations, reminder lifecycle, external alpha feedback, physical audio playback, and two-host recovery remain outstanding.

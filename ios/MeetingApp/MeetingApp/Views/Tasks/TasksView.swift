@@ -114,7 +114,7 @@ struct TasksView: View {
             }
             .padding(.leading, 16)
         }
-        .foregroundStyle(.red)
+        .foregroundStyle(.primary)
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }

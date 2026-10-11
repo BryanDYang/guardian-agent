@@ -116,6 +116,7 @@ def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
     due_date = body.due_date if "due_date" in provided else task["due_date"]
     assignee_user_id, owner_label = new_assignee(conn, task, body)
     status = {"approve": "approved", "edit": "pending", "dismiss": "dismissed"}
+    previous = task
     task = tasks.update_review(
         conn,
         task_id,
@@ -126,6 +127,7 @@ def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
         due_date=due_date,
         approved_by=user.id if body.action == "approve" else None,
     )
+    tasks.audit_details(conn, previous, task, "REVIEW_" + body.action.upper(), user.id)
     if body.action != "approve" or due_date is None:
         return {"task": task}
     # The iOS app creates the reminder with EventKit from this payload.
@@ -141,6 +143,7 @@ def edit_task(task_id: UUID, body: TaskEdit, user: User, conn: Conn) -> dict:
     if task["review_status"] != "approved":
         raise HTTPException(409, "Only approved tasks can be edited here")
     assignee_user_id, owner_label = new_assignee(conn, task, body)
+    previous = task
     task = tasks.update_details(
         conn,
         task_id,
@@ -151,6 +154,7 @@ def edit_task(task_id: UUID, body: TaskEdit, user: User, conn: Conn) -> dict:
             body.due_date if "due_date" in body.model_fields_set else task["due_date"]
         ),
     )
+    tasks.audit_details(conn, previous, task, "DETAILS_EDIT", user.id)
     return {"task": task}
 
 
@@ -254,8 +258,10 @@ def revert(revert_token: UUID, user: User, conn: Conn) -> dict:
     # A token for another project's task looks exactly like an unknown one.
     if audit is None or not access.can_see_task(conn, user.id, audit["task_id"]):
         raise HTTPException(404, "Unknown revert token")
-    if audit["action"] == "MEETING_RECONCILIATION":
-        raise HTTPException(409, "Edit the task to correct a meeting reconciliation")
+    if audit["action"] not in {"STATUS_CHANGE", "REVERT"}:
+        raise HTTPException(
+            409, "Only lifecycle changes support undo; edit the task to correct details"
+        )
     task = locked(conn, audit["task_id"])
     if tasks.latest_audit_id(conn, task["id"]) != audit["id"]:
         raise HTTPException(409, "Only the most recent change can be undone")

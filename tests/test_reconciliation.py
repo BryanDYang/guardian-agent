@@ -90,7 +90,9 @@ def test_reviewed_continuity(client, seeded, sequence, action):
     )
     with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
         audit = conn.execute(
-            "SELECT * FROM task_audit_log WHERE task_id = %s", (sequence["target"],)
+            "SELECT * FROM task_audit_log WHERE task_id = %s "
+            "AND action = 'MEETING_RECONCILIATION'",
+            (sequence["target"],),
         ).fetchone()
         assert audit["actor_id"] == seeded["member_id"]
         assert audit["new_value"]["quote"] == body["quote"]

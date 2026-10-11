@@ -224,7 +224,12 @@ def test_state_changes_and_undo(client, seeded):
             "SELECT action FROM task_audit_log WHERE task_id = %s ORDER BY created_at",
             (task_id,),
         ).fetchall()
-    assert [a[0] for a in actions] == ["STATUS_CHANGE", "REVERT", "REVERT"]
+    assert [a[0] for a in actions] == [
+        "REVIEW_APPROVE",
+        "STATUS_CHANGE",
+        "REVERT",
+        "REVERT",
+    ]
 
 
 def test_errors(client, seeded):
@@ -356,7 +361,7 @@ def test_approver_and_actor_are_recorded(client, seeded):
             "SELECT actor_id FROM task_audit_log WHERE task_id = %s", (task_id,)
         ).fetchall()
     assert approved == (seeded["member_id"], True)
-    assert [a[0] for a in actors] == [seeded["member_id"]] * 2
+    assert [a[0] for a in actors] == [seeded["member_id"]] * 3
 
 
 def test_outsiders_cannot_see_or_change_tasks(client, seeded):
@@ -381,3 +386,25 @@ def test_outsiders_cannot_see_or_change_tasks(client, seeded):
     assert task["lifecycle_status"] == "done"
     no_token = {"Authorization": ""}
     assert calendar(client, seeded["project_id"], headers=no_token).status_code == 401
+
+
+def test_edit_audit_preserves_old_deadline_and_blocks_unsafe_undo(client, seeded):
+    task_id = seeded["Share the recording"]
+    approve(client, task_id, "2026-10-02")
+    done = client.post(f"/api/v1/tasks/{task_id}/state", json={"state": "done"}).json()
+    response = client.patch(f"/api/v1/tasks/{task_id}", json={"due_date": "2026-10-09"})
+    assert response.status_code == 200
+    assert (
+        client.post(f"/api/v1/tasks/revert/{done['revert_token']}").status_code == 409
+    )
+    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        audit = conn.execute(
+            "SELECT * FROM task_audit_log WHERE task_id=%s AND action='DETAILS_EDIT'",
+            (task_id,),
+        ).fetchone()
+    assert audit["old_value"]["due_date"] == "2026-10-02"
+    assert audit["new_value"]["due_date"] == "2026-10-09"
+    assert audit["actor_id"] == seeded["member_id"]
+    assert (
+        client.post(f"/api/v1/tasks/revert/{audit['revert_token']}").status_code == 409
+    )

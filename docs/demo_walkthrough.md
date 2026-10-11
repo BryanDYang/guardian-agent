@@ -142,3 +142,59 @@ player to about 03:12; it was paused at 03:19. No guessed name was confirmed.
 The Tasks tab displayed the new To-do/Calendar switch and an accurate empty
 accepted-task state. Full approval/edit/complete/relaunch and reconciliation
 acceptance are still open. Physical-device audibility remains unverified.
+
+## October 11 scripted native task continuity inspection
+
+Used a separate **M3 Scripted Acceptance - Oct 11** project with the versioned
+`tests/fixtures/continuity/native_sequence.json`. Four completed text-only meetings
+and their pending review candidates were seeded deliberately through existing
+persistence functions. This is a native workflow fixture, not audio-to-app or
+model extraction evidence. It includes a seeded completion candidate because
+completion-only update extraction is still missing. AMI projects were unchanged.
+
+Observed in the simulator, beginning on `e7399c8` and finishing on the local follow-up build:
+
+- Assigned the initial fixture task explicitly to Bryan, with no deadline.
+- Approved it; it appeared in To-do. Completed it, then used Undo to reopen it.
+- Opened the second meeting's **Update an existing task** action, selected the
+  original task, confirmed the quoted repeated mention, and applied the review.
+- The database retained the original accepted task ID and dismissed the later
+  candidate. The reconciliation audit retained quote, meeting/turn, timestamp,
+  operation, policy, and actor. No second accepted task was created.
+- In the third meeting, confirmed the quoted deadline as October 16. The same
+  task appeared on October 16 in Calendar, with its owner preserved.
+- In the fourth meeting, confirmed explicit completion. The task appeared under
+  Completed and persisted after relaunch, without a second accepted task.
+- PostgreSQL retained one approved task and three dismissed later candidates.
+  The three reconciliation audits contain the exact quotes and reviewer.
+- Undo after reviewed completion initially failed because the client retained an
+  obsolete lifecycle token. The fix associates the token with the server revision,
+  clearing it when a newer revision arrives. Native Undo then reopened the task.
+  After a new manual completion and relaunch, Undo used the valid audit token
+  successfully (verified as REVERT in PostgreSQL). The fixture was left done.
+- The seeded text-only meetings have no recording; their audio-unavailable error
+  is expected and not playback proof. Completion-only extraction remains open.
+
+Inspection exposed a calendar-day shift west of UTC, completed cards labeled
+Processing until opened, stale mandatory-deadline guidance, and an empty-state
+message incorrectly claiming nothing was extracted after approval. Fixes are
+implemented; the simulator build passed. The exact date helper preserved October
+11 in America/Los_Angeles and Pacific/Kiritimati checks. The resumed native inspection verified correct meeting dates, Processed status,
+updated approval guidance, and the No pending tasks state. A loading indicator now distinguishes
+fetching tasks from an empty review queue, and continuity review has a Pause
+control for evidence playback.
+
+Review and detail edits now append actor/old/new snapshots to the task audit.
+Only lifecycle audit entries support Undo, and a later detail edit prevents an
+old undo token from discarding that edit. Targeted API regressions passed (23).
+
+Final verification for this follow-up: all 283 backend tests, Ruff lint/format,
+and the simulator build passed. The updated simulator build was installed and
+relaunched with cached account/task data preserved. The idle backend was restarted
+only after checking that no queued/running jobs remained; the continuity route
+was reachable afterward. The resumed scripted native sequence passed through
+deadline change, completion, and relaunch. The follow-up simulator build also
+passed with the undo-token cache fix and preserved existing app data during
+installation. Real audio-to-task acceptance, physical audibility, independent
+labels, and model-quality evaluation remain open. This follow-up is documented
+alongside its implementation and versioned fixture in the repository.
