@@ -64,3 +64,22 @@ placeholder content. Neither is accepted end-to-end behavior.
 
 The larger centered playback controls built successfully and were inspected in
 the simulator; TS3005a loaded its real 21:58 duration.
+
+## Live diarization reprocessing
+
+Hugging Face access to both gated models was verified and the pipeline loaded
+successfully. Restarted the idle shared worker and requeued TS3005a with its saved
+job settings explicitly changed to enable diarization. The run completed with
+six speaker clusters and nine unassigned turns. This is a successful processing
+run, not verified speaker accuracy; compare against corpus annotations before
+using the clusters as identities. No development tasks had been reviewed. Previous
+job/result snapshots were preserved in the gitignored
+`artifacts/dev-reprocess-backup-20261010.json`. TS3005b-d were then queued in order
+with diarization enabled; their final acceptance is pending.
+
+Reproduced a stale-cache issue in the native app: the completed reprocessed
+meeting still showed one unknown speaker because stored turns only populated an
+empty local transcript. Updated the refresh path to replace stored turns and
+reuse existing speaker attendees. Simulator build passed. Reopening TS3005a
+showed its new summary and six anonymous speaker cards plus the unknown group
+on Storyline. Storyline detail still contains placeholders.

@@ -65,25 +65,33 @@ enum RemoteMeetingApplier {
         try context.save()
     }
 
-    /// Fills in a meeting loaded from the database with its stored transcript turns.
+    /// Refreshes stored turns and speaker labels, including after reprocessing.
     static func applyStoredTranscript(
         _ turns: [RemoteStoredTurn],
         to meeting: Meeting,
         context: ModelContext
     ) {
-        guard meeting.transcript.isEmpty, !turns.isEmpty else { return }
+        guard !turns.isEmpty else { return }
 
         var attendeesBySpeaker: [String: Attendee] = [:]
         for speaker in Set(turns.map { $0.speaker ?? "UNKNOWN" }) {
-            let attendee = Attendee(
-                id: "\(meeting.id):\(speaker)",
-                name: displayName(for: speaker),
-                initials: initials(for: speaker),
-                email: "",
-                colorHex: "#6B7280"
-            )
-            context.insert(attendee)
-            attendee.meetings = [meeting]
+            let id = "\(meeting.id):\(speaker)"
+            let attendee: Attendee
+            if let existing = meeting.attendee(withID: id) {
+                attendee = existing
+                attendee.name = displayName(for: speaker)
+                attendee.initials = initials(for: speaker)
+            } else {
+                attendee = Attendee(
+                    id: id,
+                    name: displayName(for: speaker),
+                    initials: initials(for: speaker),
+                    email: "",
+                    colorHex: "#6B7280"
+                )
+                context.insert(attendee)
+                attendee.meetings = [meeting]
+            }
             attendeesBySpeaker[speaker] = attendee
         }
         meeting.attendees = Array(attendeesBySpeaker.values)
