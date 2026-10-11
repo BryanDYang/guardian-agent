@@ -3,7 +3,7 @@ import SwiftUI
 
 /// Fourth tab: who you are, your task counts, settings, and Sign Out.
 ///
-/// Visual language: white canvas, soft gray groups with no borders, monochrome icons,
+/// Visual language: adaptive canvas and grouped surfaces, monochrome icons,
 /// one accent color (brand blue). Red appears only where it carries meaning:
 /// overdue tasks and Sign Out.
 struct ProfileTab: View {
@@ -27,7 +27,7 @@ struct ProfileTab: View {
                 .padding(.top, 32)
                 .padding(.bottom, 24)
             }
-            .background(Color.white)
+            .background(Color(uiColor: .systemBackground))
             .toolbar(.hidden, for: .navigationBar)
             .sheet(isPresented: $showingEditProfile) {
                 EditProfileSheet()
@@ -65,21 +65,21 @@ struct ProfileTab: View {
             VStack(spacing: 4) {
                 Text(session.user.name)
                     .font(.title2.bold())
-                    .foregroundStyle(Palette.ink)
+                    .foregroundStyle(ProfileStyle.text)
                 if !session.user.title.isEmpty {
                     Text(session.user.title)
                         .font(.subheadline)
-                        .foregroundStyle(Palette.ink.opacity(0.75))
+                        .foregroundStyle(ProfileStyle.text.opacity(0.75))
                 }
                 Text(session.user.email)
                     .font(.subheadline)
-                    .foregroundStyle(Palette.secondaryText)
+                    .foregroundStyle(ProfileStyle.secondaryText)
             }
             .multilineTextAlignment(.center)
 
             Button("Edit profile") { showingEditProfile = true }
                 .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(ProfileStyle.text)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 8)
                 .background(Capsule().fill(ProfileStyle.surface))
@@ -209,10 +209,12 @@ struct ProfileTab: View {
 // MARK: - Pieces
 
 private enum ProfileStyle {
-    static let surface = Color(hex: "#F4F5F8")
-    static let pressed = Color(hex: "#EAECF1")
-    static let hairline = Color(hex: "#E4E7EC")
-    static let chevron = Color(hex: "#B8BFCA")
+    static let text = Color(uiColor: .label)
+    static let secondaryText = Color(uiColor: .secondaryLabel)
+    static let surface = Color(uiColor: .secondarySystemBackground)
+    static let pressed = Color(uiColor: .tertiarySystemFill)
+    static let hairline = Color(uiColor: .separator)
+    static let chevron = Color(uiColor: .tertiaryLabel)
     static let cornerRadius: CGFloat = 18
 }
 
@@ -227,7 +229,7 @@ private struct SectionHeader: View {
         Text(title.uppercased())
             .font(.caption.weight(.semibold))
             .tracking(1.2)
-            .foregroundStyle(Palette.secondaryText)
+            .foregroundStyle(ProfileStyle.secondaryText)
             .padding(.leading, 4)
             .accessibilityAddTraits(.isHeader)
     }
@@ -274,10 +276,10 @@ private struct TaskStat: View {
             Text("\(value)")
                 .font(.system(.title2, design: .rounded, weight: .semibold))
                 .monospacedDigit()
-                .foregroundStyle(isAlert ? Palette.danger : Palette.ink)
+                .foregroundStyle(isAlert ? Palette.danger : ProfileStyle.text)
             Text(label)
                 .font(.caption)
-                .foregroundStyle(Palette.secondaryText)
+                .foregroundStyle(ProfileStyle.secondaryText)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
@@ -301,13 +303,13 @@ private struct ProfileMenuRow: View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.system(size: 17))
-                .foregroundStyle(Palette.ink.opacity(0.6))
+                .foregroundStyle(ProfileStyle.text.opacity(0.6))
                 .frame(width: 24)
                 .accessibilityHidden(true)
 
             Text(title)
                 .font(.body)
-                .foregroundStyle(Palette.ink)
+                .foregroundStyle(ProfileStyle.text)
 
             Spacer(minLength: 8)
 
@@ -332,7 +334,7 @@ private struct ProfileMenuRow: View {
         case .text(let value):
             Text(value)
                 .font(.subheadline)
-                .foregroundStyle(Palette.secondaryText)
+                .foregroundStyle(ProfileStyle.secondaryText)
         case .action(let value):
             Text(value)
                 .font(.subheadline.weight(.medium))

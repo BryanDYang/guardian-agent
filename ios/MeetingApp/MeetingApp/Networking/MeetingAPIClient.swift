@@ -980,7 +980,7 @@ enum LabSyncDate {
 
     /// Server timestamps look like 2026-10-01T18:04:05.123456Z. The fraction is
     /// dropped first, since ISO8601DateFormatter doesn't read every fraction length.
-    static func timestamp(_ value: String) -> Date? {
+    nonisolated static func timestamp(_ value: String) -> Date? {
         let whole = value.replacingOccurrences(of: #"\.\d+"#, with: "", options: .regularExpression)
         return ISO8601DateFormatter().date(from: whole)
     }

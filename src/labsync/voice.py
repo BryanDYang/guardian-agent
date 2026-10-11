@@ -149,8 +149,7 @@ def enroll(clips: dict[str, Path]) -> Enrollment:
         if check.reason
     ]
     if not failures and total < MIN_TOTAL_SPEECH_SECONDS:
-        # A and B are fixed passages, so re-recording them can't add much speech.
-        # Clip C is open-ended, so ask for more there.
+        # Retry the final clip when the combined recordings need more speech.
         failures = [{"clip": "C", "reason": "too_short"}]
     if failures:
         return Enrollment(quality=quality, failures=failures)

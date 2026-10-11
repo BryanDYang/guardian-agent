@@ -22,8 +22,7 @@ struct VoiceEnrollmentView: View {
         let seconds: Double
     }
 
-    /// Two read passages, then one in the user's own words, which sounds more
-    /// like how people talk in meetings.
+    /// Three meeting-style passages so users never have to invent a response.
     private static let clips = [
         Clip(
             label: "A",
@@ -39,8 +38,8 @@ struct VoiceEnrollmentView: View {
         ),
         Clip(
             label: "C",
-            heading: "IN YOUR OWN WORDS",
-            text: "Describe what you worked on last week, or what you plan to do this week.",
+            heading: "READ ALOUD",
+            text: "This week, I will review the feedback from our last meeting and test the latest changes. First, I will check that recordings upload correctly and that everyone can see their action items. Then I will share what worked, explain any problems, and confirm the next steps with the team. Before we finish, let's agree on who owns each task and when we will meet again.",
             seconds: 20
         ),
     ]
@@ -106,11 +105,14 @@ struct VoiceEnrollmentView: View {
                 .font(.caption.weight(.semibold))
                 .tracking(1.2)
                 .foregroundStyle(Palette.brandBlue)
-            Text(clip.label == "C" ? clip.text : "\u{201C}\(clip.text)\u{201D}")
+            Text("\u{201C}\(clip.text)\u{201D}")
                 .font(.title3.weight(.medium))
                 .foregroundStyle(Palette.ink)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
+            Text("Read at your normal pace until the timer ends. If you finish early, start the passage again.")
+                .font(.subheadline)
+                .foregroundStyle(Palette.secondaryText)
         }
         .padding(.leading, 16)
         .overlay(alignment: .leading) {
@@ -259,7 +261,7 @@ struct VoiceEnrollmentView: View {
     private var statusText: String {
         switch phase {
         case .standby:
-            consentGiven ? "Tap to record \u{00B7} up to \(Int(clip.seconds)) sec" : "Agree below to start"
+            consentGiven ? "Tap to record \u{00B7} \(Int(clip.seconds)) sec" : "Agree below to start"
         case .recording:
             "Recording \u{00B7} " + String(format: "0:%02d", Int(elapsed)) + " \u{00B7} tap to finish"
         case .captured:

@@ -6,6 +6,8 @@ This is the remaining work to make Meetings, Tasks, and Chat run against Postgre
 
 **Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. When the worker is started with `--diarize`, enrolled project members can be named on the transcript and everyone else stays `SPEAKER_N`. Match thresholds are provisional and not calibrated. Playback, storylines, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
 
+**Optional shared backend:** `serve --shared --worker-id <unique-name>` implements private Supabase audio, DB-backed polling/jobs, renewable worker claims, fenced result publication, and deferred object cleanup. Local mode still uses JSON status. See [shared backend rollout](shared_backend.md); live two-device acceptance, migration of existing local recordings, and automatic endpoint routing are not established yet.
+
 Legend: `[x]` implementation exists in the repo · `[ ]` implementation still required. A checked item is not acceptance evidence. Use the [UI demo walkthrough](demo_walkthrough.md) to record the build, backend, observed behavior, and remaining gaps before claiming a user journey works.
 
 ---
@@ -77,6 +79,12 @@ Whisper, optional diarization, and Codex/Claude extraction run, and completed v1
 
 ## Phase 4 — Sequential Queue & API Gateway (Systems 4 & 5)
 
+- [x] Optional shared mode: private audio storage, database job claims with lease recovery, per-project processing order, cross-backend polling/retry/playback, and upload idempotency keys
+- [x] Isolated PostgreSQL tests with two backend instances, terminated claimant recovery, stale-write rejection, membership checks, and object cleanup; Storage and inference are offline stand-ins
+- [ ] Run live shared-mode acceptance against a separate Supabase project before coordinating team rollout
+- [ ] Configure health-monitored routing across two tunnels after both backends pass acceptance
+- [ ] Decide whether to migrate existing local recordings; preserve them on their original backend until then
+
 v1 project, meeting, task, chat, profile, invitation, and voice routes talk to Postgres. Legacy `/api/meetings` routes still serve the JSON worker record, which is what the iOS status poll uses. No WebSocket or summary edit. Voice enrollment runs inside the request, not in the meeting queue.
 
 - [x] Sequential worker so only one meeting processes at a time
@@ -128,7 +136,7 @@ Partial: [CCB transcription measurements](archive/milestone_2/transcription_resu
 
 The current 45-second AMI fixture checks upload/transcription, not project continuity. Swift seed data is for previews/tests. Neither is a complete demo corpus. Use the [submission draft](milestone_3/submission_draft.md) for reporting and the [demo walkthrough](demo_walkthrough.md) for observed native behavior. Owners below are proposed until the team confirms them.
 
-- [ ] **Data selection (Guadalupe, with team review):** Inspect TS3005a-d manual transcripts for meaningful decisions, commitments, deadline changes, and completion before selecting audio. Annotations are local; only TS3005a audio from this series is currently downloaded. Download the missing recordings if the sequence fits
+- [ ] **Data selection (Guadalupe, with team review):** Inspect TS3005a-d manual transcripts for meaningful decisions, commitments, deadline changes, and completion before selecting audio. Annotations and all four TS3005a-d recordings are local under `contexts/datasets/ami`. Select the sequence based on reviewed continuity evidence
 - [ ] **Coverage fallback (Team):** If AMI lacks the required continuity cases, record a clearly labeled scripted sequence with consenting teammates. Keep scripted demonstration evidence separate from natural-meeting accuracy claims
 - [ ] **Main project (Team):** Assemble three connected meetings with a new owner/deadline commitment, a later deadline change, explicit completion, an unaccepted suggestion, an ambiguous reference, and an unmentioned task that remains open
 - [ ] **Second project (Team):** Add a distinct recording with different facts and commitments for project selection and isolation checks

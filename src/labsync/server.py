@@ -3,7 +3,6 @@
 import json
 import shutil
 import subprocess
-import sys
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import date, datetime, timezone
@@ -33,7 +32,7 @@ from .db import profiles, rag
 from .db import projects as project_store
 from .db.connection import create_pool
 from .embeddings import OpenAIEmbedder
-from .extraction import Extraction, Transcript
+from .pipeline import run_pipeline
 from .providers import DEFAULT_MODELS
 
 MAX_UPLOAD_BYTES = 512 * 1024 * 1024
@@ -54,11 +53,18 @@ def create_app(
     embedder: rag.Embedder | None = None,
     supabase_url: str | None = None,
     jwt_secret: str | None = None,
+    shared_audio=None,
+    worker_id: str | None = None,
+    lease_seconds: int = 120,
 ) -> FastAPI:
     if provider not in DEFAULT_MODELS:
         raise ValueError(f"Unknown extraction provider: {provider}")
     if whisper_backend not in {"mlx", "openai"}:
         raise ValueError(f"Unknown Whisper backend: {whisper_backend}")
+    if shared_audio is not None and (
+        not database_url or not worker_id or lease_seconds < 15
+    ):
+        raise ValueError("Shared mode requires a database, worker ID, and lease >= 15s")
     model = model or DEFAULT_MODELS[provider]
     storage, source = storage.resolve(), source.resolve()
     lock = RLock()
@@ -86,13 +92,6 @@ def create_app(
             record = read(meeting_id)
             record.update(fields)
             save(record)
-
-    def transcription_metadata(work: Path) -> dict:
-        path = work / "ccb-transcript.json"
-        if not path.is_file():
-            return {}
-        metadata = json.loads(path.read_text()).get("metadata")
-        return metadata if isinstance(metadata, dict) else {}
 
     def sync_database(
         meeting_id,
@@ -148,95 +147,63 @@ def create_app(
             # Speaker embeddings, guests' included, are not kept after matching.
             path.unlink(missing_ok=True)
 
+    settings = dict(
+        provider=provider,
+        model=model,
+        whisper_model=whisper_model,
+        whisper_backend=whisper_backend,
+        diarize=diarize,
+    )
+
     def process(meeting_id):
         record = read(meeting_id)
         directory = folder(meeting_id)
         attempt = record["attempt"]
         work = directory / f"attempt-{attempt}"
-        stage = "transcribing"
-        try:
-            update(meeting_id, status=stage)
-            sync_database(meeting_id, stage, attempt, None)
-            with (directory / "processing.log").open("a") as log:
-                command = [
-                    sys.executable,
-                    "-m",
-                    "labsync",
-                    "transcribe",
-                    str(directory / record["filename"]),
-                    "--source",
-                    str(source),
-                    "--project-id",
-                    record["project"],
-                    "--meeting-id",
-                    meeting_id,
-                    "--whisper-model",
-                    whisper_model,
-                    "--whisper-backend",
-                    whisper_backend,
-                    "--output-dir",
-                    str(work),
-                ]
-                if diarize:
-                    command.append("--diarize")
-                subprocess.run(
-                    command, check=True, stdout=log, stderr=log, timeout=7200
-                )
-                transcript = Transcript.model_validate_json(
-                    (work / "transcript.json").read_text()
-                )
-                identification = identify_speakers(record["project"], transcript, work)
-                # Extraction sees names and SPEAKER_N, not diarizer tags (FR-SPK-9).
-                named = voice.relabel(transcript, identification)
-                labeled = work / "labeled-transcript.json"
-                labeled.write_text(named.model_dump_json(indent=2) + "\n")
-                update(meeting_id, transcript_path=str(labeled))
-                stage = "extracting"
-                update(meeting_id, status=stage)
-                sync_database(meeting_id, stage, attempt, None)
-                subprocess.run(
-                    [
-                        sys.executable,
-                        "-m",
-                        "labsync",
-                        "extract",
-                        str(labeled),
-                        "--provider",
-                        provider,
-                        "--model",
-                        model,
-                        "--output",
-                        str(work / "extraction.json"),
-                        "--timeout",
-                        "300",
-                    ],
-                    check=True,
-                    stdout=log,
-                    stderr=log,
-                    timeout=330,
-                )
-                result = json.loads((work / "extraction.json").read_text())
-                Extraction.model_validate(result["extraction"]).check_evidence(named)
-                sync_database(
-                    meeting_id,
-                    "completed",
-                    attempt,
-                    None,
-                    transcript=transcript,
-                    result=result,
-                    transcription=transcription_metadata(work),
-                    identification=identification,
-                )
+        current_stage = "transcribing"
+
+        def stage(value):
+            nonlocal current_stage
+            current_stage = value
+            update(meeting_id, status=value)
+            if value == "extracting":
                 update(
-                    meeting_id,
-                    status="completed",
-                    extraction_path=str(work / "extraction.json"),
-                    error=None,
+                    meeting_id, transcript_path=str(work / "labeled-transcript.json")
                 )
+            sync_database(meeting_id, value, attempt, None)
+
+        try:
+            transcript, named, result, identification, metadata = run_pipeline(
+                record,
+                directory,
+                work,
+                source,
+                settings,
+                identify_speakers,
+                stage,
+                subprocess.run,
+            )
+            update(meeting_id, transcript_path=str(work / "labeled-transcript.json"))
+            sync_database(
+                meeting_id,
+                "completed",
+                attempt,
+                None,
+                transcript=transcript,
+                result=result,
+                transcription=metadata,
+                identification=identification,
+            )
+            update(
+                meeting_id,
+                status="completed",
+                extraction_path=str(work / "extraction.json"),
+                error=None,
+            )
         except Exception:
             error = (
-                f"{stage.capitalize()} failed. Check the backend processing log, "
-                "resolve the problem, then retry."
+                f"{current_stage.capitalize()} failed. Check the backend processing "
+                "log, resolve the problem, then retry."
             )
             update(meeting_id, status="failed", error=error)
             sync_database(meeting_id, "failed", attempt, error)
@@ -250,7 +217,24 @@ def create_app(
         try:
             if database_url:
                 app.state.pool = create_pool(database_url)
-            for path in storage.glob("*/meeting.json"):
+            if shared_audio is not None:
+                from .shared_backend import SharedBackend
+
+                app.state.shared = SharedBackend(
+                    app,
+                    shared_audio,
+                    storage,
+                    source,
+                    settings,
+                    worker_id,
+                    lease_seconds,
+                    identify_speakers,
+                    subprocess.run,
+                )
+                app.state.shared.start()
+            for path in (
+                [] if shared_audio is not None else storage.glob("*/meeting.json")
+            ):
                 record = json.loads(path.read_text())
                 if record["status"] in ACTIVE:
                     record.update(
@@ -266,6 +250,8 @@ def create_app(
                     )
             yield
         finally:
+            if shared_audio is not None and hasattr(app.state, "shared"):
+                app.state.shared.stop()
             app.state.executor.shutdown(wait=True)
             if app.state.pool is not None:
                 app.state.pool.close()
@@ -539,4 +525,8 @@ def create_app(
         app.state.executor.submit(app.state.process, meeting_id)
         return public(record)
 
+    if shared_audio is not None:
+        from .shared_backend import install_routes
+
+        install_routes(app)
     return app

@@ -31,3 +31,16 @@ Use a real server project with at least two completed recordings and a second pr
 Fix the earliest failing step needed for the story, repeat that step in the UI, then continue the walkthrough. Keep unverified rows marked Not run. Do not fill missing behavior with sample content or silently treat another API request as UI evidence.
 
 Playback/seek, per-attendee storylines, real login, voice identity, and cross-project search are outside this initial demo's verified claims. Add acceptance steps before presenting them as working.
+
+## October 10, 2026 partial native run
+
+Device: iPhone 18 Pro Max simulator, iOS 27.0. Backend: `http://127.0.0.1:8000`, shared mode, MLX Whisper base, without diarization. The repository checkpoint commit records this implementation; no complete walkthrough video was recorded.
+
+- **Passed:** Signed-in Google account reached the main app; created real server projects; projects appeared after relaunch. This is not a clean-install or second-user authorization check.
+- **Passed:** Native file selection and permission confirmation submitted all seven AMI recordings to their assigned projects. PostgreSQL contained all seven durable jobs. TS3005a/b completed at the checkpoint; remaining jobs were running/queued.
+- **Observed failure and recovery:** The larger TS3005b WAV returned a Storage error. A smaller lossless FLAC retry succeeded. FLAC copies were checked sample-for-sample against originals.
+- **Passed:** Reproduced Profile using a white canvas while other tabs were dark; rebuilt with adaptive colors and visually checked light/dark modes.
+- **Not run:** Inspect complete outputs, approve/update tasks, verify continuity, supported/unsupported chat and citations, isolation, purge, and complete persistence journey.
+- **Not run:** Two-device worker failover, automatic API routing, and external tester availability.
+
+Corpus mapping and local operating commands are in [the shared backend guide](shared_backend.md). Current meeting dates are import dates, not verified corpus dates.

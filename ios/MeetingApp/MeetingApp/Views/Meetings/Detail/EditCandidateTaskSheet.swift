@@ -192,7 +192,7 @@ struct AssigneePicker: View {
 
     /// Server meetings name each speaker attendee "<meeting id>:<label>".
     /// Sample attendees have no label, so their name stands in.
-    static func speakerLabel(of attendee: Attendee) -> String {
+    nonisolated static func speakerLabel(of attendee: Attendee) -> String {
         guard let colon = attendee.id.firstIndex(of: ":") else { return attendee.name }
         return String(attendee.id[attendee.id.index(after: colon)...])
     }

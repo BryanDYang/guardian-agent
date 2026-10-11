@@ -431,9 +431,9 @@ Script (shown on screen, original text, safe to ship):
 
 - **Clip A (read, about 15 s):** "Thanks for joining today. Before we start, here is a quick update on the project. We finished the first round of testing on Tuesday, and most of the results look good. There are still two open issues with the upload screen, and I would like both of them fixed by the end of next week."
 - **Clip B (read, about 15 s):** "Let's go over the action items. Maya will send the budget draft by Thursday, and Jordan will check the numbers for March, April, and May. If anything changes, please post it in the shared channel so everyone sees it before our next meeting."
-- **Clip C (free speech, at least 15 s):** "In your own words, describe what you worked on last week or what you plan to do this week."
+- **Clip C (read, 20 s recording):** "This week, I will review the feedback from our last meeting and test the latest changes. First, I will check that recordings upload correctly and that everyone can see their action items. Then I will share what worked, explain any problems, and confirm the next steps with the team. Before we finish, let's agree on who owns each task and when we will meet again."
 
-Clip C matters: spontaneous speech is closer to meeting speech than reading aloud.
+All three clips use fixed passages to make enrollment repeatable. Users read at their normal pace until the 20-second timer ends and restart the passage if they finish early. This replaces the open-ended Clip C prompt after onboarding retries exposed insufficient speech. Speaker identification quality with the scripted passage still needs evaluation.
 
 Quality gates (run per clip after VAD; all thresholds are config values in one module):
 

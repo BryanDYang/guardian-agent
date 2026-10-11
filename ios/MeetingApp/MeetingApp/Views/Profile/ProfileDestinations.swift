@@ -64,7 +64,7 @@ struct WorkspacesView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(project.name)
                                 .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(Palette.ink)
+                                .foregroundStyle(.primary)
                             Text(details(of: project))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)

@@ -88,7 +88,7 @@ Evidence quotes are checked against source turns before extracted records are ac
 
 With `--diarize`, the pipeline now matches speaker centroids against enrolled project members using WeSpeaker voiceprints and cosine similarity. A match supplies a display name to the transcript and extraction input; a matched commitment owner can receive `assignee_user_id`. Unmatched speakers remain anonymous. Match thresholds are provisional and recognition quality has not been measured.
 
-Remaining pipeline work includes calibrated speaker identification, attendee storylines, task deduplication and cross-meeting reconciliation, meeting duration persistence, and removal of the JSON status dependency.
+Remaining pipeline work includes calibrated speaker identification, attendee storylines, task deduplication and cross-meeting reconciliation, meeting duration persistence, and verification of PostgreSQL-backed status in shared mode; legacy local mode retains JSON status.
 
 ### 2.3 Human review and task lifecycle
 
@@ -150,7 +150,7 @@ The alpha consists of the following integrated systems:
 | ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
 | Native client      | SwiftUI and SwiftData iOS application                                     | Static playback UI remains; clean-install journey unverified     |
 | Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication               | Project membership is enforced; live authorization checks remain |
-| API and worker     | FastAPI routes and one-at-a-time meeting worker                           | Legacy JSON status path remains                                  |
+| API and worker     | FastAPI with optional PostgreSQL jobs and recoverable shared workers       | Two-device recovery and API failover routing remain unverified    |
 | Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain   |
 | Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Cross-meeting reconciliation is not implemented                  |
 | Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused    |
@@ -358,7 +358,7 @@ The SwiftUI client uploads consented audio to an authenticated FastAPI service, 
 
 ### Operational constraints and mitigations
 
-The backend currently runs on an Apple Silicon Mac, depends on separately supplied transcription code, stores audio locally, and uses Supabase authentication with project membership checks. The first model download is large, chat is not streamed, and some pipeline status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Longer-term mitigations include database-backed status, selective redaction, broader participant-level recording consent controls, audio seeking, and reviewed reconciliation logic.
+The backend currently runs on Apple Silicon Macs and depends on separately supplied transcription code. Optional shared mode stores audio in private Supabase Storage and jobs/status in PostgreSQL, with recoverable worker leases and project membership checks. Bryan has verified a shared-mode backend locally; live two-device recovery and automatic API routing remain unverified. The first model download is large, chat is not streamed, and legacy local-mode status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Longer-term mitigations include database-backed status, selective redaction, broader participant-level recording consent controls, audio seeking, and reviewed reconciliation logic.
 
 ## 8. Privacy, Safety, and Responsible Use
 
@@ -408,7 +408,7 @@ Cross-meeting task reconciliation is the core distinction between LabSync and an
 ### Valuable alpha improvements if time permits
 
 - Connect `AVPlayer` to stored audio and seek from transcript and chat citations.
-- Replace the JSON status route with PostgreSQL-backed status throughout.
+- Verify shared-mode PostgreSQL status and live worker recovery; decide how to migrate remaining local-mode records.
 - Add approved-task editing with audit records.
 - Save meeting duration and display a real waveform or deterministic progress UI.
 - Add summary editing and formatted sharing.
@@ -465,7 +465,7 @@ Assignments remain proposed until confirmed by the team.
 - Human review of labels and semantic matches is incomplete.
 - The required ablation, updated RAG results, and latency/cost table are not complete.
 - The iOS build and real model/embedding behavior must be verified on the team environment.
-- The remaining JSON status dependency and static playback limit the alpha path; seed-free launch and server project refresh are implemented but need clean-run evidence.
+- Legacy local-mode JSON status and static playback limit the alpha path; seed-free launch and server project refresh are implemented but need clean-run evidence.
 
 ### Planned next steps
 
@@ -516,3 +516,9 @@ Primary repository documentation:
 - `contexts/milestone_3/Milestone 3.pdf` for the official assignment and grading rubric.
 
 [PLACEHOLDER: add TA feedback, final commit SHA, demo link, and any external sources used in the final report.]
+
+### October 10 setup checkpoint
+
+The signed-in iOS app created four real AMI projects and uploaded seven recordings: TS3005a-d (one connected dev project), IS1008a (isolation/validation), IS1009a (evaluation candidate), and ES2004a (separate evaluation trial). All uploads were confirmed in shared PostgreSQL job records. At the checkpoint, TS3005a and b had completed processing and other jobs were running or queued. Project-list persistence across app relaunch was observed. The simulator build passed, and Profile was visually verified in light and dark appearances. The third voice-enrollment prompt is now scripted; its effect on retries remains unmeasured.
+
+This is partial native integration evidence. Transcript correctness, task review and continuity, cited answers/refusals, cross-project isolation, purge, clean-install behavior, external tester availability, and live two-host failover still require recorded acceptance runs. IS1009a and ES2004a were used in the Milestone 2 ASR pilot and cannot be presented as untouched evaluation inputs. See [shared backend setup](../shared_backend.md) and [native walkthrough](../demo_walkthrough.md).

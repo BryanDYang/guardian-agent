@@ -103,6 +103,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     add_whisper_backend_option(server)
     server.add_argument("--diarize", action="store_true")
+    server.add_argument(
+        "--shared",
+        action="store_true",
+        help="Use private Supabase audio and recoverable database jobs",
+    )
+    server.add_argument("--worker-id", default=os.environ.get("LABSYNC_WORKER_ID"))
+
     args = parser.parse_args(argv)
     if args.command in {"extract", "serve"} and args.provider not in DEFAULT_MODELS:
         parser.error(
@@ -123,6 +130,25 @@ def main(argv: list[str] | None = None) -> int:
         except ImportError:
             parser.exit(1, "Install the server extra: uv sync --extra server\n")
         embedder = OpenAIEmbedder()
+        shared_audio = None
+        if args.shared:
+            from .shared_storage import SupabaseAudio
+
+            if not all(
+                (
+                    os.environ.get("DATABASE_URL"),
+                    os.environ.get("SUPABASE_SERVICE_ROLE_KEY"),
+                    args.worker_id,
+                )
+            ):
+                parser.exit(
+                    1,
+                    "Shared mode needs DATABASE_URL, "
+                    "SUPABASE_SERVICE_ROLE_KEY, and --worker-id\n",
+                )
+            shared_audio = SupabaseAudio(
+                os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+            )
         uvicorn.run(
             create_app(
                 args.storage,
@@ -136,6 +162,8 @@ def main(argv: list[str] | None = None) -> int:
                 embedder=embedder,
                 supabase_url=os.environ.get("SUPABASE_URL") or None,
                 jwt_secret=os.environ.get("SUPABASE_JWT_SECRET") or None,
+                shared_audio=shared_audio,
+                worker_id=args.worker_id,
             ),
             host="127.0.0.1",
             port=args.port,

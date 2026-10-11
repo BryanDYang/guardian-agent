@@ -116,6 +116,14 @@ scripts/setup_tunnel.sh api-yourname.guardianagent.dev labsync-yourname
 
 This logs you in to Cloudflare, creates the tunnel, and points the iOS app at `https://api-yourname.guardianagent.dev` and at the Supabase project in `.env`.
 
+### Optional shared processing and backup workers
+
+Two backends can opt into private Supabase audio storage and recoverable database
+jobs with `labsync serve --shared --worker-id <unique-name>`. Follow the
+[shared backend rollout](docs/shared_backend.md) for migrations, server credentials,
+two-worker tests, existing-meeting limitations, and Will's minimal setup changes.
+Automatic hostname failover requires separate routing configuration.
+
 ### 6. Start the backend (Terminal 1)
 
 ```bash
