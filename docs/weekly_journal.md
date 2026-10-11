@@ -194,3 +194,22 @@ The native run exposed a one-day meeting-date shift, completed meetings labeled 
 Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/format passed, and the simulator build passed. The existing account/cache survived installation. See the [native walkthrough](demo_walkthrough.md), [scripted fixture](../tests/fixtures/continuity/README.md), and [Milestone 3 roadmap](milestone_3/roadmap.md).
 
 **Limits and next:** Candidates, including completion, were seeded deliberately; this establishes UI and persistence behavior, not extraction accuracy or audio-to-task acceptance. AMI projects were unchanged. Completion-only update extraction, independently reviewed sequence labels, paired evaluations, reminder lifecycle, external alpha feedback, physical audio playback, and two-host recovery remain outstanding.
+
+# Week 8 (October 12-18, 2026)
+
+**Setup:** Planning section opened October 11. No Week 8 work or results are recorded yet. Use the [Milestone 3 roadmap](milestone_3/roadmap.md) for execution order and the [checklist](checklist.md) for implementation status.
+
+**Did:** To be updated with completed work and supporting evidence during the week.<br>
+**Blocked on:** Independent sequence-label review, consenting test-account mappings, and coordination with Will for shared-worker recovery. Scripted UI acceptance does not establish real audio-to-task or model quality.<br>
+**Next:** Freeze the development sequence expectations, complete the real native task loop, and implement bounded continuity proposals before running paired evaluations.
+
+## Planned priorities
+
+- **Bryan:** Review TS3005a-d in order and version expected task states, supporting timestamps, and RAG questions. Preserve Milestone 2 inputs/results and disclose prior evaluation-data exposure. Prepare paired comparisons using identical inputs and settings.
+- **Native acceptance:** Test a real uploaded meeting through evidence review, confirmed ownership/account mapping, optional deadline editing, To-do/Calendar visibility, completion/Undo, and relaunch. Record observed failures and fixes in the [walkthrough](demo_walkthrough.md); verify audio on a physical device.
+- **Continuity and follow-through:** Add completion-only update proposals and test supported changes, ambiguity, and preservation of user-completed work. Define the automation policy and start reminder schedule/reschedule/cancel testing with a controlled clock and test sink.
+- **Team coordination (proposed):** Arrange a second reviewer for sequence expectations, verify invitations with separate accounts, and schedule a two-worker recovery test with Will following the [shared-backend guide](shared_backend.md). Confirm external tester access and an available backend test window. Owners and timing need team agreement.
+
+## Evidence and reflection to add
+
+Record dates, contributors, commit/configuration, observed results, and unresolved failures. Keep scripted UI checks, real audio acceptance, model comparisons, and live recovery results separate. Add what changed our engineering decisions and the next concrete step; do not mark planned work as completed.
