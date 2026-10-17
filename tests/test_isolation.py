@@ -40,6 +40,18 @@ def upload_form(ids):
 # Routes that act on one project's data. An outsider must get 404 from each.
 # Each entry: (method, route path exactly as declared, request options).
 PROJECT_ROUTES = [
+    ("GET", "/api/v1/projects/{project_id}/followup", lambda ids: {}),
+    ("GET", "/api/v1/projects/{project_id}/followup/emails", lambda ids: {}),
+    (
+        "PUT",
+        "/api/v1/projects/{project_id}/followup",
+        lambda ids: {"json": {"email_enabled": True, "auto_approve": True}},
+    ),
+    (
+        "PUT",
+        "/api/v1/projects/{project_id}/followup/me",
+        lambda ids: {"json": {"receive_email": False}},
+    ),
     (
         "POST",
         "/api/v1/tasks/{task_id}/reconcile",

@@ -460,6 +460,30 @@ struct MeetingAPIClient {
         try await send(URLRequest(url: baseURL.appending(path: "api/v1/me/tasks/summary")))
     }
 
+    func followupSettings(projectID: String) async throws -> RemoteFollowupSettings {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/followup")))
+    }
+
+    func saveFollowupSettings(projectID: String, email: Bool, autoApprove: Bool) async throws -> RemoteFollowupSettings {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/followup"))
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["email_enabled": email, "auto_approve": autoApprove])
+        return try await send(request)
+    }
+
+    func saveFollowupPreference(projectID: String, receive: Bool) async throws -> RemoteFollowupSettings {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/followup/me"))
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["receive_email": receive])
+        return try await send(request)
+    }
+
+    func followupEmails(projectID: String) async throws -> [RemoteFollowupEmail] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/followup/emails")))
+    }
+
     private func send<T: Decodable>(_ request: URLRequest) async throws -> T {
         var request = request
         let token = try await accessToken()
@@ -1105,4 +1129,34 @@ struct SpeakerNameSuggestion: Decodable {
 private struct SpeakerConfirmation: Decodable {
     let label: String
     let name: String
+}
+
+struct RemoteFollowupSettings: Decodable {
+    let email_enabled: Bool
+    let auto_approve: Bool
+    let receive_email: Bool
+    let can_manage: Bool
+    let delivery_mode: String
+}
+
+struct RemoteFollowupEmail: Decodable, Identifiable {
+    let id: String
+    let title: String
+    let state: String
+    let mode: String
+    let attempts: Int
+    let recipient_name: String?
+    let last_error: String?
+    let preview: String?
+
+    var status: String {
+        switch state {
+        case "captured": "Captured for testing"
+        case "sent": "Accepted by email provider"
+        case "sending": "Sending"
+        case "cancelled": "Cancelled"
+        case "failed": "Needs attention"
+        default: "Queued"
+        }
+    }
 }

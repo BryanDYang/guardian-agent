@@ -19,6 +19,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from . import voice
 from .api.chat import router as chat_router
 from .api.deps import Conn, SignedIn, User, require_meeting, require_member
+from .api.followup import router as followup_router
 from .api.invitations import router as invitations_router
 from .api.me import router as me_router
 from .api.meetings import router as meetings_router
@@ -217,6 +218,15 @@ def create_app(
         try:
             if database_url:
                 app.state.pool = create_pool(database_url)
+                from .followup import EmailWorker
+
+                with app.state.pool.connection() as conn:
+                    migrated = conn.execute(
+                        "SELECT to_regclass('public.task_followup_emails') AS name"
+                    ).fetchone()["name"]
+                if migrated:
+                    app.state.email_worker = EmailWorker(app.state.pool)
+                    app.state.email_worker.start()
             if shared_audio is not None:
                 from .shared_backend import SharedBackend
 
@@ -250,6 +260,8 @@ def create_app(
                     )
             yield
         finally:
+            if hasattr(app.state, "email_worker"):
+                app.state.email_worker.stop()
             if shared_audio is not None and hasattr(app.state, "shared"):
                 app.state.shared.stop()
             app.state.executor.shutdown(wait=True)
@@ -271,6 +283,7 @@ def create_app(
     app.include_router(chat_router)
     app.include_router(me_router)
     app.include_router(invitations_router)
+    app.include_router(followup_router)
 
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]

@@ -114,7 +114,7 @@ struct SpeakerReviewSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    Text("Confirm names from introductions or enter a correction. Transcribed names may be misspelled. Connecting an app member assigns pending commitments already owned by this speaker; it does not approve tasks, replace existing account assignments, or identify other voices.")
+                    Text("Confirm names from introductions or enter a correction. Connecting an app member assigns pending commitments already owned by this speaker. If project automatic approval is enabled, eligible clear commitments can be approved and emailed. Other voices and existing assignments are unchanged.")
                         .font(.footnote).foregroundStyle(.secondary)
                     if audio.isPlaying {
                         Button("Pause audio", systemImage: "pause.circle") { audio.pause() }

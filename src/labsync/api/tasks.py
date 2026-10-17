@@ -9,6 +9,7 @@ from psycopg import Connection
 from psycopg.types.json import Jsonb
 from pydantic import BaseModel, Field
 
+from .. import followup
 from ..db import access, tasks
 from .deps import User, get_conn, require_member, require_task
 
@@ -128,6 +129,8 @@ def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
         approved_by=user.id if body.action == "approve" else None,
     )
     tasks.audit_details(conn, previous, task, "REVIEW_" + body.action.upper(), user.id)
+    if body.action == "approve":
+        followup.enqueue(conn, task)
     if body.action != "approve" or due_date is None:
         return {"task": task}
     # The iOS app creates the reminder with EventKit from this payload.
@@ -155,6 +158,7 @@ def edit_task(task_id: UUID, body: TaskEdit, user: User, conn: Conn) -> dict:
         ),
     )
     tasks.audit_details(conn, previous, task, "DETAILS_EDIT", user.id)
+    followup.enqueue(conn, task)
     return {"task": task}
 
 

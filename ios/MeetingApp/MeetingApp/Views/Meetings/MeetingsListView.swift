@@ -20,6 +20,7 @@ struct MeetingsListView: View {
     @State private var showAddProject = false
     @State private var showAddMeeting = false
     @State private var showInvite = false
+    @State private var showFollowup = false
 
     var body: some View {
         ScrollView {
@@ -56,6 +57,9 @@ struct MeetingsListView: View {
                 } else if let project {
                     Menu {
                         if isServerID(project.id) {
+                            Button("Follow-through", systemImage: "envelope") {
+                                showFollowup = true
+                            }
                             Button("Invite People", systemImage: "person.badge.plus") {
                                 showInvite = true
                             }
@@ -92,6 +96,9 @@ struct MeetingsListView: View {
             if let project {
                 InviteMembersSheet(project: project)
             }
+        }
+        .sheet(isPresented: $showFollowup) {
+            if let project { FollowupSettingsSheet(projectID: project.id) }
         }
         .confirmationDialog(
             pendingDeletion.count == 1 ? "Delete this project?" : "Delete these projects?",

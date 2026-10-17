@@ -10,10 +10,18 @@ struct PrivacySettingsSheet: View {
     @State private var showPurgeConfirmation = false
     @State private var isPurging = false
     @State private var errorMessage: String?
+    @State private var showFollowup = false
 
     var body: some View {
         NavigationStack {
             Form {
+                if let project, isServerID(project.id) {
+                    Section {
+                        Button("Task email & automatic approval", systemImage: "envelope") {
+                            showFollowup = true
+                        }
+                    } header: { Text("Follow-through") }
+                }
                 Section {
                     Button("Open Redaction Tool") { }
                 } header: {
@@ -65,6 +73,9 @@ struct PrivacySettingsSheet: View {
             }
         }
         .interactiveDismissDisabled(isPurging)
+        .sheet(isPresented: $showFollowup) {
+            if let project { FollowupSettingsSheet(projectID: project.id) }
+        }
         .presentationDetents([.medium, .large])
     }
 

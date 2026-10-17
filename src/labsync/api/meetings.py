@@ -176,4 +176,7 @@ def confirm_speaker(
             "UPDATE meeting_jobs SET record=%s,updated_at=now() WHERE meeting_id=%s",
             (Jsonb(record), meeting_id),
         )
-    return {"label": label, **review}
+    from ..followup import auto_approve
+
+    approved = auto_approve(conn, meeting_id)
+    return {"label": label, **review, "auto_approved_tasks": approved}

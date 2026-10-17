@@ -7,6 +7,7 @@ import Supabase
 struct MeetingAppApp: App {
     @State private var navigator = MeetingNavigator()
     @State private var session = AppSession(auth: SupabaseService.client.auth)
+    @State private var pendingTaskLink = false
     private let container: ModelContainer
 
     init() {
@@ -66,14 +67,23 @@ struct MeetingAppApp: App {
             }
             .environment(session)
             .environment(navigator)
-            .onOpenURL { session.open($0) }
+            .onOpenURL { url in
+                if url.scheme == "meetingmemory" && url.host == "tasks" {
+                    if case .signedIn = session.stage {
+                        navigator.activeTab = .tasks
+                    } else {
+                        pendingTaskLink = true
+                    }
+                } else { session.open(url) }
+            }
             .task { await session.followAuthChanges() }
             .onChange(of: session.stage) { _, stage in
                 switch stage {
                 case .signedIn:
                     // Every sign-in lands on the Meetings tab, not wherever the last user left off.
                     navigator.closeMeeting()
-                    navigator.activeTab = .meetings
+                    navigator.activeTab = pendingTaskLink ? .tasks : .meetings
+                    pendingTaskLink = false
                 case .signedOut:
                     LocalCache.clear(container.mainContext)
                 default:
