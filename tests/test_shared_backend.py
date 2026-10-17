@@ -289,6 +289,49 @@ def test_failed_processing_retry_on_other_backend(pair, member):
     )
 
 
+@pytest.mark.parametrize("purge_only", [False, True])
+@pytest.mark.parametrize(
+    "audio_path", [None, "", "scripted-text-only:no-audio", "/original/recording.wav"]
+)
+def test_delete_meetings_without_processing_jobs(
+    pair, member, make_user, purge_only, audio_path
+):
+    apps, first, _, audio = pair
+    project, auth = member
+    with apps[0].state.pool.connection() as conn:
+        meeting_id = conn.execute(
+            "INSERT INTO meetings(project_id,name,meeting_date,status,audio_file_path) "
+            "VALUES(%s,'Text-only fixture',now(),'completed',%s) RETURNING id",
+            (project, audio_path),
+        ).fetchone()["id"]
+    endpoint = (
+        f"/api/projects/{project}/meetings"
+        if purge_only
+        else f"/api/v1/projects/{project}"
+    )
+    _, outsider = make_user()
+    assert first.delete(endpoint, headers=outsider).status_code == 404
+    response = first.delete(endpoint, headers=auth)
+    has_recording = audio_path == "/original/recording.wav"
+    if has_recording:
+        assert response.status_code == 409, response.text
+        assert response.json()["detail"] == (
+            "Delete local recordings on their original backend"
+        )
+    else:
+        assert response.status_code == 200, response.text
+    with apps[0].state.pool.connection() as conn:
+        remaining = conn.execute(
+            "SELECT id FROM meetings WHERE id=%s", (meeting_id,)
+        ).fetchone()
+        assert bool(remaining) == has_recording
+        project_exists = conn.execute(
+            "SELECT id FROM projects WHERE id=%s", (project,)
+        ).fetchone()
+        assert bool(project_exists) == (purge_only or has_recording)
+    assert not audio.objects
+
+
 def test_actual_two_worker_loops(tmp_path, embedder, fake_inference, member):
     audio = MemoryAudio()
     apps = [

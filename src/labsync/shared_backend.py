@@ -411,8 +411,12 @@ def install_routes(app):
 
     def lock_project(conn, project_id):
         conn.execute("SELECT id FROM projects WHERE id=%s FOR UPDATE", (project_id,))
+        # Text-only imports have no processing job or recording to clean up.
+        # Keep local recordings protected so their files are not orphaned.
         if conn.execute(
-            "SELECT 1 FROM meetings m WHERE m.project_id=%s AND NOT EXISTS "
+            "SELECT 1 FROM meetings m WHERE m.project_id=%s "
+            "AND NULLIF(m.audio_file_path, '') IS NOT NULL "
+            "AND m.audio_file_path <> 'scripted-text-only:no-audio' AND NOT EXISTS "
             "(SELECT 1 FROM meeting_jobs j WHERE j.meeting_id=m.id) LIMIT 1",
             (project_id,),
         ).fetchone():
