@@ -1,3 +1,5 @@
+> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../architecture.md) for implemented connections and [the native walkthrough](../demo_walkthrough.md) for acceptance evidence.
+
 ### 1. Native iOS Client Stack
 
 - **Swift 6 & SwiftUI:** The core framework for the iOS client. Modern Swift Concurrency (`async`/`await`, `TaskGroup`, and Actors) prevents UI hangs when parsing large transcripts or receiving streaming LLM responses.

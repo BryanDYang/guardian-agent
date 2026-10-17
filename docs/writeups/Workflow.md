@@ -1,3 +1,5 @@
+> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../architecture.md) for implemented connections and [the native walkthrough](../demo_walkthrough.md) for acceptance evidence.
+
 ## Sequential AI build with agent
 
 To build this end-to-end system with an AI agent while preventing hallucinations, dependency loops, and schema drift, develop from the **data contracts upward**—locking core schemas and headless processing before writing API routers or client views.

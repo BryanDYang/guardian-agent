@@ -198,3 +198,16 @@ passed with the undo-token cache fix and preserved existing app data during
 installation. Real audio-to-task acceptance, physical audibility, independent
 labels, and model-quality evaluation remain open. This follow-up is documented
 alongside its implementation and versioned fixture in the repository.
+# October 17 simulator OAuth signing repair
+
+Google sign-in displayed "invalid request: both auth code and code verifier
+should be non-empty" after the unsigned simulator installation. Simulator
+security logs showed `-34018`: the app lacked application-identifier/Keychain
+entitlements. Rebuilt with simulator code signing enabled and ad-hoc identity;
+verified the embedded simulated application identity and reinstalled/relaunched
+without clearing app data. A disposable non-secret Keychain entry was written,
+read, and deleted inside the running app; all three operations returned success.
+The entry was removed and the debugger detached. No real credentials were read.
+This verifies the storage repair; a fresh user Google sign-in still needs to
+complete to establish end-to-end OAuth acceptance. Keep signing enabled for
+future simulator acceptance builds; do not bypass PKCE or replace Keychain.

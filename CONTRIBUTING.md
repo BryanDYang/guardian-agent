@@ -1,6 +1,6 @@
 # Contributing to ai-capstone
 
-This document covers development of the meeting follow-through assistant.
+This document covers development of the meeting follow-through assistant. Start with the [current architecture and troubleshooting guide](docs/architecture.md) and [repository map](docs/README.md) before tracing a feature.
 
 ## Development setup
 
@@ -20,7 +20,7 @@ uv run ruff format --check src tests
 uv run pytest
 ```
 
-To use the shared backend on Will's Mac, get his API key privately and run
+To use the shared backend on Will's Mac, get the backend URL and public Supabase configuration from him, sign in with your own app account, and run
 `scripts/use_shared_backend.sh` (see [README](README.md#option-a-use-wills-backend)).
 
 Tests run offline without API keys. Keep real meeting artifacts and participant
@@ -59,7 +59,7 @@ git checkout -b feature/my-feature
 - Keep commits small and focused, with one logical change per commit.
 - Write clear commit messages in the imperative mood.
 - Never commit `.env`, `LabSyncConfig.plist`, or any file containing secrets or API keys.
-- Treat [docs/milestone_1/project_proposal.md](docs/milestone_1/project_proposal.md) as the current project source of truth.
+- Use [current architecture](docs/architecture.md) for implementation structure and [Milestone 3 scope](docs/milestone_3/scope_and_acceptance.md) for acceptance goals. Earlier proposals are historical context.
 - Do not reintroduce archived requirements without first updating the active proposal.
 
 ---
@@ -77,7 +77,7 @@ git checkout -b feature/my-feature
 
 ## Reporting Issues
 
-Open a [GitHub Issue](../../issues) with:
+Open a [GitHub Issue](https://github.com/BryanDYang/guardian-agent/issues) with:
 
 - A clear title describing the problem.
 - Steps to reproduce.

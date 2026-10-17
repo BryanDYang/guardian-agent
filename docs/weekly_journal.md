@@ -197,9 +197,9 @@ Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/fo
 
 # Week 8 (October 12-18, 2026)
 
-**Setup:** Planning section opened October 11. No Week 8 work or results are recorded yet. Use the [Milestone 3 roadmap](milestone_3/roadmap.md) for execution order and the [checklist](checklist.md) for implementation status.
+**Setup:** Planning section opened October 11. Use the [Milestone 3 roadmap](milestone_3/roadmap.md) for execution order and the [checklist](checklist.md) for implementation status.
 
-**Did:** To be updated with completed work and supporting evidence during the week.<br>
+**Did (October 17):** Reproduced and fixed shared-backend deletion of text-only scripted meetings while retaining local-recording cleanup protection. Added project-controlled immediate task email, recipient opt-out, a durable delivery queue, captured-email previews/history, and optional evidence-gated automatic approval after speaker/account confirmation. Applied the additive migration with automation off for all projects and installed a passing simulator build. See [follow-through setup and limitations](milestone_3/follow_through.md). Real inbox delivery and native visual acceptance remain unverified; recurring reminders are unfinished.<br>
 **Blocked on:** Independent sequence-label review, consenting test-account mappings, and coordination with Will for shared-worker recovery. Scripted UI acceptance does not establish real audio-to-task or model quality.<br>
 **Next:** Freeze the development sequence expectations, complete the real native task loop, and implement bounded continuity proposals before running paired evaluations.
 

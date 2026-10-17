@@ -24,7 +24,18 @@ text-only fixture uses seeded candidates, including completion. It closes the
 scripted UI path, not real extraction, audio playback, or the full native gate.
 See the walkthrough for evidence and limitations.
 
-## Starting point
+## October 17 follow-through implementation
+
+Added project-controlled immediate task email, recipient opt-out, captured-email
+previews and delivery history, and an optional narrow automatic-approval rule
+after human speaker/account confirmation. The policy records evidence and
+abstains on uncertain language, unresolved deadlines, and possible duplicates.
+It is experimental, not calibrated confidence. See [setup and acceptance](follow_through.md).
+Recurring reminder lifecycle, real inbox delivery, a-d model-quality evaluation,
+and native visual acceptance remain open. This advances Stage 3 but does not
+close its follow-through gate.
+
+## Starting point (October 10 inspection)
 
 Shared-mode backend, authenticated native uploads, Google sign-in, project membership, extraction, task review/lifecycle, and cited chat are implemented. Seven AMI meetings completed processing and produced 69 pending candidates at the last inspection. No candidates were approved. The calendar therefore remained empty. Targeted backend tests passed (29), lint passed, and simulator builds passed. Full native acceptance, live two-host recovery, external tester access, sequence accuracy, and automatic follow-through remain unverified.
 

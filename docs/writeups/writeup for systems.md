@@ -1,12 +1,14 @@
+> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../architecture.md) for implemented connections and [the native walkthrough](../demo_walkthrough.md) for acceptance evidence.
+
 **1. [[Native Presentation System]] (SwiftUI)** Drives the 3-axis tab layout: the Projects/Meetings dashboard (summaries, decisions, transcripts, attendee storylines), the date-based Tasks calendar with 3-state execution (Open, Done, Dropped), and the conversational Chat view.
 
-**2. [[Audio Playback & Deep-Linking Engine ]](AVFoundation)** Enables sub-second playhead seeking (`AVPlayer.seek(to: CMTime)`) mapped directly to transcript offsets, decision evidence, task proof citations, and chat source references without streaming full raw audio over the network repeatedly.
+**2. [Audio Playback & Deep-Linking Engine](<systems/Audio Playback & Deep-Linking Engine.md>)** Enables sub-second playhead seeking (`AVPlayer.seek(to: CMTime)`) mapped directly to transcript offsets, decision evidence, task proof citations, and chat source references without streaming full raw audio over the network repeatedly.
 
 **3. [[Mobile OS Integration Service]] (Apple EventKit)** Natively bridges device capabilities by extracting attendee metadata from calendar events and exporting approved tasks and deadlines directly to Apple Reminders and Calendar, eliminating the need for a dedicated push notification backend.
 
-**4. [[Remote Gateway & Secure Tunneling Layer ]](Cloudflare Tunnel / Tailscale)** Exposes the local backend to the mobile app over secure, zero-trust HTTPS and WebSockets, bypassing complex port forwarding, router configuration, or expensive cloud infrastructure.
+**4. [Remote Gateway & Secure Tunneling Layer](<systems/Remote Gateway & Secure Tunneling Layer.md>)** Exposes the local backend to the mobile app over secure, zero-trust HTTPS and WebSockets, bypassing complex port forwarding, router configuration, or expensive cloud infrastructure.
 
-**5. [[Ingestion & Sequential Worker Service ]](FastAPI / Uvicorn)** Serves as the central API gateway enforcing project-level access guards. It orchestrates background processing via an asynchronous worker queue, handles FFmpeg audio normalization, and executes safe, recoverable file trashing via `send2trash`.
+**5. [Ingestion & Sequential Worker Service](<systems/Ingestion & Sequential Worker Service.md>)** Serves as the central API gateway enforcing project-level access guards. It orchestrates background processing via an asynchronous worker queue, handles FFmpeg audio normalization, and executes safe, recoverable file trashing via `send2trash`.
 
 **6. [[Acoustic Ingestion & Diarization Pipeline]] (MLX-Whisper + pyannote.audio)** *Leverages the PREBUILT foundation.* Executes on Apple Silicon unified memory to generate word-level timestamped transcripts, separate speech turns, and resolve persistent x-vector voice embeddings against attendee records.
 

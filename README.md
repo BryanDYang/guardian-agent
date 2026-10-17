@@ -4,7 +4,9 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Repository:** https://github.com/BryanDYang/guardian-agent
 
-**Pipeline:** iOS app uploads audio → Cloudflare Tunnel → backend on a Mac → Whisper (medium) transcribes → Codex or Claude extracts decisions and action items → results show up in the app.
+**Pipeline:** iOS uploads audio through Cloudflare Tunnel → the Mac backend queues processing → local Whisper/diarization and Codex or Claude produce results → PostgreSQL stores meeting/task state → the app refreshes its cache. Optional immediate task email runs through a separate backend worker.
+
+**Understand the system:** [Current architecture, data flows, and troubleshooting](docs/architecture.md). For code ownership, design history, and a staged simplification plan, see the [documentation and repository map](docs/README.md). For remaining milestone work, see the [Milestone 3 roadmap](docs/milestone_3/roadmap.md).
 
 Pick one:
 
@@ -13,8 +15,8 @@ Pick one:
 
 ## Option A: Use Will's backend
 
-1. Send Will the email you will sign up with. He adds you to the Supabase team and the Google sign-in test users.
-2. Accept the Supabase team invite in your email.
+1. Send Will the email you will sign up with. He confirms backend access and adds you to the Google sign-in test users if required by the configured Google audience.
+2. App users do not need Supabase dashboard/team access. You will need an app account and a project invitation.
 3. Ask Will for the Supabase URL and anon key.
 4. Run:
 
