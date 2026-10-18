@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 The Native Presentation System (SwiftUI) is the client-side interface of the app, organizing meeting artifacts into a 3-tab navigation hierarchy—Meetings, Tasks, and Chat—while coordinating audio playback, consent checks, and background pipeline states.
 
 **1. Meetings View & Meeting Detail Hub** Serves as the app’s default landing screen, structured to handle multi-project tracking and meeting inspection:

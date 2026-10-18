@@ -4,10 +4,42 @@
 **Track:** AI Engineering
 **Team:** Will Liu, Guadalupe Cantera, and Bryan Yang
 **Repository:** https://github.com/BryanDYang/guardian-agent
-**Draft updated:** October 10, 2026
+**Draft updated:** October 18, 2026
 **Planned submission date:** October 26, 2026
 
 > **Draft status:** This document follows the AI Engineering requirements and 100-point rubric in `contexts/milestone_3/Milestone 3.pdf`. It records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The final deliverable must be submitted as a single PDF unless the teaching staff directs otherwise.
+
+## October 18 status checkpoint
+
+Bryan completed the October 17 immediate-follow-up implementation and reports
+progress on the AMI development walkthrough on October 18. User-supplied
+screenshots show accepted tasks in To-do and enabled follow-through settings;
+the Test inbox remains empty. These observations do not establish a reviewed or
+scored TS3005a-d sequence, a personal audio-to-email run, or real inbox delivery.
+
+Implemented: optional evidence-gated automatic approval after current human
+speaker/account confirmation; project email controls and recipient opt-out;
+transactional email outbox, retry/deduplication, captured previews and delivery
+history. All 311 backend tests, Ruff lint/format, and the simulator build passed
+on October 17. Google OAuth's simulator Keychain signing failure was repaired
+and storage access verified; complete fresh Google sign-in still needs recording.
+See [architecture](../architecture.md), [follow-through details](follow_through.md),
+and the [Week 8 journal](../weekly_journal.md#week-8-october-12-18-2026).
+
+Next: Bryan records a consented personal meeting in a separate test project,
+connects its speaker to his actual app account, and runs the
+[replaceable-date acceptance scripts](follow_through.md#personal-recording-test-scripts). AMI speakers
+must not be treated as real account holders. Date-bearing tasks need manual
+review; relative-date prefilling, completion-only update extraction, recurring
+reminders, live inbox delivery, independent sequence labels, paired evaluations,
+external feedback, and live two-host recovery remain unfinished.
+
+The professor's Zoom/CCB direction is documented as a proposed future input path:
+authorized summaries/transcripts could feed the same backend and standalone
+mobile app. No Zoom integration or account-permission test has been completed.
+Validate the existing task loop first, then try one authorized artifact and
+report Zoom-input results separately. The original exploratory note is local-only
+in `contexts/zoom_integration_direction.md`; the tracked roadmap summarizes it.
 
 ## 1. Project and Milestone Goal
 
@@ -70,13 +102,13 @@ Completed implementation includes:
 - Bearer-token authentication for backend routes.
 - A PostgreSQL connection pool shared by API handlers and background processing.
 
-The sequential worker still uses a local `meeting.json` record for part of its status and retry flow. PostgreSQL is therefore the application data store, but it is not yet the only source of truth for pipeline status.
+Shared mode uses PostgreSQL jobs/status, private audio storage, and recoverable worker leases. Legacy local mode retains `meeting.json` records. Do not treat the two modes as interchangeable recording owners.
 
 ### October 11 native continuity validation
 
 A separate scripted project exercised undated approval, repeated mentions, a reviewed deadline change, and reviewed completion across four meetings. The simulator and PostgreSQL retained one accepted task ID, three evidence-backed reconciliation audits, and the completed state after relaunch. The run exposed date display, review guidance, empty-state, and stale Undo-token issues; the follow-up fixes were validated natively. All 283 backend tests, Ruff checks, and the simulator build passed.
 
-These are deliberately seeded text-only candidates, including the completion candidate. This is workflow and persistence evidence, not audio processing or model accuracy evidence. Completion-only update extraction, independent sequence labels, paired evaluations, reminders, external alpha testing, and two-host recovery remain unfinished. See `docs/demo_walkthrough.md` for the observed steps.
+These are deliberately seeded text-only candidates, including the completion candidate. This is workflow and persistence evidence, not audio processing or model accuracy evidence. Completion-only update extraction, independent sequence labels, paired evaluations, reminders, external alpha testing, and two-host recovery remain unfinished. See `docs/evidence/demo_walkthrough.md` for the observed steps.
 
 ### 2.2 Structured audio and extraction pipeline
 
@@ -96,19 +128,36 @@ With `--diarize`, the pipeline now matches speaker centroids against enrolled pr
 
 Remaining pipeline work includes calibrated speaker identification, attendee storylines, task deduplication and cross-meeting reconciliation, meeting duration persistence, and verification of PostgreSQL-backed status in shared mode; legacy local mode retains JSON status.
 
-### 2.3 Human review and task lifecycle
+### 2.3 Task review, lifecycle, and immediate follow-through
 
-The iOS client and backend support the human review path for candidate tasks. A reviewer can approve, edit, or dismiss a pending item. Approval requires an explicit due date. Approved tasks appear in the Tasks calendar and can be copied to Apple Reminders.
+A reviewer can approve, edit, or dismiss a pending task. Deadlines are optional:
+accepted undated work appears in To-do; dated tasks also appear in Calendar.
+Review and accepted-task edits are audited. Approved tasks support `open`, `done`,
+and `dropped`, with lifecycle Undo protected against stale tokens and later edits.
+Dated approvals can also produce a phone-side Apple Reminders export.
 
-Approved tasks support `open`, `done`, and `dropped` lifecycle states. Each lifecycle change appends an audit record with the previous state, new state, and a unique revert token. The user can undo a lifecycle change through that token.
+Reviewed reconciliation can attach a later candidate to one existing accepted
+task as a repeated mention, deadline change, or completion, preserving task ID
+and evidence history. Similarity alone does not authorize an update. A seeded
+four-meeting native fixture verified this workflow on October 11; natural-data
+sequence accuracy and completion-only proposal extraction remain open.
 
-Current limitations are:
+Project owners can enable a narrow experimental automatic-approval rule after
+human-confirmed speaker/account mapping. It requires explicit self-commitment,
+supported evidence/title, available embeddings, and no unresolved deadline or
+possible duplicate. This is not calibrated AI confidence. Other tasks stay pending.
 
-- Edits made during candidate review are not yet included in the task audit log.
-- Editing an already approved task is not implemented.
-- Calendar-event creation and ingest-time calendar matching are not implemented.
-- A candidate can return `matches_task` when its title embedding has cosine similarity of at least 0.80 with an earlier approved open task in the same project. The candidate is still inserted; duplicate prevention, deadline updates, completion inference, and ambiguous-match arbitration are not implemented.
-- Scheduled follow-up beyond the one-time Apple Reminder created at approval is not implemented.
+Immediate email queues transactionally for an approved assigned task when project
+email and recipient preferences permit. A separate worker records capture or
+provider acceptance, with retry/idempotency protection and pre-send state/access
+checks. Default capture mode sends nothing externally. The current AMI walkthrough
+has no real recipient mapping or captured email; personal-recording acceptance
+and configured live inbox delivery are still pending.
+
+Recurring reminders, automatic relative-date calculation, automatic later-task
+updates, calendar-event creation, and calendar-based attendee matching remain
+unimplemented. One-time export and immediate email do not establish a complete
+reminder lifecycle. See [follow-through details](follow_through.md).
 
 ### 2.4 Project chat with hybrid retrieval and verified citations
 
@@ -127,7 +176,7 @@ The newest alpha capability is project-scoped chat over stored meeting history. 
 
 The current retrieval implementation uses exact cosine search within a project instead of an approximate HNSW query. This favors recall and predictable project filtering at the current alpha scale. Transcript chunks use windows of complete speaker turns up to 150 words, while summaries, decisions, and tasks receive their own chunks.
 
-Citation badges can navigate toward a meeting transcript, but audio playback and timestamp seeking are not yet connected. Real embedding-model, live model-response, Supabase, and Swift build checks must be completed on the team environment before these features are claimed as end-to-end verified.
+Citation navigation and authenticated audio playback/seeking are implemented, with selected simulator observations recorded in the walkthrough. Full native citation journeys, physical audibility, and measured answer/citation quality remain open.
 
 ### 2.5 iOS alpha application
 
@@ -140,7 +189,7 @@ The SwiftUI client currently provides four main areas:
 
 The client uses a configurable base URL and the signed-in user's Supabase access token and can connect to the backend through a Cloudflare Tunnel. The repository includes scripts that configure and check the remote connection.
 
-The client no longer seeds sample projects on launch. It refreshes projects from `GET /api/v1/projects`, and cache preparation removes legacy seed project IDs. Seed data remains for previews and tests. Audio playback still uses a static dock. Clean-install persistence and the complete native journey still require recorded verification.
+The client no longer seeds sample projects on launch. It refreshes projects from `GET /api/v1/projects`, and cache preparation removes legacy seed project IDs. Seed data remains for previews and tests. The audio dock uses AVPlayer with authenticated temporary-file download and seeking. Clean-install persistence and the complete native journey still require recorded verification.
 
 ### 2.6 Accounts, membership, and voice consent
 
@@ -154,11 +203,11 @@ The alpha consists of the following integrated systems:
 
 | Layer              | Current implementation                                                    | Current limitation                                               |
 | ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Native client      | SwiftUI and SwiftData iOS application                                     | Static playback UI remains; clean-install journey unverified     |
+| Native client      | SwiftUI and SwiftData iOS application                                     | Full native/physical-device acceptance remains open     |
 | Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication               | Project membership is enforced; live authorization checks remain |
 | API and worker     | FastAPI with optional PostgreSQL jobs and recoverable shared workers       | Two-device recovery and API failover routing remain unverified    |
 | Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain   |
-| Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Cross-meeting reconciliation is not implemented                  |
+| Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Reviewed reconciliation exists; automatic update proposals and sequence accuracy remain open                  |
 | Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused    |
 | Retrieval and chat | Hybrid dense/full-text retrieval, structured answers, verified citations  | Live model and embedding checks remain; no streaming             |
 | Evaluation         | Offline ASR and extraction harnesses with saved predictions               | RAG and sequence evaluations are incomplete                      |
@@ -168,6 +217,13 @@ The architecture intentionally separates audio recognition, structured extractio
 ## 4. Current Verification Evidence
 
 ### 4.1 Automated tests
+
+Latest recorded run, October 17: all **311 backend tests** passed on disposable
+PostgreSQL, with Ruff lint/format and the simulator build passing. The suite
+reported two dependency deprecation warnings. See [follow-through verification](follow_through.md#verification)
+and commits `88f517a`, `ff58d1c`, and `0d01cf4`. No new test suite or model-quality
+evaluation was run during the October 18 documentation update. Final submission
+checks still need to be repeated on the submission commit.
 
 The chat implementation report records 116 passing tests against PostgreSQL 16 and pgvector, including 25 tests added for chat and retrieval. These tests cover chunk construction, citation verification, refusal rules, project isolation, meeting scoping, task-state freshness, dismissed-task exclusion, hybrid ranking, history, model failure behavior, purge behavior, and index replacement after retry.
 
@@ -182,7 +238,7 @@ The prior Milestone 2 evaluation also included deterministic tests for extractio
 
 ### 4.2 End-to-end alpha verification
 
-The repository contains the components needed for an alpha demonstration, but the complete user journeys in `docs/checklist.md` are not yet marked verified. The team should execute and record one clean run using the checked-in AMI audio fixture or another consented recording.
+The repository contains the components needed for an alpha demonstration, but the complete user journeys in `docs/archive/checklist.md` are not yet marked verified. The team should execute and record one clean run using the checked-in AMI audio fixture or another consented recording.
 
 Required verification sequence:
 
@@ -213,7 +269,7 @@ The smallest coherent evaluation plan is:
 2. Use those same runs to review answer correctness, citation faithfulness, refusals, failures, latency, tokens, and cost. Include ordinary successes and failures in the independent human review. Quote validity alone does not establish that an answer is supported.
 3. Record one clean native end-to-end alpha journey, including sign-in, server project persistence, task review, chat, and deletion. This is integration evidence, separate from model-quality measurements.
 4. Evaluate speaker matching on consented labeled recordings with enrolled and unenrolled speakers if it is presented as an advanced extension. Report correct/incorrect identification, abstentions, unknown-speaker false matches, and downstream owner attribution. Calibrate on development recordings and keep evaluation recordings separate.
-5. Evaluate a reviewed recurring-meeting sequence if we claim cross-meeting reconciliation. Until state-update logic exists, measure only the similarity flag or state explicitly that full continuity remains incomplete.
+5. Evaluate a reviewed recurring-meeting sequence if we claim cross-meeting reconciliation. Measure reviewed reconciliation separately from autonomous proposals and retain the remaining continuity limitations.
 
 The RAG set and controlled comparison are the immediate priority. Speaker and sequence evaluations support our feature claims; the assignment does not prescribe these particular datasets. No new Milestone 3 model-quality measurements are recorded in this draft yet.
 
@@ -364,7 +420,7 @@ The SwiftUI client uploads consented audio to an authenticated FastAPI service, 
 
 ### Operational constraints and mitigations
 
-The backend currently runs on Apple Silicon Macs and depends on separately supplied transcription code. Optional shared mode stores audio in private Supabase Storage and jobs/status in PostgreSQL, with recoverable worker leases and project membership checks. Bryan has verified a shared-mode backend locally; live two-device recovery and automatic API routing remain unverified. The first model download is large, chat is not streamed, and legacy local-mode status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Longer-term mitigations include database-backed status, selective redaction, broader participant-level recording consent controls, audio seeking, and reviewed reconciliation logic.
+The backend currently runs on Apple Silicon Macs and depends on separately supplied transcription code. Optional shared mode stores audio in private Supabase Storage and jobs/status in PostgreSQL, with recoverable worker leases and project membership checks. Bryan has verified a shared-mode backend locally; live two-device recovery and automatic API routing remain unverified. The first model download is large, chat is not streamed, and legacy local-mode status still depends on a local JSON record. Before submission, we will verify clean installation, database migrations, real embeddings, live inference, project persistence, refusal behavior, isolation, and deletion. Shared-mode database status, audio seeking, and reviewed reconciliation are now implemented. Remaining work includes full native acceptance, live recovery, selective redaction, broader participant controls, and evaluated automatic continuity.
 
 ## 8. Privacy, Safety, and Responsible Use
 
@@ -385,7 +441,7 @@ Current limits must be stated clearly:
 
 ## 9. What Remains Before Submission
 
-The [execution roadmap](roadmap.md) orders implementation, testing, and validation gates. The [scope and acceptance plan](scope_and_acceptance.md) defines proposed Milestone 3 targets, the engineering sequence, and next-phase boundaries. The [implementation checklist](../checklist.md) tracks code; the [native walkthrough](../demo_walkthrough.md) tracks observed acceptance. Targets are not completed claims.
+The [roadmap, scope, and acceptance plan](roadmap.md) defines current targets, execution order, validation gates, and next-phase boundaries. The [implementation checklist](../archive/checklist.md) tracks code; the [native walkthrough](../evidence/demo_walkthrough.md) tracks observed acceptance. Targets are not completed claims.
 
 ### Required for a credible Milestone 3 alpha
 
@@ -411,13 +467,13 @@ The [execution roadmap](roadmap.md) orders implementation, testing, and validati
 
 ### Central product claim that remains incomplete
 
-Cross-meeting task reconciliation is the core distinction between LabSync and an independent meeting summarizer. The current application stores task state and lets users change it, and flags title-similar candidates against earlier approved open tasks. It does not yet merge duplicates, arbitrate ambiguous matches, update a deadline, or infer completion from later meetings. The team should either implement and evaluate a narrow three-meeting reconciliation path before submission or explicitly present it as the highest-priority limitation. It must not be described as completed without measured sequence evidence.
+Cross-meeting continuity remains the central product claim to evaluate. Human-confirmed reconciliation with stable task identity is implemented and passed a seeded native workflow. Completion-only update proposals, autonomous state changes, reviewed natural-sequence expectations, and measured sequence accuracy remain unfinished. Immediate email is implemented in capture mode; recurring follow-through is not. Neither the seeded fixture nor the current AMI screenshots establish the complete product claim.
 
 ### Valuable alpha improvements if time permits
 
-- Connect `AVPlayer` to stored audio and seek from transcript and chat citations.
+- Complete physical-device audio and full citation-navigation acceptance for the implemented player.
 - Verify shared-mode PostgreSQL status and live worker recovery; decide how to migrate remaining local-mode records.
-- Add approved-task editing with audit records.
+- Complete real-recording acceptance of the implemented approved-task editing/audit path.
 - Save meeting duration and display a real waveform or deterministic progress UI.
 - Add summary editing and formatted sharing.
 - Add transcript redaction.
@@ -473,7 +529,7 @@ Assignments remain proposed until confirmed by the team.
 - Human review of labels and semantic matches is incomplete.
 - The required ablation, updated RAG results, and latency/cost table are not complete.
 - The iOS build and real model/embedding behavior must be verified on the team environment.
-- Legacy local-mode JSON status and static playback limit the alpha path; seed-free launch and server project refresh are implemented but need clean-run evidence.
+- Legacy local-mode JSON status remains; shared-mode status and real playback are implemented. Seed-free launch, server refresh, and the full native flow still need clean-run evidence.
 
 ### Planned next steps
 
@@ -511,11 +567,11 @@ The rubric allocates 60 points to core progress and evidence quality and 40 poin
 Primary repository documentation:
 
 - `README.md` for installation, backend, tunnel, iOS, and evaluation commands.
-- `docs/checklist.md` for the current end-to-end completion checklist.
-- `docs/demo_walkthrough.md` for recording native acceptance evidence.
+- `docs/archive/checklist.md` for the current end-to-end completion checklist.
+- `docs/evidence/demo_walkthrough.md` for recording native acceptance evidence.
 - `docs/weekly_journal.md` for the Week 6 and Week 7 progress/reflections.
 - `src/labsync/voice.py`, `src/labsync/embeddings.py`, and `src/labsync/db/meetings.py` for current speaker and task-similarity settings.
-- `docs/writeups/systems/Chat RAG & Citations.md` for the retrieval, answer, citation, and persistence design.
+- `docs/archive/writeups/systems/Chat RAG & Citations.md` for the retrieval, answer, citation, and persistence design.
 - `docs/archive/milestone_2/submission_draft.md` for the prior dataset, baseline, and evaluation record.
 - `docs/archive/milestone_2/results/README.md` for task-extraction measurements.
 - `docs/archive/milestone_2/transcription_results.md` for ASR measurements.
@@ -529,7 +585,7 @@ Primary repository documentation:
 
 The signed-in iOS app created four real AMI projects and uploaded seven recordings: TS3005a-d (one connected dev project), IS1008a (isolation/validation), IS1009a (evaluation candidate), and ES2004a (separate evaluation trial). All uploads were confirmed in shared PostgreSQL job records. At the checkpoint, TS3005a and b had completed processing and other jobs were running or queued. Project-list persistence across app relaunch was observed. The simulator build passed, and Profile was visually verified in light and dark appearances. The third voice-enrollment prompt is now scripted; its effect on retries remains unmeasured.
 
-This is partial native integration evidence. Transcript correctness, task review and continuity, cited answers/refusals, cross-project isolation, purge, clean-install behavior, external tester availability, and live two-host failover still require recorded acceptance runs. IS1009a and ES2004a were used in the Milestone 2 ASR pilot and cannot be presented as untouched evaluation inputs. See [shared backend setup](../shared_backend.md) and [native walkthrough](../demo_walkthrough.md).
+This is partial native integration evidence. Transcript correctness, task review and continuity, cited answers/refusals, cross-project isolation, purge, clean-install behavior, external tester availability, and live two-host failover still require recorded acceptance runs. IS1009a and ES2004a were used in the Milestone 2 ASR pilot and cannot be presented as untouched evaluation inputs. See [shared backend setup](../reference/shared_backend.md) and [native walkthrough](../evidence/demo_walkthrough.md).
 
 ## October 11 implementation checkpoint (not final acceptance)
 

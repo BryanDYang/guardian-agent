@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 The Remote Gateway & Secure Tunneling Layer bridges the native iOS client over cellular or Wi-Fi to the local FastAPI backend running on your M4 Mac. By deploying an outbound-only daemon like Cloudflare Tunnel (`cloudflared`) or a Tailscale mesh VPN, it provides an encrypted gateway without cloud server costs, port forwarding, or dynamic DNS configuration.
 
 **1. Outbound Encrypted Ingress**

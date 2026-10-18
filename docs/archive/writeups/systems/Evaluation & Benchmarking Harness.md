@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 The Evaluation & Benchmarking Harness is an offline, decoupled testing suite built with `pytest`, `jiwer`, `pyannote.metrics`, and `ragas`. It runs locally on the host Mac to quantify error propagation across each discrete stage of the pipeline—from raw acoustics to grounded RAG responses—without touching production database tables or the mobile client.
 
 **1. Acoustic Transcription Benchmarking (`jiwer`)**

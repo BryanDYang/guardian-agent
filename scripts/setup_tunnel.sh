@@ -100,7 +100,7 @@ echo "Set BaseURL to https://$HOST and the Supabase settings to match .env."
 
 if [ ! -f "$ROOT/contexts/meeting_transcriber-master/meeting_transcriber.py" ]; then
   printf '\nWarning: contexts/meeting_transcriber-master is missing, so uploads will fail at\n'
-  printf 'transcription. See docs/ccb-transcriber.md.\n'
+  printf 'transcription. See docs/reference/ccb-transcriber.md.\n'
 fi
 
 cat <<EOF

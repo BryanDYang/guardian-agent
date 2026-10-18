@@ -87,7 +87,7 @@ accuracy, task extraction, RAG, and calendar/task state are outside this test.
 
 Install the audio and development dependencies, obtain the supplied CCB source,
 and download the manual annotation archive and each manifest recording to its
-listed path. Existing acquisition examples are in `docs/codex-integration.md`.
+listed path. Existing acquisition examples are in `docs/reference/codex-integration.md`.
 For example:
 
 ```bash

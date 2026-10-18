@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 The Ingestion & Sequential Worker Service is the backend orchestration engine running on the host M4 Mac via FastAPI and Uvicorn. It bridges incoming network uploads to the local ML models, enforcing project-level security and coordinating resource-intensive pipelines one meeting at a time.
 
 **1. Ingestion Gateway & Access Verification**

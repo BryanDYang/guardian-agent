@@ -26,7 +26,7 @@ separately; the root license alone does not establish their redistribution terms
 ## Initial Codex integration
 
 The audited tree has no `meeting_transcriber.py`, `source_handlers/`, or
-`meeting_log.py`. `docs/writeups/PREBUILT_TRANSCRIBER.md` describes a separate
+`meeting_log.py`. `docs/archive/writeups/PREBUILT_TRANSCRIBER.md` describes a separate
 audio tool now supplied in `contexts/meeting_transcriber-master`. The simulation LLM factory
 supports OpenAI, Anthropic, and mock clients; there is no Gemini adapter to swap.
 

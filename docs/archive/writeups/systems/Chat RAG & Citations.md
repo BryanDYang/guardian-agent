@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 # Project chat: hybrid RAG with citations
 
 Implements Tech Stack section 6 (RAG, Search & Citations) end to end:

@@ -148,7 +148,7 @@ Prompt engineering currently feels partly like art: wording and context choices 
 
 # Week 7 (October 5-11, 2026)
 
-**Progress so far, based on Will's October 4 implementation and [checklist update](checklist.md).**
+**Progress so far, based on Will's October 4 implementation and [checklist update](archive/checklist.md).**
 
 **Did:** Will implemented voice enrollment and speaker identification across the iOS client and backend. Enrollment records three clips and stores a voiceprint only after consent and quality checks. Users can skip enrollment, re-record from Profile, or revoke consent to delete their voiceprint. With the worker running with `--diarize`, the pipeline uses cosine similarity to match diarized speakers to enrolled project members; unmatched speakers keep generic `SPEAKER_N` labels.<br>
 **Blocked on:** Speaker-match thresholds are provisional and have not been calibrated. We still need a documented native end-to-end run and a speaker-identification benchmark before claiming reliable recognition.<br>
@@ -173,7 +173,7 @@ Bryan's immediate sequence is to bring up a reachable local backend, verify sign
 
 ## October 10 checkpoint: shared backend and native dataset setup
 
-**Did:** Bryan brought up a second backend on his Mac using the shared Supabase project. Added opt-in shared processing: private audio Storage, PostgreSQL job/status records, renewable worker leases, fenced publication, per-project processing order, and deferred object cleanup. Existing local mode remains available. The backend now runs in a detached `labsync` tmux session; its shared-mode health check passed after a graceful restart. This provides shared storage and recoverable work, not automatic API failover. Will has not yet been verified running the same shared configuration. See [deployment and restart instructions](shared_backend.md).
+**Did:** Bryan brought up a second backend on his Mac using the shared Supabase project. Added opt-in shared processing: private audio Storage, PostgreSQL job/status records, renewable worker leases, fenced publication, per-project processing order, and deferred object cleanup. Existing local mode remains available. The backend now runs in a detached `labsync` tmux session; its shared-mode health check passed after a graceful restart. This provides shared storage and recoverable work, not automatic API failover. Will has not yet been verified running the same shared configuration. See [deployment and restart instructions](reference/shared_backend.md).
 
 Configured Google sign-in and reached the signed-in native app. Created real account-owned AMI projects through iOS and verified they remained after relaunch. Uploaded all seven local recordings through the native file picker and consent flow: TS3005a-d into the connected dev project, IS1008a into isolation/validation, IS1009a into evaluation, and ES2004a into a separate evaluation project because it is a different trial. All seven uploads were confirmed in PostgreSQL; TS3005a and b completed processing at the checkpoint, while the rest were processing or queued. App dates currently reflect import dates, not verified corpus dates. IS1009a and ES2004a have prior Milestone 2 ASR exposure.
 
@@ -191,25 +191,60 @@ Bryan tested a separate scripted project with four consecutive text-only meeting
 
 The native run exposed a one-day meeting-date shift, completed meetings labeled Processing, outdated deadline guidance, an inaccurate empty review state, and a stale Undo token after reviewed completion. These were fixed and checked in the simulator. Undo after meeting review passed; a valid lifecycle Undo also survived relaunch and was verified in the database. Review and accepted-task detail edits now record actor and old/new values, and Undo cannot discard a later detail edit.
 
-Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/format passed, and the simulator build passed. The existing account/cache survived installation. See the [native walkthrough](demo_walkthrough.md), [scripted fixture](../tests/fixtures/continuity/README.md), and [Milestone 3 roadmap](milestone_3/roadmap.md).
+Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/format passed, and the simulator build passed. The existing account/cache survived installation. See the [native walkthrough](evidence/demo_walkthrough.md), [scripted fixture](../tests/fixtures/continuity/README.md), and [Milestone 3 roadmap](milestone_3/roadmap.md).
 
 **Limits and next:** Candidates, including completion, were seeded deliberately; this establishes UI and persistence behavior, not extraction accuracy or audio-to-task acceptance. AMI projects were unchanged. Completion-only update extraction, independently reviewed sequence labels, paired evaluations, reminder lifecycle, external alpha feedback, physical audio playback, and two-host recovery remain outstanding.
 
 # Week 8 (October 12-18, 2026)
 
-**Setup:** Planning section opened October 11. Use the [Milestone 3 roadmap](milestone_3/roadmap.md) for execution order and the [checklist](checklist.md) for implementation status.
+## What got done
 
-**Did (October 17):** Reproduced and fixed shared-backend deletion of text-only scripted meetings while retaining local-recording cleanup protection. Added project-controlled immediate task email, recipient opt-out, a durable delivery queue, captured-email previews/history, and optional evidence-gated automatic approval after speaker/account confirmation. Applied the additive migration with automation off for all projects and installed a passing simulator build. See [follow-through setup and limitations](milestone_3/follow_through.md). Real inbox delivery and native visual acceptance remain unverified; recurring reminders are unfinished.<br>
-**Blocked on:** Independent sequence-label review, consenting test-account mappings, and coordination with Will for shared-worker recovery. Scripted UI acceptance does not establish real audio-to-task or model quality.<br>
-**Next:** Freeze the development sequence expectations, complete the real native task loop, and implement bounded continuity proposals before running paired evaluations.
+- **Bryan, October 17:** Reproduced and fixed deletion of the text-only scripted test project. The shared backend now distinguishes meetings without recordings from real local recordings that still require cleanup on their original backend.
+- Implemented immediate task follow-up email: project-owner controls, recipient opt-out, a durable outbox, captured-email previews/history, and retry/duplicate protection. Added optional evidence-gated automatic approval after a current human-confirmed speaker/account connection. The rule abstains on uncertainty, unresolved deadlines, and possible duplicates; it is experimental, not calibrated confidence. See [implementation and limitations](milestone_3/follow_through.md).
+- Applied the additive database migration with project automation off by default and installed the updated simulator app. The final backend suite passed **311 tests** on disposable PostgreSQL; Ruff lint/format and the simulator build passed. These checks use inference/provider stand-ins and do not establish real inbox delivery or natural-meeting accuracy.
+- Diagnosed Google OAuth's missing PKCE verifier as a simulator signing problem. The unsigned build could not access Keychain (`-34018`). Rebuilt/reinstalled with signing enabled and verified a disposable Keychain write/read/delete inside the running app. A fresh user Google sign-in remains needed to document complete OAuth acceptance.
+- Added the [current architecture/troubleshooting guide](architecture.md) and [repository map/simplification plan](README.md). Distinguished old design proposals from implementation, corrected onboarding guidance and broken links, and documented code paths, cache/backend ownership, worker recovery, and external data boundaries. The source reorganization itself has not been performed.
+- **Bryan, October 18:** Continued the AMI development-set walkthrough. Supplied screenshots show extracted/accepted tasks in To-do, including a TS3005d evidence quote, and enabled follow-through controls with an empty Test inbox. Bryan reports the dev path is working for these checks. This is partial UI evidence, not a reviewed/scored TS3005a-d sequence or completed email acceptance.
+- Confirmed the test-data limitation: AMI speakers are corpus participants, not app members with recipient inboxes. Existing approved tasks retain their assignments, and enabling email does not bulk-send old work. A separate personal recording is needed to test a truthful speaker-to-account-to-email path without relabeling AMI participants as Bryan.
+- Prepared [read-aloud follow-through scripts](milestone_3/follow_through.md#personal-recording-test-scripts) with replaceable meeting/deadline dates, expected results, negative cases, and an evidence log. The personal-recording tests have not been executed yet.
 
-## Planned priorities
+## Engineering reflection
 
-- **Bryan:** Review TS3005a-d in order and version expected task states, supporting timestamps, and RAG questions. Preserve Milestone 2 inputs/results and disclose prior evaluation-data exposure. Prepare paired comparisons using identical inputs and settings.
-- **Native acceptance:** Test a real uploaded meeting through evidence review, confirmed ownership/account mapping, optional deadline editing, To-do/Calendar visibility, completion/Undo, and relaunch. Record observed failures and fixes in the [walkthrough](demo_walkthrough.md); verify audio on a physical device.
-- **Continuity and follow-through:** Add completion-only update proposals and test supported changes, ambiguity, and preservation of user-completed work. Define the automation policy and start reminder schedule/reschedule/cancel testing with a controlled clock and test sink.
-- **Team coordination (proposed):** Arrange a second reviewer for sequence expectations, verify invitations with separate accounts, and schedule a two-worker recovery test with Will following the [shared-backend guide](shared_backend.md). Confirm external tester access and an available backend test window. Owners and timing need team agreement.
+The development data is useful for reviewing extraction and continuity, but cannot by itself prove email routing to real participants. Keep natural-data quality evaluation separate from personal scripted acceptance. Diarization separates voices; account mapping establishes a recipient. Date-bearing tasks currently require manual calendar entry/review, and completion-only extraction and recurring reminders remain gaps. Capture mode lets us inspect messages without contacting anyone; it does not demonstrate real inbox delivery.
 
-## Evidence and reflection to add
+## Zoom direction discussed
 
-Record dates, contributors, commit/configuration, observed results, and unresolved failures. Keep scripted UI checks, real audio acceptance, model comparisons, and live recovery results separate. Add what changed our engineering decisions and the next concrete step; do not mark planned work as completed.
+Following the professor's discussion of Zoom for CCB meetings, Bryan documented a proposed Zoom connection in the local, gitignored `contexts/zoom_integration_direction.md`. The idea is to import authorized meeting summaries/transcripts into the same project/task backend, retain the standalone mobile app, and eventually maintain commitments and follow-through across meetings. A full interface inside Zoom is a separate later decision. The [tracked Milestone 3 checkpoint](milestone_3/roadmap.md#zoom-proposal) records the proposal for teammates who do not have the local context folder.
+
+No Zoom integration has been implemented or tested. CCB/host permission, available account features/API access, provenance, and summary-versus-transcript evidence need confirmation. First validate one authorized artifact after the core task loop works; keep any Zoom-input evaluation separate from the current audio pipeline.
+
+## Next priorities and dependencies
+
+1. Record Bryan's consented test audio and run manual approval-to-captured-email, then automatic approval after speaker/account confirmation. Record actual outcomes using the new script; verify relaunch, dates, and recipient opt-out. Configure a verified sender before claiming real inbox delivery.
+2. Complete the human-reviewed TS3005a-d ledger and obtain a second review. Keep original AMI identities, baseline inputs/results, and prior evaluation exposure documented. The full sequence-quality evaluation remains open.
+3. Finish completion-only update proposals and the bounded reminder lifecycle: schedule, reschedule, completion/cancellation, and retry deduplication. Use a controlled clock and test sink before live delivery.
+4. Coordinate separate-account invitations/isolation, two-worker recovery with Will, external alpha access/feedback, and physical-device audio acceptance. Proposed owners and timing need team agreement.
+5. Discuss Zoom with the team as a scoped next ingestion experiment, rather than substituting it for unfinished Milestone 3 acceptance and evaluation.
+
+Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`, and `0d01cf4`. October 18 screenshots are user-supplied observations; original screenshot/video artifacts and a completed personal-recording result log still need to be attached to the walkthrough. The [roadmap](milestone_3/roadmap.md) and [submission draft](milestone_3/submission_draft.md) retain the unfinished milestone gates.
+
+<details>
+<summary>Week 8 group update draft (not sent)</summary>
+
+Hi Will and Guadalupe, Week 8 and the M3 roadmap are updated. This week I added
+immediate task email, recipient preferences, captured delivery history, and optional
+approval after speaker/account confirmation; fixed scripted-project deletion and
+the simulator OAuth signing issue; and documented the architecture. The last full
+run passed 311 backend tests, lint/format, and the simulator build.
+
+The AMI walkthrough shows accepted tasks, but the reviewed/scored a-d sequence
+remains open. I'll record a personal meeting to test a real speaker/account-to-email
+path using the dated scripts. We're still in capture mode; live inbox delivery
+and recurring reminders remain unfinished. I also documented the professor's
+Zoom/CCB proposal: authorized summaries/transcripts could feed the existing backend
+and mobile app, subject to access and validation. Please review the journal/roadmap;
+next coordination items are second-reviewer labels and shared-worker recovery.
+
+Publish these changes or attach the updated files before sharing this draft.
+
+</details>

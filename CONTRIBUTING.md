@@ -24,7 +24,7 @@ To use the shared backend on Will's Mac, get the backend URL and public Supabase
 `scripts/use_shared_backend.sh` (see [README](README.md#option-a-use-wills-backend)).
 
 Tests run offline without API keys. Keep real meeting artifacts and participant
-data outside the repository. See [upstream provenance](docs/upstream.md) before
+data outside the repository. See [upstream provenance](docs/reference/upstream.md) before
 copying code from the professor's reference project.
 
 ## Table of Contents
@@ -59,7 +59,7 @@ git checkout -b feature/my-feature
 - Keep commits small and focused, with one logical change per commit.
 - Write clear commit messages in the imperative mood.
 - Never commit `.env`, `LabSyncConfig.plist`, or any file containing secrets or API keys.
-- Use [current architecture](docs/architecture.md) for implementation structure and [Milestone 3 scope](docs/milestone_3/scope_and_acceptance.md) for acceptance goals. Earlier proposals are historical context.
+- Use [current architecture](docs/architecture.md) for implementation structure and [Milestone 3 scope](docs/milestone_3/roadmap.md) for acceptance goals. Earlier proposals are historical context.
 - Do not reintroduce archived requirements without first updating the active proposal.
 
 ---

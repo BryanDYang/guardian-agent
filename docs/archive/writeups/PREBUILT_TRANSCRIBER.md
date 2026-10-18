@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
+
 # meeting_transcriber
 
 A command-line tool for transcribing meeting recordings with speaker diarization and identification. Designed for personal use on macOS: feed it a Zoom recording, voice memo, or screen capture, and it produces a timestamped transcript with named speakers — using a combination of voice fingerprinting and the attendee list from your macOS Calendar.

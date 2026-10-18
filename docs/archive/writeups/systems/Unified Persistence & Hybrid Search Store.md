@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 The Unified Persistence & Hybrid Search Store (System 8) replaces the PREBUILT flat-file JSON storage with a single **PostgreSQL 16 + pgvector** database running locally on your Mac host via Homebrew rather than in a Docker container. It acts as the single source of truth, combining relational schema enforcement, biometric and semantic vector indexing, an immutable audit trail, and hybrid search retrieval.
 
 **1. Relational Integrity & Safe Data Lifecycle**

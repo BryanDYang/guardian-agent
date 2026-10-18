@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
+
 ## Goal
 
 The app turns one meeting recording into a project record the team can act on. A user creates a project, uploads a consented recording, and the backend transcribes it, then extracts a summary, decisions, commitments, and unaccepted suggestions. Decisions, commitments, and suggestions are kept only when they cite a verbatim quote from the transcript. Commitments and suggestions arrive as pending tasks. Nothing becomes a tracked task until the user approves it, and a task cannot be approved without a due date. Approved tasks show up on that project's calendar and can be copied into Apple Reminders. The user can also open a chat and ask questions about earlier meetings in a project. The model answers from the stored transcripts, summaries, decisions, and tasks in the database, and cites the meeting and timestamp the answer came from. If that history does not contain the answer, it says it does not know.

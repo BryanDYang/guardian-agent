@@ -8,7 +8,7 @@ load it locally and do not copy or redistribute its code in the LabSync package.
 Audited `meeting_transcriber.py` SHA-256:
 `c1f1a342ecf5924d9d92ee9791790ab90d98beef5a0a61377b552235ba1c0fa3`.
 
-For backend setup, see the [README](../README.md#option-b-run-your-own-backend-end-to-end); for common failures, see [troubleshooting](../README.md#troubleshooting).
+For backend setup, see the [README](../../README.md#option-b-run-your-own-backend-end-to-end); for common failures, see [troubleshooting](../../README.md#troubleshooting).
 
 ## Working audio-to-Codex path
 
@@ -82,12 +82,12 @@ Changing the source segmentation changes these IDs, so retain the original artif
 
 ## Measured transcription baseline
 
-The [September 24 pilot](milestone_2/transcription_results.md) runs these same CCB
+The [September 24 pilot](../milestone_2/transcription_results.md) runs these same CCB
 functions on 12 one-minute AMI clips using Whisper tiny and base, scored with
 JiWER against manual references. Development, validation and test meetings come
 from disjoint series. Test WER is 28.79% for tiny and 24.54% for base over 705
 reference words; this is a small initial result, not a full-corpus accuracy claim.
-See the [protocol](../tests/fixtures/asr/README.md) for reproducible commands.
+See the [protocol](../../tests/fixtures/asr/README.md) for reproducible commands.
 
 ## Earlier integration smoke and limits
 
@@ -99,7 +99,7 @@ validation passed; that suggestion's usefulness still needs human evaluation.
 The clip's source file was preserved. Timestamps are relative to the clip,
 not the full AMI meeting.
 
-The [audio fixture](../tests/fixtures/ami/README.md) is included in the repository.
+The [audio fixture](../../tests/fixtures/ami/README.md) is included in the repository.
 Local results: `artifacts/audio-smoke/ccb-tiny/`. This proves the integration,
 not recognition accuracy. The tiny model visibly misrecognized some words.
 Use a larger model and human-reviewed references for evaluation.

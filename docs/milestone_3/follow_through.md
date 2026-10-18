@@ -5,7 +5,16 @@ manual or bounded automatic approval, a durable delivery queue, and delivery his
 Scheduled recurring reminders and cancellation/rescheduling of future reminders are
 still separate unfinished work.
 
+Quick navigation: [app test](#try-it-in-the-app), [approval policy](#automatic-approval),
+[live delivery setup](#live-email-setup), [dated recording scripts](#personal-recording-test-scripts),
+and [result log](#result-log).
+
 ## Try it in the app
+
+For repeatable personal audio, use the [read-aloud scripts below](#personal-recording-test-scripts).
+AMI participants have no corresponding recipient accounts. Test email routing
+with a separate consented recording of an actual app member. Previously accepted
+AMI tasks are not automatically reassigned or emailed by enabling these settings.
 
 1. Open a project's actions menu > **Follow-through**, or a meeting's gear >
    **Task email & automatic approval**.
@@ -108,3 +117,208 @@ preserved and restarted the idle backend explicitly in capture mode. Backend
 health passed, all project automation remained off, and zero real emails were
 sent. Desktop UI automation was unavailable, so visual native acceptance remains
 open. The suite reports two existing dependency deprecation warnings.
+
+## Personal recording test scripts
+
+Prepared October 18, 2026. These are scripted acceptance recordings you can read
+aloud, not natural-meeting accuracy benchmarks. Replace bracketed fields before
+recording. Record only yourself or participants who consent. Keep original AMI
+projects and their anonymous speaker identities unchanged.
+
+### Fill this in once per test session
+
+| Placeholder | Your value | Example if testing October 18, 2026 |
+| --- | --- | --- |
+| `[YOUR_NAME]` | Name of your signed-in test account | Bryan |
+| `[RUN_LABEL]` | Unique label for this session | 2026-10-18-run-1 |
+| `[MEETING_DATE]` | Actual recording date, YYYY-MM-DD | 2026-10-18 |
+| `[DUE_DATE]` | Chosen calendar deadline | 2026-10-20 |
+| `[DUE_DATE_SPOKEN]` | Say the full date aloud | October twentieth, twenty twenty-six |
+| `[TOMORROW_DATE]` | Calendar day after the meeting | 2026-10-19 |
+| `[REVISED_DUE_DATE]` | New later deadline | 2026-10-22 |
+| `[REVISED_DUE_DATE_SPOKEN]` | Full revised date aloud | October twenty-second, twenty twenty-six |
+| `[TIME_ZONE]` | Time zone used for the run | America/Los_Angeles |
+
+Choose dates relative to your actual test day. Use future dates to avoid confusion
+with overdue tasks. The upload form must contain the actual `[MEETING_DATE]`;
+file timestamps are not reliable meeting-date evidence. The app currently stores
+calendar deadlines, not a selectable deadline time. Do not expect a spoken time
+or relative phrase to produce a prefilled calendar deadline automatically.
+
+### Setup and recording method
+
+1. Use the installed signed simulator build or a normally signed device build.
+2. Sign in with your own account and create a separate project for each independent
+   scenario, such as `Follow-through [RUN_LABEL] - A`. Do not reuse AMI projects.
+3. Open project **... > Follow-through**. Save **Email task owners after approval**
+   on. Save your own receive-email preference on. Keep delivery in **Test inbox**.
+4. Use Voice Memos or another recorder. Speak the quoted text clearly. Record each
+   block as a separate audio file; a short silence before/after is fine.
+5. Upload it with `[MEETING_DATE]`. Wait until processing completes and inspect
+   the transcript, exact evidence, task title, and owner before proceeding.
+6. Confirm the speaker's name as `[YOUR_NAME]` and connect your actual app member.
+   You can enter your name manually; a spoken introduction is not required.
+
+For automatic-approval case B, record only its commitment sentence. Do not prepend
+an introduction to the same turn: the current rule expects a source turn starting
+with `I will` or `I'll`. If ASR or extraction changes the wording, record the
+abstention instead of changing the transcript or claiming a successful auto-pass.
+
+### A. Manual approval to captured follow-up
+
+**Settings:** email on; automatic approval off. Use a fresh project.
+
+Read:
+
+> I will prepare the evaluation checklist.
+
+After processing, confirm your speaker/account and approve the evidence-supported
+candidate without a due date. Open Follow-through, refresh history, and read the
+captured email.
+
+Expected: one approved task in To-do and one captured message for your account.
+The message should include the task, meeting, supporting quote, and no invented
+deadline. Its Tasks link should open the app's Tasks tab. Refresh/relaunch should
+preserve the task and history, without creating another message.
+
+**Pass evidence:** task card, speaker/account connection, captured email, relaunch.
+This verifies capture delivery, not arrival in a real inbox.
+
+### B. Automatic approval after identity confirmation
+
+**Settings:** email on; automatic approval on. Use a fresh project with no other tasks.
+
+Read:
+
+> I will share the recording.
+
+After processing, confirm the speaker and connect your account. Do not manually
+approve the candidate first.
+
+Expected: if the transcript/title/evidence meet the narrow policy, the task is
+approved and one email is captured without a task-level approval click. Identity
+confirmation is still required once for this recording. If the task remains
+pending, preserve the transcript/title/evidence and record why it did not qualify.
+A safe abstention is not evidence that automatic approval succeeded.
+
+**Pass evidence:** before/after candidate state, accepted task, captured email, and
+policy audit if available. Do not report calibrated confidence from this test.
+
+**Negative case, in another fresh project:**
+
+> I might prepare the budget spreadsheet if I have time.
+
+Keep automatic approval on and confirm the speaker/account. Expected: no automatic
+approval and no follow-up email. The extractor may omit this tentative statement
+or present it for review; neither result should turn it into an accepted promise.
+Do not manually approve it during this negative test.
+
+### C. Explicit date and manual deadline entry
+
+**Settings:** email on; automatic approval may be on. Use a fresh project.
+
+Read after replacing the date:
+
+> I will send the project summary by [DUE_DATE_SPOKEN].
+
+Expected: the deadline text is preserved if extracted correctly. A date-bearing
+task stays pending under the current automatic-approval policy. Open **Edit**,
+turn **Due date** on, select `[DUE_DATE]`, save, then approve.
+
+Verify To-do, Calendar on `[DUE_DATE]`, and the captured email all agree. If the
+picker initially shows today's date, replace it deliberately; that initial value
+is not an inferred deadline. A missing/wrong extracted deadline is a finding.
+
+**Pass evidence:** source quote, selected date, Calendar placement, message date.
+
+### D. Relative deadline: reveal the current limitation
+
+**Settings:** email on; automatic approval off. Use a fresh project.
+
+Read:
+
+> I will upload the presentation slides tomorrow.
+
+Upload with `[MEETING_DATE]`. Expected raw deadline text: `tomorrow`. The desired
+calendar deadline is `[TOMORROW_DATE]`, but automatic relative-date resolution is
+not implemented. Enter that date manually through Edit, then approve and inspect
+the captured email and Calendar.
+
+Record manual entry separately from extraction. Do not mark automatic date
+calculation as passed because the manually entered value is correct.
+
+### E. Recipient opt-out
+
+**Settings:** email on; automatic approval off. Before approval, turn your own
+receive-email preference off and save. Use a fresh project.
+
+Read:
+
+> I will review the deployment instructions.
+
+Connect the speaker to your account and approve. Expected: the accepted task
+exists but no email is queued/captured for the opted-out recipient. Restore your
+preference after recording the result. Opting back in does not retroactively
+send this task; use a fresh task for another delivery run.
+
+### F. Later meetings and completion: staged continuity check
+
+Use the project from case C. Keep automatic approval off. Record F1 and F2 as
+separate files and upload in order with their actual meeting dates.
+
+**F1 - deadline change. Read:**
+
+> I will send the same project summary. The deadline for the project summary is now [REVISED_DUE_DATE_SPOKEN].
+
+Inspect whether a suitable update candidate is extracted. If present, choose
+**Update an existing task**, select the original summary task, confirm the quote,
+and set `[REVISED_DUE_DATE]`. Expected: the same accepted task changes deadline;
+no second accepted task is created. If there is no suitable candidate, record that
+extraction gap. Do not manufacture a candidate to claim audio acceptance.
+
+**F2 - completion. Read:**
+
+> I finished the project summary. The project summary is complete.
+
+Completion-only update extraction remains unfinished. It may not generate a
+reviewable update. Record the actual output, then separately mark the original
+task complete in To-do and verify persistence after relaunch. That manual action
+is not proof of completion inference from the recording.
+
+Current immediate email is one follow-up per task/recipient. Do not expect a new
+update email, a scheduled reminder, or automatic reminder rescheduling/cancellation
+from these later recordings. Those are future acceptance cases, not implemented
+passes. A duplicate candidate is also not the same as retrying the original
+approval: approving a new duplicate task can create a separate email.
+
+### G. Live inbox delivery, after sender setup
+
+Only run after configuring a verified email sender and a consenting test inbox.
+Use a fresh project/task and repeat A. Capture records are never promoted into
+live messages after a mode switch. Verify both the provider's recorded acceptance
+and the actual received email; note spam/delivery delay separately. No live sender
+has been established by the current capture tests.
+
+### Result log
+
+Copy this table for every run. Leave unexecuted cases pending.
+
+| Field | Recorded value |
+| --- | --- |
+| Run label / tester / test date / time zone | |
+| Commit, app build, device/simulator, backend configuration | |
+| Scenario and actual meeting date | |
+| Audio filename and consent | |
+| Project / meeting / task IDs | |
+| Expected title, owner, evidence, due date | |
+| Observed transcript and extracted output | |
+| Mapping and manual actions taken | |
+| Email mode, state, recipient, message count | |
+| Screenshot/video references | |
+| Result: pass / fail / abstained / unsupported / not run | |
+| Failure and next action | |
+
+For a short demo, record the screen while showing A, B, C and a relaunch. Keep the
+original audio files and label this as personal scripted acceptance. Run negative
+cases too; a successful-looking email alone does not establish safe automation.
+See [implementation and delivery limits](#live-email-setup).

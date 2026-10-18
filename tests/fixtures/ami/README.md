@@ -28,7 +28,7 @@ uv run labsync extract artifacts/ami-audio-test/transcript.json \
 Whisper runs locally and downloads weights on first use. Extraction uses the
 Codex CLI login and sends the generated transcript to Codex. Use a new output
 directory for another run. These commands do not run diarization by default.
-See [the integration guide](../../../docs/ccb-transcriber.md) for prerequisites.
+See [the integration guide](../../../docs/reference/ccb-transcriber.md) for prerequisites.
 
 This opening/agenda excerpt checks the pipeline; it is not a commitment benchmark.
 Generated transcripts and predictions are not human labels. They remain in the

@@ -1,4 +1,4 @@
-> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../architecture.md) for implemented connections and [the native walkthrough](../demo_walkthrough.md) for acceptance evidence.
+> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../../architecture.md) for implemented connections and [the native walkthrough](../../evidence/demo_walkthrough.md) for acceptance evidence.
 
 ## Sequential AI build with agent
 

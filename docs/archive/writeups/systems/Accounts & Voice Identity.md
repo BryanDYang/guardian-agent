@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 # Accounts, Projects & Voice Identity
 
 Status: Spec, not yet implemented
@@ -66,7 +68,7 @@ After this system ships:
 | D6 | Roles: **owner** and **member** | Permissions in Section 6.4. A project can have more than one owner. |
 | D7 | Speaker matching candidates = **enrolled members of the meeting's project** at processing time | Never match against users outside the project. |
 | D8 | Unknown speakers are labeled **`SPEAKER_1`, `SPEAKER_2`, ...** | 1-based, numbered by first speaking time within the meeting. Raw diarizer tags (`SPEAKER_00`) are kept separately. |
-| D9 | Same embedding model for enrollment and meetings | pyannote `speaker-diarization-3.1` with its WeSpeaker ResNet34 embedding (256-d, matching `vector(256)` in the schema). `docs/writeups/Tech Stack.md` says 512-d; the schema is correct, update the doc. |
+| D9 | Same embedding model for enrollment and meetings | pyannote `speaker-diarization-3.1` with its WeSpeaker ResNet34 embedding (256-d, matching `vector(256)` in the schema). `docs/archive/writeups/Tech Stack.md` says 512-d; the schema is correct, update the doc. |
 | D10 | Chat conversations are **private to the user who created them** | Retrieval is still scoped to the whole project's data. |
 | D11 | Raw enrollment audio is **deleted after the embedding is computed** | Only the embedding and quality metrics are stored. |
 | D12 | Profile tab is the **4th tab** in `RootTabView` | SF Symbol `person.crop.circle`. Meetings stays the default tab. |
@@ -548,7 +550,7 @@ The step comes from `GET /me`, never from local flags. A pending invite token is
 ### Maintainability
 
 - NFR-MAIN-1: All thresholds live in one config module with comments.
-- NFR-MAIN-2: Update `docs/writeups/Tech Stack.md` (embedding dim) and `docs/writeups/systems/Acoustic Ingestion & Diarization Pipeline.md` to match what ships.
+- NFR-MAIN-2: Update `docs/archive/writeups/Tech Stack.md` (embedding dim) and `docs/archive/writeups/systems/Acoustic Ingestion & Diarization Pipeline.md` to match what ships.
 - NFR-MAIN-3: Lint and type checks pass for Python; Swift builds with no new warnings.
 
 ### Platform

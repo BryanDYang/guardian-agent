@@ -1,167 +1,57 @@
-# Documentation and repository map
+# Start here
 
-Start with [the current architecture](architecture.md) to understand how the app,
-backend, storage, models, and email worker connect. Use the root
-[README](../README.md) to set up a working environment.
+**Your next step:** run [Clip A: manual approval to captured follow-up](milestone_3/follow_through.md#a-manual-approval-to-captured-follow-up).
+Record one clear commitment, upload it to a separate test project, connect your
+speaker/account, and record the observed result. You do not need to read the
+technical references first.
 
-## Choose the right document
+After that, use the [Milestone 3 roadmap](milestone_3/roadmap.md) to choose the
+next task. The [weekly journal](weekly_journal.md) records progress and contains
+the Week 8 group-message draft. Each document below has one responsibility.
 
-| Question | Read |
+| Question | Authoritative document |
 | --- | --- |
-| How does the application actually work? | [Current architecture and troubleshooting](architecture.md) |
-| How do I run it? | [Root setup guide](../README.md), [shared-backend operations](shared_backend.md) |
-| What remains for this milestone? | [Milestone 3 roadmap](milestone_3/roadmap.md), [scope and acceptance](milestone_3/scope_and_acceptance.md) |
-| How do I test task email or auto-approval? | [Immediate follow-through](milestone_3/follow_through.md) |
-| What has actually been tested? | [Native walkthrough](demo_walkthrough.md), [weekly journal](weekly_journal.md), versioned tests and evaluation reports |
-| How do I contribute and run checks? | [Contributing](../CONTRIBUTING.md), [CI workflow](../.github/workflows/ci.yml) |
-| Why were some designs considered? | [Design writeups](writeups/README.md); these are not current implementation specifications |
-| How should we simplify the repo? | The staged plan below |
+| How do I run the app? | [Root README](../README.md) |
+| How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
+| What remains for Milestone 3? | [Roadmap, scope, and acceptance](milestone_3/roadmap.md) |
+| How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](milestone_3/follow_through.md) |
+| What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |
+| What will we submit? | [Milestone 3 report draft](milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
+| How do I operate/recover the backend? | [Shared-backend guide](reference/shared_backend.md) |
+| How do I contribute/run checks? | [Contributing](../CONTRIBUTING.md) and [CI](../.github/workflows/ci.yml) |
 
-## Repository ownership
+## Supporting references
 
-```text
-guardian-agent/
-  README.md                 Setup and links to current architecture
-  pyproject.toml, uv.lock    Python dependencies and CLI entry point
-  src/labsync/              Python application and evaluation code
-    api/                    HTTP routes and authorization boundary
-    db/                     SQL access and persistence
-    server.py               App wiring and legacy local processing/routes
-    shared_backend.py       Shared audio processing and related routes
-    shared_jobs.py          Durable job ownership/recovery
-    pipeline.py             One audio-to-extraction attempt
-    ccb.py, voice.py         Audio adapter and voice enrollment/matching
-    extraction.py           Transcript/extraction contracts and evidence checks
-    providers.py            Text-model provider selection
-    chat.py, embeddings.py  Grounded answers and text vectors
-    followup.py             Approval eligibility and immediate email delivery
-  ios/MeetingApp/           Native Xcode project
-    MeetingApp/
-      Auth/                 Session and sign-in
-      Models/, Data/        SwiftData models, cache, previews
-      Networking/           API client, sync, OS reminders
-      Navigation/, Views/   Presentation and navigation
-    MeetingAppTests/        Native tests
-  supabase/migrations/      Ordered database schema changes
-  tests/                    Python tests and versioned fixtures
-  scripts/                  Setup/check helpers and local debugging utilities
-  docs/                     Current guides, milestone evidence, design history
-  db/schema.sql             Historical initial schema, not current full schema
-```
+[Transcriber integration](reference/ccb-transcriber.md), [model integration](reference/codex-integration.md),
+and [upstream provenance](reference/upstream.md) explain specific dependencies. The
+[implementation checklist](archive/checklist.md) is a code inventory, not a second current
+roadmap or proof of acceptance. Use the roadmap to decide what to do next.
 
-These local directories/files are a separate category:
+[Design writeups](archive/writeups/README.md) and `archive/` preserve earlier rationale,
+proposals, and milestone artifacts. They are historical references, not current
+implementation specifications. Read them only when tracing a decision or its origin.
+Historical migration comments may still use the original `docs/writeups/` paths;
+those documents are preserved under `docs/archive/writeups/`. Migration history
+has not been rewritten to change comments.
 
-- `contexts/`: gitignored external transcriber, datasets, reference repositories,
-  course materials, and exploratory notes. Some are runtime prerequisites; most
-  are references. A fresh clone does not contain them.
-- `artifacts/`: gitignored recordings, processing logs, saved runs, and local test IDs.
-- `.env`, `.venv/`, model caches: private configuration and generated dependencies.
-- Root `meeting_transcriber.py`: currently an untracked local file. The normal
-  CLI source path points to `contexts/meeting_transcriber-master`; the root copy
-  is not automatically the runtime dependency. Do not delete or edit it assuming
-  it is redundant without checking provenance and local use.
+## Repository boundaries
 
-## Simplification plan
+- `src/labsync/`: Python API, SQL access, pipeline/workers, models, and evaluation.
+- `ios/MeetingApp/`: native app and client-side cache/networking.
+- `supabase/migrations/`: current schema changes. `db/schema.sql` is historical.
+- `tests/`: versioned tests/fixtures; `scripts/`: setup/check/debug commands.
+- `contexts/`: ignored local references, course materials, datasets, and the
+  external transcriber dependency. A fresh clone does not contain them.
+- `artifacts/`: ignored recordings, processing logs, and run outputs.
+- `.env`, `.venv/`, model caches: private configuration/generated dependencies.
+- Root `meeting_transcriber.py` is currently an untracked local copy; the normal
+  runtime source is `contexts/meeting_transcriber-master`. Preserve provenance
+  and check local use before deleting either.
 
-The aim is fewer competing explanations and clearer responsibility boundaries.
-Avoid adding a framework, service layer, message broker, or generic plugin system
-unless an actual requirement calls for one.
+## Maintaining documentation
 
-### 1. Make the existing repo understandable first
-
-Done in this documentation pass:
-
-- Add one current architecture guide with data flows, code entry points, storage
-  ownership, security/provider boundaries, and symptom-to-code troubleshooting.
-- Add this documentation index and distinguish current guides, acceptance
-  evidence, design proposals, historical schema, and local-only material.
-- Correct the root pipeline summary and link readers to implementation details.
-- Mark older tech-stack/workflow descriptions as design history where they can
-  otherwise be mistaken for implemented behavior.
-
-Next: reconcile the milestone submission/checklist against recorded acceptance.
-Keep remaining claims tied to evidence rather than mechanically marking boxes.
-
-### 2. Make the external audio dependency reproducible
-
-This is the biggest clean-install obstacle: a fresh clone requires an ignored
-folder copied from a teammate. First document its exact upstream revision,
-license, required functions, and dependency versions. Then choose a pinned package
-or a deliberately maintained vendored subset. Preserve provenance and verify the
-same audio fixture before changing the import path. Do not copy the entire local
-reference directory into application source.
-
-Finished when a teammate can build the audio path from documented, versioned
-inputs without receiving an unexplained folder privately.
-
-### 3. Separate HTTP wiring from background work
-
-`server.py` and `shared_backend.py` each mix app setup, routes, and processing.
-First move shared upload/audio/delete routes into explicit API modules while
-keeping endpoint contracts unchanged. Keep lease logic in `shared_jobs.py` and
-one-attempt processing in `pipeline.py`. Move worker startup/configuration to a
-small app assembly module only when needed by that extraction.
-
-Decide whether local filesystem processing is still a supported product mode.
-If yes, document and test it as such. If no, retire it in a separate change after
-inventorying local recordings and migration/recovery needs. Shared mode should
-be the main onboarding path; deleting the legacy path prematurely could orphan data.
-
-Finished when someone can find an endpoint without searching two competing
-server implementations and can test worker processing independently of routes.
-
-### 4. Split the large iOS network file by responsibility
-
-`MeetingAPIClient.swift` currently contains transport, many feature methods,
-response models, and date helpers. Preserve one authenticated transport and the
-existing public behavior; move feature methods into extensions/files for meetings,
-tasks, projects/accounts, chat, and follow-through. Group response models by the
-same features. Avoid introducing one separate networking framework per screen.
-
-Then clarify the boundary between server DTOs, SwiftData cache models, and the
-code that applies DTOs. Review `ProjectSync`, `TaskSync`, and
-`RemoteMeetingApplier` together before consolidating their overlapping paths.
-
-Finished when a task API change has a predictable home and every server record
-has an explicit cache-update path. Verify sign-in, refresh, reprocessing, and relaunch.
-
-### 5. Keep approval policy, outbox storage, and email transport distinct
-
-`followup.py` currently holds all three. As the reminder lifecycle is added,
-extract policy eligibility, outbox SQL, and provider transport into named modules
-rather than adding scheduling branches to the current worker loop. Do this around
-actual reminder requirements, preserving atomic approval/queue insertion and
-stable provider retry keys. Do not build a general workflow engine.
-
-Finished when a policy test does not require email transport and a transport
-change does not alter task approval semantics.
-
-### 6. Organize evidence without losing its meaning
-
-Group tests by subsystem when navigation becomes difficult, keeping fixture and
-cross-project isolation checks easy to find. Document which tests require a real
-local PostgreSQL database, which replace inference, and which call real providers.
-The current CI's plain `pytest` skips database-dependent tests unless
-`TEST_DATABASE_URL` is configured; a green smoke run is not full integration proof.
-
-Consider adding a disposable PostgreSQL/pgvector CI job with the minimum Auth and
-Storage test schemas and all migrations. This would make new persistence and
-outbox failures visible on every PR instead of relying on a developer's local run.
-
-Version the small fixtures/configuration/expectations that make results
-reproducible. Keep private audio and bulky outputs out of Git. Link representative
-results into the walkthrough rather than copying progress claims into many documents.
-
-## Change order and verification
-
-Do these as small, behavior-preserving changes, one boundary at a time:
-
-1. Documentation and reproducible dependency setup.
-2. Backend route/worker separation.
-3. iOS transport/DTO organization and explicit cache application.
-4. Reminder-driven policy/outbox separation and stronger integration CI.
-
-Before each code move, establish the relevant integration tests and one native
-acceptance path. Afterward, compare behavior using the same inputs and API
-contracts. Do not mix repo reorganization with model tuning, new automation, or
-large schema changes in one PR.
+Update the existing owner document instead of creating another progress/status
+file. Put new results in the journal/walkthrough and link them from the roadmap
+or report. Keep dated historical evidence, configuration, provenance, unresolved
+failures, and proposed-vs-implemented distinctions. Group-message drafts belong
+with their weekly entry. Add a new guide only for a distinct audience or workflow.

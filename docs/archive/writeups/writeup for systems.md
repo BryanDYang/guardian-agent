@@ -1,4 +1,4 @@
-> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../architecture.md) for implemented connections and [the native walkthrough](../demo_walkthrough.md) for acceptance evidence.
+> **Design history:** This writeup includes proposed or earlier behavior. Use [Current architecture](../../architecture.md) for implemented connections and [the native walkthrough](../../evidence/demo_walkthrough.md) for acceptance evidence.
 
 **1. [[Native Presentation System]] (SwiftUI)** Drives the 3-axis tab layout: the Projects/Meetings dashboard (summaries, decisions, transcripts, attendee storylines), the date-based Tasks calendar with 3-state execution (Open, Done, Dropped), and the conversational Chat view.
 

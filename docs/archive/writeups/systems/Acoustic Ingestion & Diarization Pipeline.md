@@ -1,3 +1,5 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+
 The Acoustic Ingestion & Diarization Pipeline converts raw multi-party audio recordings into timestamped, speaker-attributed transcript turns on Apple Silicon hardware. It executes sequentially on the M4 Mac to keep peak unified memory under 10 GB while isolating speakers using voice biometrics and calendar context.
 
 - **Audio Ingestion & Format Standardization:** Accepts multi-megabyte audio files (.mp3, .m4a, .wav) or video tracks (.mp4, .mov) imported via iOS Voice Memos, Files, or Zoom. Invokes FFmpeg (`ffmpeg-python`) to validate bitrates and normalize the stream into a standardized 16 kHz 16-bit mono WAV buffer, preventing tensor compatibility issues in pyannote.

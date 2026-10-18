@@ -8,6 +8,10 @@ Record the commit, device/iOS version, backend URL (no keys), date, project and 
 
 ## Demo story and acceptance criteria
 
+This is the initial checklist, retained as historical context. Dated observations
+below supersede its original Not run/Reported entries; it is not a current status
+dashboard. Use the Milestone 3 roadmap for today's open gates.
+
 Use a real server project with at least two completed recordings and a second project for the scope check. Choose a question whose answer and source timestamp you can verify in the transcript, plus an unsupported question. Obtain recording consent before uploading.
 
 | Step | UI action | Expected result | Latest evidence |
@@ -43,7 +47,7 @@ Device: iPhone 18 Pro Max simulator, iOS 27.0. Backend: `http://127.0.0.1:8000`,
 - **Not run:** Inspect complete outputs, approve/update tasks, verify continuity, supported/unsupported chat and citations, isolation, purge, and complete persistence journey.
 - **Not run:** Two-device worker failover, automatic API routing, and external tester availability.
 
-Corpus mapping and local operating commands are in [the shared backend guide](shared_backend.md). Current meeting dates are import dates, not verified corpus dates.
+Corpus mapping and local operating commands are in [the shared backend guide](../reference/shared_backend.md). Current meeting dates are import dates, not verified corpus dates.
 
 ## Playback implementation follow-up
 
@@ -211,3 +215,24 @@ The entry was removed and the debugger detached. No real credentials were read.
 This verifies the storage repair; a fresh user Google sign-in still needs to
 complete to establish end-to-end OAuth acceptance. Keep signing enabled for
 future simulator acceptance builds; do not bypass PKCE or replace Keychain.
+
+## October 18 user-reported AMI walkthrough
+
+Historical October 10 inspection: all seven AMI jobs completed with 69 pending
+candidates and zero approved tasks; the calendar was therefore empty. This is
+the earlier baseline, not the October 18 task count.
+
+Bryan supplied simulator screenshots of accepted AMI tasks in To-do, including
+TS3005d's quoted minutes commitment, and the Follow-through sheet with email and
+automatic-approval controls enabled. The Test inbox showed no follow-ups. These
+are user-reported UI observations; no new database audit or scored a-d sequence
+was performed in this documentation session. The screenshot files were supplied
+through temporary conversation attachments and have not been added as permanent
+repository artifacts.
+
+The existing tasks still show anonymous corpus speakers. Those participants are
+not the signed-in account, and speaker mapping does not retrospectively change
+approved assignments. Enabling email does not bulk-send old work. A separate
+personal recording will be used for truthful identity/account and follow-up
+acceptance, using the [dated read-aloud scripts](../milestone_3/follow_through.md#personal-recording-test-scripts).
+The recording, captured-message result, and real inbox test remain pending.

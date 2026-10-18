@@ -11,6 +11,7 @@
 * Apply that same high standard to engineering excellence: lint, test failures, and test flakiness. If you see one, even if it is not caused by what you are working on right now, still get it fixed.
 * Before using "dynamic workflows", "ultra code" or any harness feature that immediately spawns a large swarm of subagents, always explain the tradeoffs and ask the user for explicit approval.
 * Keep code signing enabled for simulator acceptance builds. `CODE_SIGNING_ALLOWED=NO` omits the simulated application identity and breaks Supabase Keychain storage/Google PKCE. See the simulator signing note in `docs/architecture.md`.
+* Use `docs/README.md` to choose an existing owner document before adding documentation. Keep progress/evidence in the journal/walkthrough and avoid overlapping status, planning, or setup guides.
 
 ## Maintaining this file
 

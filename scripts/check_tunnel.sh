@@ -60,7 +60,7 @@ if [ "$SHARED" = 0 ]; then
   if [ -f "$ROOT/contexts/meeting_transcriber-master/meeting_transcriber.py" ]; then
     pass "CCB transcriber source present"
   else
-    fail "CCB transcriber source present" "Add contexts/meeting_transcriber-master (see docs/ccb-transcriber.md)"
+    fail "CCB transcriber source present" "Add contexts/meeting_transcriber-master (see docs/reference/ccb-transcriber.md)"
   fi
 
   CODE="$(status http://127.0.0.1:8000/api/health)"

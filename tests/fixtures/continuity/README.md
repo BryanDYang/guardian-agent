@@ -28,7 +28,7 @@ quotes. Relaunch and verify the final state remains done.
 The database IDs for the local run are saved in the gitignored
 `artifacts/m3-native-sequence.json`. Never replace development or evaluation
 projects to reset this fixture. Create a fresh isolated project for another run.
-See `docs/demo_walkthrough.md` for the actual steps completed and remaining checks.
+See `docs/evidence/demo_walkthrough.md` for the actual steps completed and remaining checks.
 
 October 11 result: the scripted sequence passed through Calendar deadline display,
 reviewed completion, stable identity/evidence audit, and relaunch persistence.

@@ -122,7 +122,7 @@ This logs you in to Cloudflare, creates the tunnel, and points the iOS app at `h
 
 Two backends can opt into private Supabase audio storage and recoverable database
 jobs with `labsync serve --shared --worker-id <unique-name>`. Follow the
-[shared backend rollout](docs/shared_backend.md) for migrations, server credentials,
+[shared backend rollout](docs/reference/shared_backend.md) for migrations, server credentials,
 two-worker tests, existing-meeting limitations, and Will's minimal setup changes.
 Automatic hostname failover requires separate routing configuration.
 
@@ -264,7 +264,7 @@ and [review log](docs/archive/milestone_2/human_review_log.md) cover all 72 outp
 See the [fixture protocol](tests/fixtures/evaluation/README.md) for live inference,
 annotation rules, matching and metric definitions. Labels are AI-authored pending
 human review; the reported action-matching scores are development proxies.
-This implements the extraction portion of [checklist Phase 5](docs/checklist.md).
+This implements the extraction portion of [checklist Phase 5](docs/archive/checklist.md).
 
 ## Contributor checks
 
@@ -285,7 +285,7 @@ TEST_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres \
 supabase stop
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md), [the CCB guide](docs/ccb-transcriber.md), [the integration guide](docs/codex-integration.md), and [the project proposal](docs/archive/milestone_1/project_proposal.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md), [the CCB guide](docs/reference/ccb-transcriber.md), [the integration guide](docs/reference/codex-integration.md), and [the project proposal](docs/archive/milestone_1/project_proposal.md).
 
 ## License
 

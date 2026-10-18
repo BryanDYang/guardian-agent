@@ -1,16 +1,22 @@
-# End-to-End Completion Checklist
+# Historical implementation checklist
 
-Source of truth: [Workflow.md](writeups/Workflow.md). User-facing behavior: [Story Writeup.md](writeups/Story%20Writeup.md).
+Archived October 18, 2026. Retained for implementation history and design context;
+some statements and checkboxes are superseded by later code and evidence. Use
+the [current roadmap](../milestone_3/roadmap.md) for open work and the
+[architecture guide](../architecture.md) for implemented behavior. Unique open
+items were triaged into the roadmap before archiving.
 
-Execution order: [Milestone 3 roadmap](milestone_3/roadmap.md). Milestone priorities and next-phase boundaries: [Milestone 3 scope and acceptance](milestone_3/scope_and_acceptance.md). Use this checklist for implementation status and the [native walkthrough](demo_walkthrough.md) for acceptance evidence.
+Original design references: [Workflow.md](writeups/Workflow.md) and [Story Writeup.md](writeups/Story%20Writeup.md).
+
+Execution order, milestone priorities, and next-phase boundaries: [Milestone 3 roadmap and acceptance plan](../milestone_3/roadmap.md). Use the [native walkthrough](../evidence/demo_walkthrough.md) for acceptance evidence.
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
 **Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. Diarization is enabled by default for new processing runs; enrolled project members can be named on the transcript and unmatched speakers stay `SPEAKER_N` until a member confirms a suggested or manually entered name. Account mapping requires explicit confirmation. Match thresholds are provisional and not calibrated. Playback and timestamp seeking are implemented and partially verified in the simulator; physical-device audibility remains unverified. Storylines, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
 
-**Optional shared backend:** `serve --shared --worker-id <unique-name>` implements private Supabase audio, DB-backed polling/jobs, renewable worker claims, fenced result publication, and deferred object cleanup. Local mode still uses JSON status. See [shared backend rollout](shared_backend.md); live two-device acceptance, migration of existing local recordings, and automatic endpoint routing are not established yet.
+**Optional shared backend:** `serve --shared --worker-id <unique-name>` implements private Supabase audio, DB-backed polling/jobs, renewable worker claims, fenced result publication, and deferred object cleanup. Local mode still uses JSON status. See [shared backend rollout](../reference/shared_backend.md); live two-device acceptance, migration of existing local recordings, and automatic endpoint routing are not established yet.
 
-Legend: `[x]` implementation exists in the repo · `[ ]` implementation still required. A checked item is not acceptance evidence. Use the [UI demo walkthrough](demo_walkthrough.md) to record the build, backend, observed behavior, and remaining gaps before claiming a user journey works.
+Legend: `[x]` implementation exists in the repo · `[ ]` implementation still required. A checked item is not acceptance evidence. Use the [UI demo walkthrough](../evidence/demo_walkthrough.md) to record the build, backend, observed behavior, and remaining gaps before claiming a user journey works.
 
 ---
 
@@ -115,7 +121,7 @@ v1 project, meeting, task, chat, profile, invitation, and voice routes talk to P
 
 ## Phase 5 — Offline Evaluation Harness (System 9)
 
-Partial: [CCB transcription measurements](archive/milestone_2/transcription_results.md) cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](archive/milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
+Partial: [CCB transcription measurements](milestone_2/transcription_results.md) cover 12 minutes of AMI audio with series-disjoint development/validation/test splits. [Extraction development results](milestone_2/results/README.md) cover 24 synthetic cases with AI-authored labels pending human review. No DER/RAGAS gate or calibrated WER acceptance threshold.
 
 - [x] Offline pytest for extraction contract, CLI, and stubbed server workflow
 - [x] Transcript extraction development fixtures: 24 cases, 15 obligations, annotation and matching protocol (`tests/fixtures/evaluation/`)
@@ -136,7 +142,7 @@ Partial: [CCB transcription measurements](archive/milestone_2/transcription_resu
 
 ### Milestone 3 demo pack and updated evaluation
 
-The current 45-second AMI fixture checks upload/transcription, not project continuity. Swift seed data is for previews/tests. Neither is a complete demo corpus. Use the [submission draft](milestone_3/submission_draft.md) for reporting and the [demo walkthrough](demo_walkthrough.md) for observed native behavior. Owners below are proposed until the team confirms them.
+The current 45-second AMI fixture checks upload/transcription, not project continuity. Swift seed data is for previews/tests. Neither is a complete demo corpus. Use the [submission draft](../milestone_3/submission_draft.md) for reporting and the [demo walkthrough](../evidence/demo_walkthrough.md) for observed native behavior. Owners below are proposed until the team confirms them.
 
 - [ ] **Data selection (Guadalupe, with team review):** Inspect TS3005a-d manual transcripts for meaningful decisions, commitments, deadline changes, and completion before selecting audio. Annotations and all four TS3005a-d recordings are local under `contexts/datasets/ami`. Select the sequence based on reviewed continuity evidence
 - [ ] **Coverage fallback (Team):** If AMI lacks the required continuity cases, record a clearly labeled scripted sequence with consenting teammates. Keep scripted demonstration evidence separate from natural-meeting accuracy claims

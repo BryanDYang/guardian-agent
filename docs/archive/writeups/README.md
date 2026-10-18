@@ -1,12 +1,14 @@
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
+
 # Design writeups and reference material
 
 These documents explain proposed systems, earlier technology choices, and upstream
 capabilities. They are useful design history, but some describe functionality that
 is not implemented or differs from the current application.
 
-For current behavior and code entry points, use [Current architecture](../architecture.md).
-For tested behavior and limitations, use the [native walkthrough](../demo_walkthrough.md)
-and [Milestone 3 roadmap](../milestone_3/roadmap.md).
+For current behavior and code entry points, use [Current architecture](../../architecture.md).
+For tested behavior and limitations, use the [native walkthrough](../../evidence/demo_walkthrough.md)
+and [Milestone 3 roadmap](../../milestone_3/roadmap.md).
 
 Examples of distinctions to preserve:
 
