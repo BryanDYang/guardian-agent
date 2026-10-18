@@ -212,6 +212,41 @@ Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/fo
 
 The development data is useful for reviewing extraction and continuity, but cannot by itself prove email routing to real participants. Keep natural-data quality evaluation separate from personal scripted acceptance. Diarization separates voices; account mapping establishes a recipient. Date-bearing tasks currently require manual calendar entry/review, and completion-only extraction and recurring reminders remain gaps. Capture mode lets us inspect messages without contacting anyone; it does not demonstrate real inbox delivery.
 
+## Week 8 prompt response: runtime, cost, and tradeoffs
+
+Our runtime includes local audio normalization, Whisper transcription and
+speaker diarization, followed by text-model extraction and embedding/indexing.
+We have not measured every stage of the current pipeline, so we cannot yet name
+its slowest step. One concrete existing measurement is **48.241 seconds for the
+text-extraction call on TS3005a**, with **28,106 input tokens and 1,355 output
+tokens**. This comes from the earlier saved local artifact
+`artifacts/ami/TS3005a-codex.json`, using `meeting-extraction-v1` and requested
+model `gpt-5.6-sol`. It is an earlier baseline inspected during Week 8, not a new
+Week 8 timing, an end-to-end upload latency, or a current-v2 benchmark.
+
+Token/API usage comes from extraction and chat generation plus OpenAI embedding
+requests. Audio inference runs on our Mac, consuming local compute rather than
+hosted transcription requests. Storage and live email are additional deployment
+costs. We have not verified the applicable billing or measured a per-meeting dollar
+cost, so token counts should not be presented as an actual charge. The next
+personal-recording run should log upload-to-result time, individual processing
+stages, model/embedding usage, and approval-to-capture latency separately.
+
+This week we traded broader hands-off automation and live-email scope for
+controlled, inspectable behavior. Automatic approval requires a confirmed
+speaker/account connection and a narrow evidence rule; uncertain commitments,
+possible duplicates, and date-bearing tasks stay in review. Capture mode lets us
+inspect follow-up messages without contacting recipients. This leaves some manual
+work and delays proof of real inbox delivery, but AMI speakers are not actual app
+account holders, and we do not yet have reviewed evidence that broader automatic
+assignment is reliable. We chose to validate that boundary before expanding it.
+
+We are not fine-tuning, and we have no evidence that prompting has reached its
+ceiling. The immediate gaps include identity mapping, date handling, follow-through
+integration, and independently reviewed sequence labels. We need categorized
+errors and controlled prompt/retrieval comparisons before deciding whether any
+remaining failure is a model limitation that fine-tuning would address.
+
 ## Zoom direction discussed
 
 Following the professor's discussion of Zoom for CCB meetings, Bryan documented a proposed Zoom connection in the local, gitignored `contexts/zoom_integration_direction.md`. The idea is to import authorized meeting summaries/transcripts into the same project/task backend, retain the standalone mobile app, and eventually maintain commitments and follow-through across meetings. A full interface inside Zoom is a separate later decision. The [tracked Milestone 3 checkpoint](milestone_3/roadmap.md#zoom-proposal) records the proposal for teammates who do not have the local context folder.
