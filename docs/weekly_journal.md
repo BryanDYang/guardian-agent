@@ -136,8 +136,8 @@
 
 # Week 6 (September 28-October 4, 2026)
 
-**Did:** We integrated project chat with hybrid retrieval and verified citations, and connected more of the iOS app to authenticated backend data. I worked on setup documentation and the Milestone 3 draft, separating implemented features from verified behavior.<br>
-**Blocked on:** A reviewed RAG question set and live retrieval/model evaluation; component tests do not establish answer quality.<br>
+**Did:** We integrated project chat with hybrid retrieval and verified citations, and connected more of the iOS app to authenticated backend data. I worked on setup documentation and the Milestone 3 draft, separating implemented features from verified behavior.
+**Blocked on:** A reviewed RAG question set and live retrieval/model evaluation; component tests do not establish answer quality.
 **Next:** Run a controlled comparison of hybrid retrieval against vector-only retrieval on the same labeled questions.
 
 One specific system change was grouping consecutive transcript turns into windows of up to 150 words instead of retrieving each turn separately. Short turns often lack context, while long turns can exceed the embedding model's input limit. The windows aim to preserve enough surrounding discussion to answer questions about decisions and ownership.
@@ -150,8 +150,8 @@ Prompt engineering currently feels partly like art: wording and context choices 
 
 **Progress so far, based on Will's October 4 implementation and [checklist update](archive/checklist.md).**
 
-**Did:** Will implemented voice enrollment and speaker identification across the iOS client and backend. Enrollment records three clips and stores a voiceprint only after consent and quality checks. Users can skip enrollment, re-record from Profile, or revoke consent to delete their voiceprint. With the worker running with `--diarize`, the pipeline uses cosine similarity to match diarized speakers to enrolled project members; unmatched speakers keep generic `SPEAKER_N` labels.<br>
-**Blocked on:** Speaker-match thresholds are provisional and have not been calibrated. We still need a documented native end-to-end run and a speaker-identification benchmark before claiming reliable recognition.<br>
+**Did:** Will implemented voice enrollment and speaker identification across the iOS client and backend. Enrollment records three clips and stores a voiceprint only after consent and quality checks. Users can skip enrollment, re-record from Profile, or revoke consent to delete their voiceprint. With the worker running with `--diarize`, the pipeline uses cosine similarity to match diarized speakers to enrolled project members; unmatched speakers keep generic `SPEAKER_N` labels.
+**Blocked on:** Speaker-match thresholds are provisional and have not been calibrated. We still need a documented native end-to-end run and a speaker-identification benchmark before claiming reliable recognition.
 **Next:** Verify enrollment, upload, named transcript output, and consent revocation together on a consented recording. Measure correct matches, incorrect matches, and unknown-speaker handling, then calibrate thresholds. Continue the controlled RAG comparison planned last week.
 
 Will also updated the implementation checklist to distinguish connected code paths from accepted user journeys. The current task-similarity flag can show an earlier open task's title on a new candidate, but the candidate is still created. This is progress toward cross-meeting reconciliation; it does not yet establish duplicate prevention or reliable task-state updates across meetings.
@@ -199,7 +199,7 @@ Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/fo
 
 ## What got done
 
-- **Bryan, October 17:** Reproduced and fixed deletion of the text-only scripted test project. The shared backend now distinguishes meetings without recordings from real local recordings that still require cleanup on their original backend.
+- **October 17:** Reproduced and fixed deletion of the text-only scripted test project. The shared backend now distinguishes meetings without recordings from real local recordings that still require cleanup on their original backend.
 - Implemented immediate task follow-up email: project-owner controls, recipient opt-out, a durable outbox, captured-email previews/history, and retry/duplicate protection. Added optional evidence-gated automatic approval after a current human-confirmed speaker/account connection. The rule abstains on uncertainty, unresolved deadlines, and possible duplicates; it is experimental, not calibrated confidence. See [implementation and limitations](milestone_3/follow_through.md).
 - Applied the additive database migration with project automation off by default and installed the updated simulator app. The final backend suite passed **311 tests** on disposable PostgreSQL; Ruff lint/format and the simulator build passed. These checks use inference/provider stand-ins and do not establish real inbox delivery or natural-meeting accuracy.
 - Diagnosed Google OAuth's missing PKCE verifier as a simulator signing problem. The unsigned build could not access Keychain (`-34018`). Rebuilt/reinstalled with signing enabled and verified a disposable Keychain write/read/delete inside the running app. A fresh user Google sign-in remains needed to document complete OAuth acceptance.
@@ -227,24 +227,3 @@ No Zoom integration has been implemented or tested. CCB/host permission, availab
 5. Discuss Zoom with the team as a scoped next ingestion experiment, rather than substituting it for unfinished Milestone 3 acceptance and evaluation.
 
 Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`, and `0d01cf4`. October 18 screenshots are user-supplied observations; original screenshot/video artifacts and a completed personal-recording result log still need to be attached to the walkthrough. The [roadmap](milestone_3/roadmap.md) and [submission draft](milestone_3/submission_draft.md) retain the unfinished milestone gates.
-
-<details>
-<summary>Week 8 group update draft (not sent)</summary>
-
-Hi Will and Guadalupe, Week 8 and the M3 roadmap are updated. This week I added
-immediate task email, recipient preferences, captured delivery history, and optional
-approval after speaker/account confirmation; fixed scripted-project deletion and
-the simulator OAuth signing issue; and documented the architecture. The last full
-run passed 311 backend tests, lint/format, and the simulator build.
-
-The AMI walkthrough shows accepted tasks, but the reviewed/scored a-d sequence
-remains open. I'll record a personal meeting to test a real speaker/account-to-email
-path using the dated scripts. We're still in capture mode; live inbox delivery
-and recurring reminders remain unfinished. I also documented the professor's
-Zoom/CCB proposal: authorized summaries/transcripts could feed the existing backend
-and mobile app, subject to access and validation. Please review the journal/roadmap;
-next coordination items are second-reviewer labels and shared-worker recovery.
-
-Publish these changes or attach the updated files before sharing this draft.
-
-</details>
