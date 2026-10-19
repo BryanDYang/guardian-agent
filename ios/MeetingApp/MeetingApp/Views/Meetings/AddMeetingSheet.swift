@@ -13,6 +13,8 @@ struct AddMeetingSheet: View {
     @State private var audioURL: URL?
     @State private var permissionConfirmed = false
     @State private var showFileImporter = false
+    @State private var showRecorder = false
+    @State private var showZoomImport = false
     @State private var isUploading = false
     @State private var errorMessage: String?
 
@@ -27,11 +29,23 @@ struct AddMeetingSheet: View {
                     Label("Meeting Details", systemImage: "calendar")
                 }
 
-                Section("Audio File") {
+                Section {
+                    Toggle(
+                        "Everyone has agreed to recording and processing",
+                        isOn: $permissionConfirmed
+                    )
+
+                    Button {
+                        showRecorder = true
+                    } label: {
+                        Label("Record Audio", systemImage: "mic.circle.fill")
+                    }
+                    .disabled(!permissionConfirmed)
+
                     Button {
                         showFileImporter = true
                     } label: {
-                        Label(audioURL?.lastPathComponent ?? "Choose Audio File", systemImage: "waveform")
+                        Label("Import Audio File", systemImage: "folder")
                     }
 
                     Button {
@@ -40,17 +54,31 @@ struct AddMeetingSheet: View {
                         Label("Use Sample Recording", systemImage: "doc.badge.plus")
                     }
 
-                    Toggle(
-                        "I have permission to process this recording",
-                        isOn: $permissionConfirmed
-                    )
+                    if let audioURL {
+                        Label(audioURL.lastPathComponent, systemImage: "waveform")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+                    }
+                } header: {
+                    Text("Meeting Audio")
+                } footer: {
+                    Text("Confirm everyone's permission before recording. Record in the app or choose an existing file, then upload to generate the transcript and tasks.")
+                }
+
+                Section {
+                    Button("Import Zoom Summary", systemImage: "doc.text") {
+                        showZoomImport = true
+                    }
+                } footer: {
+                    Text("Already have a Zoom summary? Import it directly to review tasks without reprocessing audio.")
                 }
 
                 if isUploading {
                     Section {
                         HStack {
                             ProgressView()
-                            Text("Uploading to the local backend…")
+                            Text("Uploading for processing…")
                         }
                     }
                 }
@@ -62,6 +90,7 @@ struct AddMeetingSheet: View {
                     }
                 }
             }
+            .disabled(isUploading)
             .navigationTitle("Add Meeting")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -70,7 +99,7 @@ struct AddMeetingSheet: View {
                         .disabled(isUploading)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Upload") {
+                    Button("Upload & Process") {
                         Task { await uploadMeeting() }
                     }
                     .disabled(!canUpload)
@@ -84,6 +113,19 @@ struct AddMeetingSheet: View {
                 case .failure(let error):
                     errorMessage = error.localizedDescription
                 }
+            }
+            .sheet(isPresented: $showRecorder) {
+                MeetingRecordingSheet { url, recordedAt in
+                    audioURL = url
+                    date = recordedAt
+                    errorMessage = nil
+                    if title == "New Sync" {
+                        title = "Recording \(recordedAt.formatted(date: .abbreviated, time: .shortened))"
+                    }
+                }
+            }
+            .sheet(isPresented: $showZoomImport) {
+                ZoomSummaryImportSheet(project: project) { dismiss() }
             }
         }
         .interactiveDismissDisabled(isUploading)

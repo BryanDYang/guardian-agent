@@ -17,7 +17,7 @@ struct TranscriptSegment: View {
             .padding(.top, 48)
         } else {
             LazyVStack(alignment: .leading, spacing: 16) {
-                if isServerID(meeting.id) {
+                if isServerID(meeting.id) && !meeting.isZoomSummary {
                     Button("Review speaker names", systemImage: "person.crop.circle.badge.questionmark", action: onReviewSpeakers)
                         .font(.subheadline.weight(.medium))
                     Text("Names from introductions need confirmation. Voice setup is optional.")
@@ -43,13 +43,15 @@ struct TranscriptSegment: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(speaker?.name ?? "Unknown speaker")
+                    Text(meeting.isZoomSummary ? "Summary document" : speaker?.name ?? "Unknown speaker")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
+                    if !meeting.isZoomSummary {
                     Button { onSeek(turn.startSeconds) } label: { Text(turn.startTime) }
                         .accessibilityLabel("Play from \(turn.startTime)")
                         .font(.system(size: 10).monospaced())
                         .foregroundStyle(.blue)
+                    }
                 }
 
                 Text(turn.text)

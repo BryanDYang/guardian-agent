@@ -96,6 +96,10 @@ enum ProjectSync {
             if item.status == "completed", meeting.duration == "Processing" {
                 meeting.duration = "Processed"
             }
+            if item.sourceKind == "zoom_summary" {
+                meeting.audioFileName = "zoom-summary:no-audio"
+                meeting.duration = "Summary import"
+            }
             meeting.project = project
         }
         try context.save()

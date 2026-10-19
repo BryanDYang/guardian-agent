@@ -225,9 +225,10 @@ def turns(conn: Connection, meeting_id: UUID, first: int, last: int) -> list[dic
     return conn.execute(
         """
         SELECT turn_order, turn_key, start_time_ms, content,
-            coalesce(speaker_name, speaker_label) AS speaker
-        FROM meeting_transcripts
-        WHERE meeting_id = %s AND turn_order BETWEEN %s AND %s
+            coalesce(speaker_name, speaker_label) AS speaker,
+            m.model_metadata->'transcription'->>'input_kind' AS source_kind
+        FROM meeting_transcripts t JOIN meetings m ON m.id=t.meeting_id
+        WHERE t.meeting_id = %s AND turn_order BETWEEN %s AND %s
         ORDER BY turn_order
         """,
         (meeting_id, first, last),

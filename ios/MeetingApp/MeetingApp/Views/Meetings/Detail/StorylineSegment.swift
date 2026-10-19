@@ -15,7 +15,7 @@ struct StorylineSegment: View {
             detail(for: attendee)
         } else {
             VStack(alignment: .leading, spacing: 16) {
-                if isServerID(meeting.id) {
+                if isServerID(meeting.id) && !meeting.isZoomSummary {
                     Button("Review speaker names", systemImage: "person.crop.circle.badge.questionmark", action: onReviewSpeakers)
                 }
                 attendeeGrid

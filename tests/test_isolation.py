@@ -40,6 +40,20 @@ def upload_form(ids):
 # Routes that act on one project's data. An outsider must get 404 from each.
 # Each entry: (method, route path exactly as declared, request options).
 PROJECT_ROUTES = [
+    (
+        "POST",
+        "/api/v1/meetings/zoom-summary",
+        lambda ids: {
+            "json": {
+                "project_id": ids["project_id"],
+                "title": "Unauthorized summary",
+                "meeting_date": "2026-10-19",
+                "source_instance": "isolation-test-instance",
+                "summary": "A private meeting summary.",
+                "consent_confirmed": True,
+            }
+        },
+    ),
     ("GET", "/api/v1/projects/{project_id}/followup", lambda ids: {}),
     ("GET", "/api/v1/projects/{project_id}/followup/emails", lambda ids: {}),
     (

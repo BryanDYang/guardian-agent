@@ -197,11 +197,16 @@ Deferral is a scope proposal, not permission to omit an explicit rubric requirem
 Following the professor's Zoom/CCB discussion, explore authorized summary/transcript
 ingestion into the existing project/task backend while retaining the standalone
 mobile app. A background account integration could precede an interface inside
-Zoom. No integration or account-access test is implemented. Confirm CCB/host
-permission, available account/artifact access, provenance, and evidence quality;
-validate one authorized artifact after the current task loop works. Evaluate
+Zoom. As of October 19, the app implements a manual **Import Zoom Summary** path
+with a solo-test example, document provenance, review-only task proposals, and
+idempotent imports by project/meeting instance. This is not an account connection,
+webhook subscription, or live-call integration. Account access and a real Zoom
+artifact still need validation. Confirm CCB/host permission and available
+account/artifact access before automated ingestion. Evaluate
 Zoom-summary inputs separately from the audio pipeline. The original exploratory
 note remains local-only in `contexts/zoom_integration_direction.md`.
+
+For the test procedure and limits, see [Zoom summary test](follow_through.md#zoom-summary-test).
 
 ## Execution rule
 

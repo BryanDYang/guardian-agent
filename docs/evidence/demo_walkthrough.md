@@ -236,3 +236,33 @@ approved assignments. Enabling email does not bulk-send old work. A separate
 personal recording will be used for truthful identity/account and follow-up
 acceptance, using the [dated read-aloud scripts](../milestone_3/follow_through.md#personal-recording-test-scripts).
 The recording, captured-message result, and real inbox test remain pending.
+
+## October 19 Zoom summary import verification
+
+- Added manual **Add Meeting > Import Zoom Summary**, with a synthetic solo
+  example and a separate summary-specific extraction prompt. This does not
+  connect a Zoom account, join calls, or subscribe to summary webhooks.
+- Signed simulator build succeeded and was installed/launched. The development
+  shared backend was restarted with no active processing meetings; health
+  returned `ok`, and OpenAPI exposes `/api/v1/meetings/zoom-summary`.
+- 62 relevant tests passed against the isolated local PostgreSQL regression
+  database, with offline model/embedding substitutes. They cover summary
+  provenance, exact evidence without playback timestamps, access/consent,
+  idempotent retries, changed-content conflicts, atomic failures, task approval
+  to captured email, and existing chat/shared-backend behavior.
+- A real Codex model run on synthetic text proposed both expected assignments
+  with validated document quotes in 4.331 seconds. A subsequent prompt refinement
+  asks for action-only titles. Live rechecks then failed with provider HTTP 429
+  (`Too Many Requests`), despite an authenticated CLI. No repeated retries or
+  fabricated success were used. Resume live processing checks after rate limits
+  clear; this one sample is not an extraction-quality evaluation.
+- Native form interaction/visual acceptance and an actual authorized Zoom
+  summary are still unverified. Desktop UI control is unavailable in this
+  session. No real email was sent, and recurring reminders remain unfinished.
+- Final pre-commit verification: all 314 backend tests passed against the local
+  regression database after adding the Zoom endpoint to mandatory route-isolation
+  coverage. Ruff lint/format checks and the signed simulator build passed. Two
+  existing dependency deprecation warnings remain.
+
+Use the existing [Zoom summary test](../milestone_3/follow_through.md#zoom-summary-test)
+to record the human walkthrough and keep it separate from audio test results.

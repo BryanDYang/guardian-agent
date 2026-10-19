@@ -39,6 +39,7 @@ struct SummarySegment: View {
                                 .font(.subheadline)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
+                            if !meeting.isZoomSummary {
                             Button { onSeek(TranscriptTurn.seconds(from: decision.timestamp)) } label: {
                                 Text("[\(decision.timestamp)]")
                             }
@@ -51,6 +52,7 @@ struct SummarySegment: View {
                                     RoundedRectangle(cornerRadius: 6)
                                         .fill(Color(.systemGray6))
                                 )
+                            }
                         }
                         .padding(16)
                         .background(card)

@@ -147,14 +147,67 @@ or relative phrase to produce a prefilled calendar deadline automatically.
 
 ### Setup and recording method
 
+**Do not read all the sentences in one recording.** Each row below is a separate
+clip. Finish its settings, upload, and checks before moving on. Start with **A**
+only; B through F can wait until A works. Read the quoted sentence, not the
+headings, settings, or expected results. Replace bracketed dates with actual
+spoken dates before recording.
+
+| Clip / suggested meeting title | Project | Before recording |
+| --- | --- | --- |
+| `A-manual` | New project A | Automatic approval off; email and your receive preference on |
+| `B-auto` | New project B-positive | Automatic approval on; email and receive preference on |
+| `B-negative` | New project B-negative | Same settings as B; do not approve manually |
+| `C-explicit-date` | New project C | Read the full chosen deadline; enter the calendar date manually before approval |
+| `D-tomorrow` | New project D | Automatic approval off; enter tomorrow's date manually |
+| `E-opt-out` | New project E | Automatic approval off; your receive-email preference off |
+| `F1-date-change` | Reuse project C | Run after C; automatic approval off; restore receive-email preference on |
+| `F2-completion` | Reuse project C | Run after F1; completion extraction is a known gap |
+
+The in-app recorder assigns its own timestamped filename. Use the suggested name
+as the **meeting title**; copy the actual audio filename into your result log.
+
+### Where recordings and results go
+
+- **In the app:** recordings are saved under the app's **Documents/Recordings**
+  directory. On a physical iPhone, look in **Files > Browse > On My iPhone >
+  MeetingApp (or the app's displayed name) > Recordings**. Originals remain after
+  upload. On the simulator, use its Files app; the simulator's app container is
+  separate from your Mac's Documents folder. If the folder is not visible, use
+  Xcode's app-container tools to copy out `Documents/Recordings`.
+- **For test evidence on your Mac:** use
+  `artifacts/follow-through/[RUN_LABEL]/audio/` for exported original clips and
+  `artifacts/follow-through/[RUN_LABEL]/evidence/` for screenshots or screen
+  recordings. Exporting is a manual backup; uploading does not create these Mac
+  copies. Keep the original filename or record any renamed copy in the log.
+- **For observed results:** use `artifacts/follow-through/[RUN_LABEL]/results.md`.
+  A starter run is prepared at
+  `artifacts/follow-through/2026-10-19-run-1/results.md`, with example dates and all
+  outcomes marked **not run**. Update dates before use. Record what actually
+  happened, including failures and manual edits; do not fill expected outcomes
+  into the observed column.
+- `artifacts/` is ignored by Git. These local recordings and detailed logs will
+  not be committed or pushed. After testing, summarize the verified outcomes in
+  the existing [walkthrough](../evidence/demo_walkthrough.md) and use an agreed
+  team evidence location if others need the files. Keep account emails, tokens,
+  and unrelated meeting content out of shared screenshots.
+
+### Run each clip
+
 1. Use the installed signed simulator build or a normally signed device build.
 2. Sign in with your own account and create a separate project for each independent
    scenario, such as `Follow-through [RUN_LABEL] - A`. Do not reuse AMI projects.
 3. Open project **... > Follow-through**. Save **Email task owners after approval**
    on. Save your own receive-email preference on. Keep delivery in **Test inbox**.
-4. Use Voice Memos or another recorder. Speak the quoted text clearly. Record each
-   block as a separate audio file; a short silence before/after is fine.
-5. Upload it with `[MEETING_DATE]`. Wait until processing completes and inspect
+4. In **Add Meeting**, confirm recording consent and choose **Record Audio**.
+   Speak the quoted text clearly, stop, play it back, then choose **Use Recording**.
+   Record each block separately; a short silence before/after is fine. Keep the
+   app open while recording. Leaving the app stops and saves the clip, and there
+   is a 60-minute limit. Originals remain in the app's **Recordings** folder in
+   Files. Importing a Voice Memos recording is also supported.
+5. Check `[MEETING_DATE]` and choose **Upload & Process**. The recorder prefills
+   the capture date; change it if your script uses a different date.
+   Wait until processing completes and inspect
    the transcript, exact evidence, task title, and owner before proceeding.
 6. Confirm the speaker's name as `[YOUR_NAME]` and connect your actual app member.
    You can enter your name manually; a spoken introduction is not required.
@@ -163,6 +216,40 @@ For automatic-approval case B, record only its commitment sentence. Do not prepe
 an introduction to the same turn: the current rule expects a source turn starting
 with `I will` or `I'll`. If ASR or extraction changes the wording, record the
 abstention instead of changing the transcript or claiming a successful auto-pass.
+
+### Zoom summary test
+
+This is a separate input experiment from the audio scripts below. It imports a
+summary after it is available; it does not join, record, or watch a Zoom call.
+
+1. In a dedicated project, open **Add Meeting > Import Zoom Summary**.
+2. For a solo test, choose **Fill Solo Test Example**. Keep **synthetic test data**
+   on and replace Bryan with your name if needed. For a real call, paste an
+   authorized summary and turn the synthetic-data switch off.
+3. Set the actual meeting date, title, and a unique instance label. A recurring
+   Zoom meeting ID alone is insufficient: use its UUID, or a label containing
+   the meeting's date/time. Confirm permission and choose **Process**.
+4. Open the imported meeting. **Source** contains the summary document. No audio
+   player or playback timestamps should appear. Names remain suggestions.
+5. With task email and your receive-email preference enabled, edit a proposed
+   task to assign your own project member and set any due date, then approve it.
+   Check **Follow-through > Recent follow-ups** for the captured message.
+6. Import the same instance and unchanged content again: expect the same meeting
+   and existing tasks, without new emails. Changed content under the same label
+   returns a conflict, preserving reviewed work. Review changes manually rather
+   than creating a different label just to bypass this check.
+
+Summary imports require manual approval even if project automatic approval is
+enabled. An exact quote proves what the summary says, not what a person actually
+said. Capture mode does not send to a real inbox, and recurring reminders remain
+outside this test. If processing times out, retry with the same instance and
+unchanged form fields. Inputs are limited to 30,000 characters.
+
+Automatic Zoom account connection is not implemented. Creating a developer app
+does not itself unlock meeting artifacts. Zoom's [Meeting Summary requirements](https://support.zoom.com/hc/en/article?id=zm_kb&sysparm_article=KB0058013)
+list a licensed Pro-or-higher host. Verify the personal account's permissions,
+plan and actual API availability before choosing OAuth scopes or implementing
+automatic imports. No Zoom secrets belong in the mobile app.
 
 ### A. Manual approval to captured follow-up
 

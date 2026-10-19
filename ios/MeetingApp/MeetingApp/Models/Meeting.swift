@@ -20,6 +20,8 @@ final class Meeting {
     var processingStatus: String?
     var processingError: String?
 
+    var isZoomSummary: Bool { audioFileName == "zoom-summary:no-audio" }
+
     /// Replaces `projectId`. Inverse declared on Project.meetings.
     var project: Project?
 

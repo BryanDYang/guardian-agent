@@ -112,7 +112,7 @@ struct TaskRow: View {
                             .frame(width: 2)
                     }
             }
-            Label(sourceLine, systemImage: "waveform")
+            Label(sourceLine, systemImage: task.sourceMeeting?.isZoomSummary == true ? "doc.text" : "waveform")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

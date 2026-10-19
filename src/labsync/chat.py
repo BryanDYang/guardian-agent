@@ -105,6 +105,17 @@ def build_sources(conn: Connection, hits: list[dict]) -> list[Source]:
                 if key in seen_turns:
                     continue
                 seen_turns.add(key)
+                if turn.get("source_kind") == "zoom_summary":
+                    add(
+                        "S",
+                        hit,
+                        kind="summary",
+                        text=turn["content"],
+                        line="Zoom summary document (not recorded speech): "
+                        + turn["content"],
+                        turn_key=turn["turn_key"],
+                    )
+                    continue
                 speaker = turn["speaker"] or "UNKNOWN"
                 add(
                     "T",

@@ -302,7 +302,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeetingApp/Info.plist;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Meeting Memory records a short voice sample so it can label you in your meetings.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Meeting Memory records meeting audio for transcripts and tasks, and optional voice samples to help label speakers.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -344,7 +344,7 @@
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeetingApp/Info.plist;
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Meeting Memory records a short voice sample so it can label you in your meetings.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Meeting Memory records meeting audio for transcripts and tasks, and optional voice samples to help label speakers.";
 				INFOPLIST_KEY_NSRemindersFullAccessUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				INFOPLIST_KEY_NSRemindersUsageDescription = "LabSync adds an approved task to Reminders so you can track its due date.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

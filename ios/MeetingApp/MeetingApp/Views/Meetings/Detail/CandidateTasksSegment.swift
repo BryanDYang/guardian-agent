@@ -23,7 +23,7 @@ struct CandidateTasksSegment: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            if isServerID(meeting.id) {
+            if isServerID(meeting.id) && !meeting.isZoomSummary {
                 Button("Review speaker names", systemImage: "person.crop.circle.badge.questionmark", action: onReviewSpeakers)
                     .font(.subheadline.weight(.medium))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -129,6 +129,7 @@ struct CandidateTasksSegment: View {
                         )
                 }
 
+                if !meeting.isZoomSummary {
                 Button {
                     onSeek(TranscriptTurn.seconds(from: candidate.timestamp))
                 } label: {
@@ -142,6 +143,7 @@ struct CandidateTasksSegment: View {
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.blue)
+                }
             }
 
             Text(candidate.taskDescription)
@@ -158,7 +160,7 @@ struct CandidateTasksSegment: View {
                     Label(candidate.assignee == nil ? "Confirm owner" : "Connect to an app member", systemImage: "person.crop.circle.badge.questionmark")
                 }
                 .font(.subheadline.weight(.medium))
-                Text(candidate.assignee == nil ? "Choose who owns this task. Tap the timestamp to listen here." : "This participant can own a task without an app account. Connect a member only if you know they are the same person.")
+                Text(meeting.isZoomSummary ? "Confirm the owner named in this summary. Connect an app member to test follow-up delivery." : candidate.assignee == nil ? "Choose who owns this task. Tap the timestamp to listen here." : "This participant can own a task without an app account. Connect a member only if you know they are the same person.")
                     .font(.caption).foregroundStyle(.secondary)
             }
 
@@ -257,7 +259,7 @@ struct CandidateTasksSegment: View {
             state: .open,
             dueDate: dueDate,
             sourceMeetingTitle: meeting.title,
-            sourceTimestamp: candidate.timestamp
+            sourceTimestamp: meeting.isZoomSummary ? "" : candidate.timestamp
         )
         context.insert(task)
         task.assignee = candidate.assignee
@@ -294,7 +296,7 @@ struct CandidateTasksSegment: View {
                 task.project = meeting.project
                 task.sourceMeeting = meeting
                 task.sourceMeetingTitle = meeting.title
-                task.sourceTimestamp = candidate.timestamp
+                task.sourceTimestamp = meeting.isZoomSummary ? "" : candidate.timestamp
                 if let eventKit = response.eventKit {
                     await ReminderScheduler.addReminder(title: eventKit.title, dueDay: eventKit.dueDate)
                 }
@@ -349,12 +351,14 @@ private struct ReconcileTaskSheet: View {
             Form {
                 Section("Evidence from this meeting") {
                     Text(candidate.quote)
+                    if !meeting.isZoomSummary {
                     Button("Listen to evidence", systemImage: "play.circle") {
                         let parts = candidate.timestamp.split(separator: ":").compactMap { Int($0) }
                         if parts.count == 2 {
                             previewing = true
                             onSeek(parts[0] * 60 + parts[1])
                         }
+                    }
                     }
                 }
                     if previewing {

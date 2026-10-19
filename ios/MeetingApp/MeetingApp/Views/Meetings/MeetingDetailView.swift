@@ -25,12 +25,20 @@ struct MeetingDetailView: View {
                 VStack(spacing: 0) {
                     Picker("Segment", selection: $navigator.activeSegment) {
                         ForEach(MeetingSegment.allCases) { segment in
-                            Text(segment.title).tag(segment)
+                            Text(meeting.isZoomSummary && segment == .transcript ? "Source" : segment.title).tag(segment)
                         }
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
+
+                    if meeting.isZoomSummary {
+                        Text("\(meeting.duration == "Test summary" ? "Synthetic test summary." : "Imported Zoom summary.") Document evidence, not recorded speech. Confirm task owners and dates before approval.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 8)
+                    }
 
                     if (meeting.processingStatus ?? "completed") != "completed" {
                         ProcessingStatusView(
@@ -53,11 +61,13 @@ struct MeetingDetailView: View {
                         .onChange(of: meeting.transcript.count) { scrollToPendingSeek(in: meeting, proxy: proxy) }
                     }
 
+                    if !meeting.isZoomSummary {
                     AudioDockView(audio: audio) { audioAttempt += 1 }
                         .task(id: "\(meeting.id)-\(audioAttempt)") {
                             await audio.load(meetingID: meeting.id)
                         }
                         .onDisappear { audio.stop() }
+                    }
                 }
                 .background(Color(.systemGroupedBackground))
                 .navigationTitle(meeting.title)
@@ -170,6 +180,10 @@ struct MeetingDetailView: View {
         defer { loadingTasks = false }
         do {
         let detail = try await MeetingAPIClient.shared.storedDetail(meetingID: meeting.id)
+        if detail.source?.inputKind == "zoom_summary" {
+            meeting.audioFileName = "zoom-summary:no-audio"
+            meeting.duration = detail.source?.isSample == true ? "Test summary" : "Summary import"
+        }
         if let overview = detail.summary?.overview, !overview.isEmpty {
             meeting.summary = [overview]
         }

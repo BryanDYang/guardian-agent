@@ -1,25 +1,16 @@
 import SwiftUI
 
-/// Rounded gradient square with a white glyph (app logo on auth screens, header icon on voice enrollment).
+/// Conversation-to-action mark, shared with the Home Screen icon.
 struct AppMark: View {
     var size: CGFloat = 56
-    var symbol: String = "waveform"
 
     var body: some View {
-        Image(systemName: symbol)
-            .font(.system(size: size * 0.42, weight: .semibold))
-            .foregroundStyle(.white)
+        Image("BrandMark")
+            .resizable()
+            .interpolation(.high)
+            .scaledToFit()
             .frame(width: size, height: size)
-            .background(
-                RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [Palette.brandIndigo, Palette.brandBlue],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            )
+            .clipShape(RoundedRectangle(cornerRadius: size * 0.23, style: .continuous))
             .accessibilityHidden(true)
     }
 }

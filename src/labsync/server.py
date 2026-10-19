@@ -26,6 +26,7 @@ from .api.meetings import router as meetings_router
 from .api.projects import ProjectEvents
 from .api.projects import router as projects_router
 from .api.tasks import router as tasks_router
+from .api.zoom import router as zoom_router
 from .auth import InvalidToken, TokenVerifier
 from .ccb import SPEAKERS_FILE
 from .db import meetings as meeting_store
@@ -284,6 +285,7 @@ def create_app(
     app.include_router(me_router)
     app.include_router(invitations_router)
     app.include_router(followup_router)
+    app.include_router(zoom_router)
 
     app.add_middleware(
         TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"]

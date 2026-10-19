@@ -69,6 +69,20 @@ struct MeetingAPIClient {
         return try await send(request)
     }
 
+    func importZoomSummary(projectID: String, title: String, date: Date, instance: String, summary: String, isSample: Bool) async throws -> RemoteMeeting {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/zoom-summary"))
+        request.httpMethod = "POST"
+        request.timeoutInterval = Self.uploadTimeout
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: [
+            "project_id": projectID, "title": title,
+            "meeting_date": LabSyncDate.string(from: date),
+            "source_instance": instance, "summary": summary,
+            "consent_confirmed": true, "is_sample": isSample,
+        ])
+        return try await send(request)
+    }
+
     func meetings(projectID: String) async throws -> [RemoteMeetingCard] {
         let request = URLRequest(
             url: baseURL.appending(path: "api/v1/projects/\(projectID)/meetings")
@@ -563,10 +577,12 @@ struct RemoteMeetingCard: Decodable {
     let name: String
     let meetingDate: String
     let status: String
+    let sourceKind: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name, status
         case meetingDate = "meeting_date"
+        case sourceKind = "source_kind"
     }
 }
 
@@ -889,6 +905,16 @@ struct RemoteStoredMeeting: Decodable {
     let tasks: [RemoteStoredTask]
     let transcript: [RemoteStoredTurn]
     let decisions: [RemoteStoredDecision]
+    let source: RemoteMeetingSource?
+}
+
+struct RemoteMeetingSource: Decodable {
+    let inputKind: String?
+    let isSample: Bool?
+    enum CodingKeys: String, CodingKey {
+        case inputKind = "input_kind"
+        case isSample = "is_sample"
+    }
 }
 
 struct RemoteStoredDecision: Decodable {

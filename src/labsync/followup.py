@@ -57,6 +57,10 @@ def auto_approve(conn, meeting_id):
     ).fetchone()
     if not meeting or not meeting["auto_approve_tasks"]:
         return 0
+    source = (meeting["model_metadata"] or {}).get("transcription", {})
+    if source.get("input_kind") == "zoom_summary":
+        # Paraphrased summaries cannot establish an explicit spoken commitment.
+        return 0
     reviews = (meeting["model_metadata"] or {}).get("speaker_name_reviews", {})
     candidates = conn.execute(
         "SELECT id FROM tasks WHERE meeting_id=%s AND review_status='pending' "
@@ -236,7 +240,8 @@ class EmailWorker:
                 return False
             recipient = conn.execute(
                 "SELECT pr.email,pm.followup_email_enabled AS opted_in,"
-                "p.followup_email_enabled AS enabled,m.name AS meeting_name "
+                "p.followup_email_enabled AS enabled,m.name AS meeting_name, "
+                "m.model_metadata->'transcription'->>'input_kind' AS source_kind "
                 "FROM tasks t JOIN project_members pm ON pm.project_id=t.project_id "
                 "AND pm.user_id=%s JOIN profiles pr ON pr.id=pm.user_id "
                 "JOIN projects p ON p.id=t.project_id "
@@ -283,8 +288,13 @@ class EmailWorker:
                     f"Your task: {task['title']}\n"
                     f"Meeting: {recipient['meeting_name'] or 'Project task'}\n"
                     f"Due: {task['due_date'] or 'No deadline set'}\n\n"
-                    f"Meeting evidence: {task['quote'] or 'No source quote'}\n\n"
-                    "Review your tasks: meetingmemory://tasks\n\n"
+                    + (
+                        "Zoom summary evidence (not recorded speech): "
+                        if recipient["source_kind"] == "zoom_summary"
+                        else "Meeting evidence: "
+                    )
+                    + f"{task['quote'] or 'No source quote'}\n\n"
+                    + "Review your tasks: meetingmemory://tasks\n\n"
                     "Open LabSync > Tasks > To-do to review, correct, or complete "
                     "this task. Manage follow-up email in the project's "
                     "Follow-through settings.\n"

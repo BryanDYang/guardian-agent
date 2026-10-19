@@ -27,7 +27,8 @@ def list_meetings(
     return conn.execute(
         """
         SELECT id, project_id, name, meeting_date, status, duration_seconds,
-               audio_file_path, created_at
+               audio_file_path, created_at,
+               model_metadata->'transcription'->>'input_kind' AS source_kind
         FROM meetings
         WHERE project_id = %s
         ORDER BY meeting_date DESC, created_at DESC
@@ -41,7 +42,8 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
     meeting = conn.execute(
         """
         SELECT id, project_id, name, meeting_date, audio_file_path, duration_seconds,
-               status, processing_attempt, error_message, created_at
+               status, processing_attempt, error_message, created_at,
+               model_metadata->'transcription' AS source
         FROM meetings
         WHERE id = %s
         """,
@@ -137,7 +139,7 @@ def create_meeting(
     project_id: UUID,
     name: str,
     meeting_date: date,
-    audio_file_path: str,
+    audio_file_path: str | None,
     uploaded_by: UUID | None = None,
 ) -> dict:
     return conn.execute(
@@ -254,6 +256,9 @@ def save_results(
             (meeting_id,),
         )
     }
+    if transcription_metadata.get("has_timestamps") is False:
+        for turn in turns.values():
+            turn["start_time_ms"] = None
 
     conn.execute(
         "INSERT INTO meeting_summaries (meeting_id, overview) VALUES (%s, %s)",
