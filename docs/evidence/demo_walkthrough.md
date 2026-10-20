@@ -346,7 +346,7 @@ but not exercised through a forced network outage.
 
 Executed the uploaded personal recordings through the signed iPhone simulator
 app against the shared backend, using capture delivery and the configured Codex
-CLI. The source checkout was `afeaded` plus the changes in this commit. Mutations
+CLI. The tested implementation was committed as `1d09bc6`, based on `afeaded`. Mutations
 were performed through the native app; database reads verified saved state,
 audit actions, and outbox counts. These are scripted single-speaker checks, not
 natural-meeting accuracy measurements or independent external acceptance.
@@ -371,7 +371,8 @@ October 21 raw extraction text remains provenance; the confirmed due date is
 October 23. The one-time captured C email is not a rescheduled reminder or an
 updated-deadline email.
 
-Local detailed snapshots and results are under
+The versioned ledger below preserves the detailed states, audit sequence, and
+counts for team review. Raw local snapshots and the working results copy are under
 `artifacts/follow-through/2026-10-20-run-1/{before.json,after.json,results.md}`.
 They are ignored by Git. Original recordings remain in the app/backend; they
 were not exported into the empty `artifacts/audio/` directory. UI observations
@@ -379,3 +380,66 @@ are in this session; no standalone screen recording was saved by these checks.
 Still needed: a clean manual A demo with recorded visual evidence, live inbox
 acceptance after sender setup, automatic date/completion improvements, recurring
 reminder lifecycle, and the independent AMI a-d review/evaluation.
+
+### Versioned run ledger
+
+This ledger is the repository copy of the observed results, derived from the
+local before/after snapshots. The tested implementation is commit `1d09bc6`
+(on top of `afeaded`); environment: October 20, 2026, America/Los_Angeles,
+iPhone 18 Pro Max simulator on iOS 27.0, signed Debug build, shared backend,
+Whisper MLX `base`, Codex `gpt-5.6-sol` via CLI `0.163.0-alpha.10.2`, delivery
+`capture`. One consenting tester, Bryan, used his account for recipient mapping.
+These recordings were already processed before the baseline snapshot, including
+D/E's documented recovery. The ledger measures subsequent native review and
+follow-through behavior; it does not measure processing latency for each clip.
+
+**Saved state transitions.** Dates below are structured due dates, not raw ASR
+text. Project names use `Follow-through Dev - 2026-10-20 - [case]`; C/F1/F2 share
+`C-F`. Opaque meeting/task IDs allow the team to locate the same test records
+without committing account identifiers, addresses, or message payloads.
+
+| Case | Meeting ID | Task ID | Before | After |
+| --- | --- | --- | --- | --- |
+| A | `d1369fd6-e347-466b-8979-541cd3875c41` | `7d0b8c92-b1c6-4198-b475-2d8ffc1d7e51` | approved/open; undated | approved/open; undated |
+| B-negative | `fd4f6ba2-0f8c-4c06-b831-fa98a759ee30` | `b3c36219-230e-4a74-80c9-16828ac032ce` | pending/open; undated | pending/open; undated |
+| B-positive | `25d4d3e7-9b80-4300-aa84-b92d5ab653d0` | `8ed21ec0-d519-457d-8608-25d62d7caa06` | pending/open; undated | approved/open; undated |
+| C | `d4e19983-74ff-48f6-aa49-b7501c47af4d` | `e68d6b72-4464-433b-8d6f-92eabb4d9cb2` | pending/open; undated | approved/done; 2026-10-23 |
+| F1 | `981df1c6-eb96-4279-9742-329c7f959aa2` | `b928dca5-85ca-414a-9e07-c4eb5865c6a5` | pending/open; undated | dismissed/open; undated |
+| F2 | `6762c1c2-fea6-4fa4-83ee-76a615d99ae3` | None | No task | No task |
+| D | `d9acf3f8-ff26-4294-b64f-8c92f5441406` | `ca1ec16e-bbb3-4b00-8473-4e59ce47a1ea` | pending/open; undated | approved/open; 2026-10-21 |
+| E | `56c9dc40-5be3-4808-b62e-a973efb42d8c` | `546a01c6-c100-42f8-843d-abd87db446e2` | pending/open; undated | approved/open; undated |
+
+**Recorded audit sequence:** A's baseline approval was `AUTO_APPROVE`;
+B-positive gained one `AUTO_APPROVE`. E recorded `REVIEW_APPROVE`. C recorded
+`REVIEW_EDIT` to October 21, then `REVIEW_APPROVE`, `MEETING_RECONCILIATION`
+with operation `duplicate`, `DETAILS_EDIT` to October 23, `STATUS_CHANGE` to
+done, `REVERT` to open, and `STATUS_CHANGE` to done again. D recorded
+`REVIEW_EDIT` to October 21 followed by `REVIEW_APPROVE`. F1's candidate became
+dismissed. F2 had no task to reconcile. These are observed saved audit actions,
+not assertions that the model inferred the manual edits.
+
+**Final settings and delivery:**
+
+| Project case | Project email | Auto-approve | Recipient preference | Captured messages | Attempts per message |
+| --- | --- | --- | --- | --- | --- |
+| A | On | On | On | 1 | 1 |
+| B-negative | On | On | On | 0 | N/A |
+| B-positive | On | On | On | 1 | 1 |
+| C-F | On | On | On | 1 | 1 |
+| D | On | Off | On | 1 | 1 |
+| E | On | Off | On | 0 | N/A |
+
+E's preference was **off at approval**, then restored on; the final On value
+must not be read as the setting used for the opt-out test. The four delivery
+rows were all `captured` in `capture` mode. Zero real-inbox deliveries were
+tested. Refresh/relaunch and repeat reconciliation did not increase those
+counts in the final snapshot; provider retry/failure recovery was not forced
+in this native run.
+
+**Acceptance disposition:** B-positive, B-negative abstention, E opt-out, and
+the manual date/Calendar, duplicate, completion/Undo, and relaunch checks passed.
+A manual approval was not run cleanly. C/D automatic date resolution and F1
+automatic deadline revision did not pass. F2 automatic completion is unsupported.
+Live inbox delivery, recurring reminders, multi-speaker identity accuracy, and
+external testers were not tested here. No standalone screenshot/video files
+were produced for this run; record the clean manual A demo separately.

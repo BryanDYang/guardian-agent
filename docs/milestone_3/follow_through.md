@@ -188,17 +188,20 @@ as the **meeting title**; copy the actual audio filename into your result log.
   `artifacts/follow-through/[RUN_LABEL]/evidence/` for screenshots or screen
   recordings. Exporting is a manual backup; uploading does not create these Mac
   copies. Keep the original filename or record any renamed copy in the log.
-- **For observed results:** use `artifacts/follow-through/[RUN_LABEL]/results.md`.
-  A starter run is prepared at
-  `artifacts/follow-through/2026-10-19-run-1/results.md`, with example dates and all
-  outcomes marked **not run**. Update dates before use. Record what actually
-  happened, including failures and manual edits; do not fill expected outcomes
-  into the observed column.
-- `artifacts/` is ignored by Git. These local recordings and detailed logs will
-  not be committed or pushed. After testing, summarize the verified outcomes in
-  the existing [walkthrough](../evidence/demo_walkthrough.md) and use an agreed
-  team evidence location if others need the files. Keep account emails, tokens,
-  and unrelated meeting content out of shared screenshots.
+- **For observed results in Git:** fill the run results and ledger in the
+  existing [walkthrough](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+  Record the tested commit/configuration, actual dates, before/after state,
+  manual actions, audit actions, delivery counts, failures, and unrun checks.
+  Keep this as the authoritative team-readable result rather than maintaining
+  another status document.
+- **For local working notes:** `artifacts/follow-through/[RUN_LABEL]/results.md`
+  and raw snapshots are optional scratch evidence. The October 19 starter has
+  example dates and **not run** outcomes; it is not acceptance evidence.
+- `artifacts/` is ignored by Git. Recordings, raw backend snapshots, private
+  configuration, and full email payloads stay there or in an agreed restricted
+  team evidence location. Promote the sanitized observed results into the
+  walkthrough before committing. Keep account emails, tokens, and unrelated
+  meeting content out of shared evidence.
 
 ### Run each clip
 
