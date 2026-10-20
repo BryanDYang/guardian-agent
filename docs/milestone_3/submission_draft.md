@@ -201,16 +201,16 @@ Voice enrollment records three clips after separate consent, applies speech/qual
 
 The alpha consists of the following integrated systems:
 
-| Layer              | Current implementation                                                    | Current limitation                                               |
-| ------------------ | ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Native client      | SwiftUI and SwiftData iOS application                                     | Full native/physical-device acceptance remains open     |
-| Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication               | Project membership is enforced; live authorization checks remain |
-| API and worker     | FastAPI with optional PostgreSQL jobs and recoverable shared workers       | Two-device recovery and API failover routing remain unverified    |
-| Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain   |
-| Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Reviewed reconciliation exists; automatic update proposals and sequence accuracy remain open                  |
-| Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused    |
-| Retrieval and chat | Hybrid dense/full-text retrieval, structured answers, verified citations  | Live model and embedding checks remain; no streaming             |
-| Evaluation         | Offline ASR and extraction harnesses with saved predictions               | RAG and sequence evaluations are incomplete                      |
+| Layer              | Current implementation                                                    | Current limitation                                                                           |
+| ------------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Native client      | SwiftUI and SwiftData iOS application                                     | Full native/physical-device acceptance remains open                                          |
+| Remote gateway     | Cloudflare Tunnel with Supabase access-token authentication               | Project membership is enforced; live authorization checks remain                             |
+| API and worker     | FastAPI with optional PostgreSQL jobs and recoverable shared workers      | Two-device recovery and API failover routing remain unverified                               |
+| Audio processing   | FFmpeg, Whisper, and optional pyannote diarization                        | Speaker matching exists; calibration and DER evaluation remain                               |
+| Model extraction   | Codex or Claude with Pydantic contracts and evidence checks               | Reviewed reconciliation exists; automatic update proposals and sequence accuracy remain open |
+| Persistence        | Supabase PostgreSQL with pgvector and append-only lifecycle audit records | Matched attendees are written; storyline tables remain unused                                |
+| Retrieval and chat | Hybrid dense/full-text retrieval, structured answers, verified citations  | Live model and embedding checks remain; no streaming                                         |
+| Evaluation         | Offline ASR and extraction harnesses with saved predictions               | RAG and sequence evaluations are incomplete                                                  |
 
 The architecture intentionally separates audio recognition, structured extraction, storage, retrieval, and presentation. This lets us measure failure sources independently instead of attributing every downstream error to one model call.
 
@@ -446,7 +446,7 @@ The [roadmap, scope, and acceptance plan](roadmap.md) defines current targets, e
 ### Required for a credible Milestone 3 alpha
 
 - [X] Identify the official Milestone 3 rubric and required components.
-- [ ] Confirm the Canvas deadline, page limit if any, and any TA check-in expectations.
+- [X] Confirm the Canvas deadline, page limit if any, and any TA check-in expectations.
 - [ ] Run and record the complete Python tests and lint checks on the submission commit.
 - [ ] Build and test the current SwiftUI application.
 - [ ] Complete one clean recording-to-results-to-task-to-chat user journey.
