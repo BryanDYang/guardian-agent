@@ -13,9 +13,14 @@ def default_provider() -> str:
     return os.environ.get("LABSYNC_PROVIDER") or "codex"
 
 
+def codex_executable() -> str:
+    """Allow a backend to pin its verified CLI without changing the system PATH."""
+    return os.environ.get("LABSYNC_CODEX_CLI", "").strip() or "codex"
+
+
 def setup_error(provider: str) -> str | None:
     """Explain missing credentials before any meeting is accepted."""
-    if provider == "codex" and not shutil.which("codex"):
+    if provider == "codex" and not shutil.which(codex_executable()):
         return (
             "Codex CLI is missing. Install it and run codex login, "
             "or set LABSYNC_PROVIDER=claude with ANTHROPIC_API_KEY."

@@ -262,3 +262,106 @@ No Zoom integration has been implemented or tested. CCB/host permission, availab
 5. Discuss Zoom with the team as a scoped next ingestion experiment, rather than substituting it for unfinished Milestone 3 acceptance and evaluation.
 
 Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`, and `0d01cf4`. October 18 screenshots are user-supplied observations; original screenshot/video artifacts and a completed personal-recording result log still need to be attached to the walkthrough. The [roadmap](milestone_3/roadmap.md) and [submission draft](milestone_3/submission_draft.md) retain the unfinished milestone gates.
+
+# Week 9 (October 19-25, 2026)
+
+## What got done so far
+
+- **October 19:** Committed and pushed the preliminary implementation to `main`
+  in [`afeaded`](https://github.com/BryanDYang/guardian-agent/commit/afeaded).
+  This is an implementation checkpoint, not completed Milestone 3 acceptance.
+- Added in-app meeting audio recording: consent and microphone permission,
+  timer/input level, stop, playback, and upload through the existing processing
+  pipeline. Original M4A recordings remain in the app's `Documents/Recordings`
+  folder. Recording stops and saves when the app leaves the foreground, with a
+  60-minute limit. The signed simulator build was installed; personal microphone
+  recording and the complete native processing journey still need testing.
+- Implemented the first Zoom experiment discussed with the professor: manual
+  summary import into the existing project/task flow, with a synthetic solo-test
+  example. Summary text retains its provenance, proposed owners require review,
+  and unchanged meeting-instance retries do not duplicate work. Summary evidence
+  is distinguished from recorded speech in the app, retrieval citations, and
+  follow-up emails. This does not connect a Zoom account or automatically import
+  post-call summaries; OAuth, API access, webhooks, and account eligibility remain
+  unresolved. It advances the Week 8 proposal without replacing audio evaluation.
+- Simplified the app logo to a flat speech bubble with a checkmark, with matching
+  light/dark icons and sign-in branding.
+- Clarified the [personal recording scripts and storage instructions](milestone_3/follow_through.md#personal-recording-test-scripts):
+  eight separate clips, independent projects except the C/F continuity sequence,
+  settings and expected outcomes per case, and local audio/evidence/result-log
+  locations. Prepared a local run log under
+  `artifacts/follow-through/2026-10-19-run-1/results.md`; all outcomes remain
+  **not run**. Recordings and detailed local logs are ignored by Git.
+
+## Verification and limits
+
+All **314 backend tests** passed against isolated local PostgreSQL, including
+Zoom import-to-captured-email acceptance and mandatory route-isolation coverage.
+Ruff lint/format and the signed iOS simulator build passed. Two existing
+dependency deprecation warnings remain. These automated checks use offline
+inference/embedding substitutes and do not establish real inbox delivery, native
+visual acceptance, or natural-meeting quality.
+
+A real synthetic-summary model call proposed both expected assignments with
+validated document quotes in **4.331 seconds**. This measures one text-extraction
+call, not the full pipeline or a quality benchmark. Later rechecks hit provider
+**HTTP 429 (Too Many Requests)** despite a signed-in CLI; live processing needs
+rechecking after the rate limit clears. No real follow-up email was sent.
+
+## Planned work this week
+
+**October 20 processing update:** Diagnosed the failed personal D/E recordings
+as Codex extraction failures after successful transcription/diarization. An
+otherwise identical synthetic request failed with the older Homebrew CLI and
+succeeded with the official desktop-bundled CLI, despite available subscription
+allowance. Added configurable `LABSYNC_CODEX_CLI`, pinned the working executable
+in local private configuration, and restarted the backend. The existing D and E
+recordings then processed successfully in the native app, with
+their tasks left pending for human review. All 316 backend tests and lint/format
+checks passed. See the
+[recovery evidence](evidence/demo_walkthrough.md#october-20-codex-cli-failure-and-recording-recovery).
+The observed earlier HTTP 429 is not evidence that the account exhausted credits.
+
+**October 20 automation-default update:** New projects now start with task-owner
+email and bounded automatic approval enabled. Applied the default-only migration
+and verified that every existing project's saved choices remained unchanged.
+Recipient opt-out and evidence/identity checks still apply; delivery remains in
+the configured mode. All 317 backend tests passed, including opt-out/explicit-off
+coverage. Existing personal test projects still need their scenario settings
+checked before approval; their outcomes are not inferred from the new defaults.
+
+**October 20 native acceptance:** Simplified follow-through settings so Done saves
+changed project/recipient values and closes after success. Draft switches survive
+history refresh and failed saves. Native tests verified preference persistence,
+joint project/preference saving, and restoration of recipient opt-in.
+
+Ran the personal recordings: B-positive auto-approved with one captured email;
+B-negative abstained; C/D manual approval and Calendar dates passed; E opt-out
+produced zero messages. F1 repeated-mention reconciliation avoided a duplicate,
+but ASR heard October 3 instead of the confirmed October 23, requiring a manual
+date edit. F2 produced no completion candidate; manual completion/Undo and
+relaunch persistence passed. Four captured messages total, zero actual inbox
+sends. A had already auto-approved and cannot count as a clean manual A test.
+The [dated evidence table](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1)
+records interventions and limits; local before/after snapshots stay in ignored
+artifacts. All 317 backend tests, Ruff checks, and the signed simulator build
+passed for these changes.
+
+Next: record a clean manual A demo, configure/verify a consenting live inbox,
+resolve automatic dates and completion extraction, and finish the AMI a-d human
+review, reminder lifecycle, external testers, and paired evaluations. Zoom
+remains manual summary import; automatic account integration has not been
+validated.
+
+## Team coordination
+
+Bryan may miss the Tuesday, October 20 check-in with Derrick because of an urgent
+work meeting. Ask teammates to share Derrick's feedback and action items so the
+recording tests and Milestone 3 priorities can be adjusted accordingly.
+
+### Short Slack draft
+
+Draft only; not sent. Share after this journal update is pushed or otherwise
+available to the team.
+
+> Hi team! I may miss tomorrow's check-in with Derrick because of an urgent work meeting. I've pushed the preliminary in-app recording, manual Zoom summary import, and updated logo. The Week 9 journal is updated, and I plan to record the follow-through tests this week and document the results for Milestone 3. Please share Derrick's feedback and any action items afterward. Thanks!

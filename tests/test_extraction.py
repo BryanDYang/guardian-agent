@@ -172,6 +172,7 @@ def fake_codex(tmp_path, monkeypatch, prediction):
     executable.chmod(0o755)
     monkeypatch.setenv("PATH", str(tmp_path) + os.pathsep + os.environ["PATH"])
     monkeypatch.delenv("LABSYNC_PROVIDER", raising=False)
+    monkeypatch.delenv("LABSYNC_CODEX_CLI", raising=False)
 
 
 def test_cli_extract_process_boundary(fake_codex, tmp_path):
@@ -197,6 +198,26 @@ def test_cli_extract_process_boundary(fake_codex, tmp_path):
     assert rerun.returncode == 1
     assert "already exists" in rerun.stderr
     assert output.read_bytes() == original
+
+
+def test_configured_cli_is_used_for_extraction_and_version(
+    fake_codex, tmp_path, monkeypatch, transcript
+):
+    configured = tmp_path / "verified-codex"
+    (tmp_path / "codex").rename(configured)
+    monkeypatch.setenv("LABSYNC_CODEX_CLI", str(configured))
+    monkeypatch.setenv("PATH", str(tmp_path / "empty-path"))
+    assert setup_error("codex") is None
+    result = extract(transcript, model="test-model", timeout=5)
+    assert result["codex_version"] == "codex-test-double"
+    assert result["extraction"]["commitments"][0]["owner"] == "Sam"
+
+
+def test_missing_configured_cli_does_not_silently_fall_back(
+    fake_codex, tmp_path, monkeypatch
+):
+    monkeypatch.setenv("LABSYNC_CODEX_CLI", str(tmp_path / "missing-codex"))
+    assert setup_error("codex") is not None
 
 
 def test_cli_reports_evidence_repairs(fake_codex, tmp_path, monkeypatch):
@@ -450,6 +471,7 @@ def test_unknown_provider_is_rejected(tmp_path):
 
 
 def test_codex_setup_error_names_both_options(tmp_path, monkeypatch):
+    monkeypatch.delenv("LABSYNC_CODEX_CLI", raising=False)
     monkeypatch.setenv("PATH", str(tmp_path))
     assert "LABSYNC_PROVIDER=claude" in setup_error("codex")
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")

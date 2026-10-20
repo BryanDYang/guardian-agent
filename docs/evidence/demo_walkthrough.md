@@ -266,3 +266,116 @@ The recording, captured-message result, and real inbox test remain pending.
 
 Use the existing [Zoom summary test](../milestone_3/follow_through.md#zoom-summary-test)
 to record the human walkthrough and keep it separate from audio test results.
+
+## October 20 Codex CLI failure and recording recovery
+
+Reproduced the failed D recording through the simulator: the Tasks screen showed
+`Processing failed`, with the original audio still playable. Backend logs showed
+successful Whisper transcription and one detected speaker, followed by failed
+Codex extraction. Both the five-hour and weekly subscription allowances had
+remaining capacity. A tiny synthetic request with Homebrew CLI 0.157.1 returned
+HTTP 429; the same account, requested `gpt-5.6-sol` model, and structured request
+completed with the official desktop-bundled CLI 0.163.0-alpha.10.2. The exact
+upstream reason for the older runtime's rejection is not established.
+
+Added host-specific `LABSYNC_CODEX_CLI` selection for availability checks,
+inference, and version reporting. Configured the private local `.env` to use the
+working bundled executable and restarted the idle shared backend. No credentials,
+provider, model, subscription, or API billing configuration were changed.
+The normal LabSync synthetic extraction command then completed in 4.876 seconds
+with one decision and one commitment; its local diagnostic artifact is
+`artifacts/diagnostics/codex-cli-fix-2026-10-20.json`.
+
+Retried D's original meeting `d9acf3f8-ff26-4294-b64f-8c92f5441406` in the native
+app. It completed and visibly showed the pending task **Upload the presentation
+slides**, owner **SPEAKER_1**, and evidence **I will upload the presentation slides
+tomorrow.** The failure banner disappeared. Calendar date entry and identity
+confirmation remain manual checks; this was processing recovery, not completed
+follow-through acceptance. No task was approved or emailed during this check.
+
+Retried E's original meeting `56c9dc40-5be3-4808-b62e-a973efb42d8c` as well. It
+completed and visibly showed **Review the deployment instructions**, owner
+**SPEAKER_1**, with the exact source quote. D and E retained their existing meeting
+IDs and were left pending for identity/assignment and scenario-specific review.
+E's recipient opt-out behavior has not been tested by this processing recovery.
+
+All 316 backend tests passed against isolated local PostgreSQL, including two
+new CLI-selection regressions. Ruff lint and formatting passed. No iOS source
+changed in this fix, so the existing signed app was used for the native retry.
+
+## October 20 new-project automation defaults
+
+At Bryan's request, new projects now default both project automation switches
+on: task-owner email after approval and bounded automatic approval. Migration
+`20261020173744_enable_project_automation_defaults.sql` changes column defaults
+only. It does not update existing projects, approve old tasks, enqueue messages,
+or change individual recipient preferences or delivery mode.
+
+All 317 backend tests passed on isolated local PostgreSQL. Coverage verifies
+new-project API settings, automatic approval only after identity confirmation,
+capture delivery, explicit disabling, and persistence of disabled choices when
+another project is created. Lint/format checks passed. Applied the migration to
+the configured backend and recorded migration history. Compared all existing
+project settings before/after and verified no changes. A transactional test
+insert confirmed both new-project defaults are true, then was rolled back.
+No permanent verification project or follow-up email was created by this check.
+
+The previously created personal test projects retain their saved settings. Check
+and save scenario-specific settings before running each test; default changes
+do not retrospectively establish that B-positive ran with automation enabled.
+
+## October 20 Done saves follow-through settings
+
+Removed the separate project/preference save buttons. **Done** saves only changed
+values and closes after success. Recipient preference is saved before project
+automation because enabling automation can immediately evaluate candidates.
+Failed saves retain draft switches for retry, and refreshing history no longer
+reloads/reset drafts. Unsaved edits cannot be dismissed by swiping; **Cancel**
+allows deliberate dismissal without saving remaining edits.
+
+Signed simulator build passed and was installed. Native acceptance used the
+existing B-negative project: changed the receive-email preference from on to
+off, refreshed history and observed the draft remained off, tapped Done, reopened
+the sheet, and observed the saved value was off. Restored the original on value
+with Done. Project automation switches were unchanged, no candidates were
+approved, and no follow-up messages appeared. This verifies native preference
+persistence and refresh behavior; joint-write failure handling was code-reviewed
+but not exercised through a forced network outage.
+
+## October 20 personal audio acceptance: 2026-10-20-run-1
+
+Executed the uploaded personal recordings through the signed iPhone simulator
+app against the shared backend, using capture delivery and the configured Codex
+CLI. The source checkout was `afeaded` plus the changes in this commit. Mutations
+were performed through the native app; database reads verified saved state,
+audit actions, and outbox counts. These are scripted single-speaker checks, not
+natural-meeting accuracy measurements or independent external acceptance.
+
+| Case | Observed result | Qualification |
+| --- | --- | --- |
+| A | Checklist task approved, visible in To-do, one captured follow-up | Already auto-approved at baseline; audit says `AUTO_APPROVE`. This is not a clean manual-approval A run. |
+| B-positive | Enabled both project switches with Done; recording-sharing task auto-approved with one `AUTO_APPROVE` audit and one captured follow-up | No manual approval click. Confirmed account mapping was already present. |
+| B-negative | Tentative budget statement remained a pending `advisor_suggestion`, unassigned, with zero messages while automation was enabled | Correct abstention; left pending. |
+| C | Manually set October 21, approved the summary task, verified October 21 Calendar entry and one captured follow-up | Spoken date was retained as raw text; structured date was initially empty. Manual date entry passed; automatic parsing did not. |
+| D | Turned automatic approval off, manually resolved “tomorrow” from October 20 to October 21, approved slides task, verified Calendar entry and one captured follow-up | Date picker initially offered October 20. Automatic relative-date resolution remains missing. |
+| E | Saved project email on and recipient preference off together with Done, then approved deployment task; zero outbox rows | Restored recipient preference on afterward; still zero messages. No retroactive delivery. |
+| F1 | Reconciled “same project summary” as a repeated mention of C, dismissing the source candidate without a second accepted task/email | ASR said October 3; Bryan confirmed intended October 23. Extracted quote omitted the deadline. Revised C manually to October 23 using task Edit, rather than asserting the quote supported a deadline update. Calendar moved from October 21 to October 23. |
+| F2 | Completion recording yielded no candidate. Manually completed C, used Undo, then completed it again | Native completed state and October 23 Calendar entry persisted after app termination/relaunch. Automatic completion extraction remains unsupported. |
+
+Final read-only verification found four captured messages total across these
+projects: A, B-positive, C, and D, each with one delivery attempt. E and B-negative
+had zero. C retained its original task ID through repeat reconciliation, date
+edit, completion, and Undo. F1's source candidate was dismissed. A/B-positive,
+D/E, and completed C were visible in native Tasks after relaunch. The original
+October 21 raw extraction text remains provenance; the confirmed due date is
+October 23. The one-time captured C email is not a rescheduled reminder or an
+updated-deadline email.
+
+Local detailed snapshots and results are under
+`artifacts/follow-through/2026-10-20-run-1/{before.json,after.json,results.md}`.
+They are ignored by Git. Original recordings remain in the app/backend; they
+were not exported into the empty `artifacts/audio/` directory. UI observations
+are in this session; no standalone screen recording was saved by these checks.
+Still needed: a clean manual A demo with recorded visual evidence, live inbox
+acceptance after sender setup, automatic date/completion improvements, recurring
+reminder lifecycle, and the independent AMI a-d review/evaluation.

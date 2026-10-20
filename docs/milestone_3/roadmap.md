@@ -1,6 +1,6 @@
 # Milestone 3 roadmap, scope, and acceptance
 
-Updated October 18, 2026. Target submission: October 26, subject to confirming
+Updated October 20, 2026. Target submission: October 26, subject to confirming
 Canvas. Proposed owners and schedule need team agreement; the course rubric
 remains authoritative. This is the single current planning document. Use the
 [weekly journal](../weekly_journal.md#week-8-october-12-18-2026) for progress history,
@@ -29,12 +29,23 @@ remains authoritative. This is the single current planning document. Use the
   recipients; approved assignments are not changed by later speaker mapping,
   and enabling email does not bulk-send old tasks.
 
-**Next:** record a consented personal meeting in a separate project, connect its
-speaker to Bryan's actual account, and run the [dated read-aloud scripts](follow_through.md#personal-recording-test-scripts).
-Then complete the independently reviewed a-d ledger, bounded reminder lifecycle,
-paired evaluations, external alpha acceptance, and submission evidence below.
-Keep manual date entry, completion inference, immediate email, and recurring
-reminders as separate claims.
+- October 20 personal scripted native acceptance verified bounded automatic
+  approval, tentative-statement abstention, manual dates/Calendar, opt-out,
+  duplicate reconciliation, and manual completion/Undo with relaunch persistence.
+  Four messages were captured; none were sent to real inboxes. Done now saves
+  settings; new-project automation defaults are on. All 317 backend tests and
+  the signed simulator build passed. See the
+  [case-by-case evidence](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+  A was already auto-approved, F1 required a corrected date, and F2 yielded no
+  completion candidate. Do not count those as clean manual A or automatic
+  date/completion passes.
+
+**Next:** record a clean manual A demo with visual evidence and validate actual
+inbox delivery after sender setup. Automatic date resolution and completion
+extraction remain gaps. Then finish the independently reviewed a-d ledger,
+bounded reminder lifecycle, paired evaluations, external alpha acceptance, and
+submission evidence below. Keep manual actions, captured email, real inbox
+receipt, and recurring reminders as separate claims.
 
 ## Product scope
 

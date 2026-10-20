@@ -1,9 +1,9 @@
 # Start here
 
-**Your next step:** run [Clip A: manual approval to captured follow-up](milestone_3/follow_through.md#a-manual-approval-to-captured-follow-up).
-Record one clear commitment, upload it to a separate test project, connect your
-speaker/account, and record the observed result. You do not need to read the
-technical references first.
+**Your next step:** review the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1),
+then record a clean [Clip A manual approval demo](milestone_3/follow_through.md#a-manual-approval-to-captured-follow-up).
+Capture delivery passed selected cases; real inbox delivery and automatic
+date/completion handling still need work.
 
 After that, use the [Milestone 3 roadmap](milestone_3/roadmap.md) to choose the
 next task. The [weekly journal](weekly_journal.md) records progress and contains

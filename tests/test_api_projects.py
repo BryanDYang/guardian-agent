@@ -42,6 +42,29 @@ def test_create_then_list(client, make_user):
     body = created.json()
     assert body["name"] == "pytest AI Thesis"
     assert body["meeting_count"] == 0 and body["image_path"] is None
+    settings_url = f"/api/v1/projects/{body['id']}/followup"
+    settings = client.get(settings_url, headers=auth).json()
+    assert settings["email_enabled"] is True
+    assert settings["auto_approve"] is True
+    assert settings["receive_email"] is True
+    disabled = client.put(
+        settings_url,
+        headers=auth,
+        json={"email_enabled": False, "auto_approve": False},
+    )
+    assert disabled.status_code == 200
+    # A later creation does not reset an existing project's explicit choices.
+    assert (
+        client.post(
+            "/api/v1/projects",
+            json={"name": "pytest second project"},
+            headers=auth,
+        ).status_code
+        == 201
+    )
+    retained = client.get(settings_url, headers=auth).json()
+    assert retained["email_enabled"] is False
+    assert retained["auto_approve"] is False
     listed = client.get("/api/v1/projects", headers=auth).json()
     assert body["id"] in [project["id"] for project in listed]
     with psycopg.connect(DATABASE_URL) as conn:

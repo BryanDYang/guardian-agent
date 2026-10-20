@@ -18,7 +18,14 @@ AMI tasks are not automatically reassigned or emailed by enabling these settings
 
 1. Open a project's actions menu > **Follow-through**, or a meeting's gear >
    **Task email & automatic approval**.
-2. As project owner, enable **Email task owners after approval** and save.
+2. New projects start with **Email task owners after approval** and
+   **Automatically approve clear commitments** on. Existing projects retain their
+   saved settings. As owner, check the switches and save any changes needed for
+   your scenario. For a manual-approval test, turn automatic approval off first.
+   **Done** saves changed project settings and your receive-email preference,
+   then closes the sheet. There are no separate save buttons. **Cancel** discards
+   unsaved edits, and saving failures keep the sheet open for retry. Refreshing
+   delivery history does not reset your draft switches.
    In the default **Test inbox** mode, nothing leaves the backend.
 3. Open a real meeting's speaker review. Confirm the speaker's name and connect
    their actual app account. An anonymous diarization label cannot receive mail.
@@ -36,7 +43,8 @@ when a project enables email; new approvals or assignment edits enqueue work.
 
 ## Automatic approval
 
-The owner can optionally enable **Automatically approve clear commitments**.
+**Automatically approve clear commitments** defaults on for new projects as of
+October 20. Owners can turn it off; existing projects retain their saved choices.
 Saving the setting evaluates existing completed-meeting candidates; confirming a
 speaker also evaluates that meeting. The rule `explicit-self-commitment-v1` requires:
 
@@ -387,6 +395,10 @@ and the actual received email; note spam/delivery delay separately. No live send
 has been established by the current capture tests.
 
 ### Result log
+
+October 20 actual results are recorded in the [native walkthrough](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+The F1 intended revised date was October 23, 2026; ASR reported October 3.
+Keep the error and manual correction in the evidence.
 
 Copy this table for every run. Leave unexecuted cases pending.
 

@@ -51,6 +51,24 @@ to normalized JSON/prompt strings, not original input file bytes. Codex harness
 tokens are included in usage. Failed, incomplete, invalid, or uncitable outputs
 are rejected; existing result files are never overwritten.
 
+### Selecting the backend's CLI executable
+
+By default LabSync runs `codex` from the backend's PATH. Set `LABSYNC_CODEX_CLI`
+in that host's private `.env` to an executable path when pinning a verified CLI.
+The same executable is used for startup availability checks, inference, and
+reported version metadata. A missing configured executable is an error; it does
+not silently fall back to another version. Restart the backend after changing it.
+Keep this setting host-specific and never copy authentication tokens.
+
+On October 20, the backend's Homebrew CLI 0.157.1 returned HTTP 429 while the
+official desktop-bundled CLI 0.163.0-alpha.10.2 completed the same synthetic
+structured request with the same signed-in account and `gpt-5.6-sol`. Normal
+LabSync synthetic extraction then succeeded using the configured bundled CLI.
+The reported subscription allowances were not exhausted. This comparison
+isolates a CLI/runtime-specific failure; the upstream reason for the older
+client's 429 is not established. Before attributing future 429s to credits,
+check the executable, version, authentication status, and exact failure.
+
 ## AMI test data
 
 Download the official manual annotation archive, which includes transcripts:

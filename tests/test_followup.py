@@ -364,8 +364,27 @@ def test_retry_stops_before_provider_deduplication_expires(flow):
     assert logs(f)[0]["state"] == "failed"
 
 
-def test_default_settings_do_not_send_or_auto_approve(flow):
+def test_new_project_defaults_auto_approve_after_confirmation_and_capture(flow):
     f = flow
+    settings = f["client"].get(f"/api/v1/projects/{f['project']}/followup").json()
+    assert settings["email_enabled"] is True
+    assert settings["auto_approve"] is True
+    assert settings["receive_email"] is True
+    assert not logs(f)  # Defaults alone do not invent a speaker/account mapping.
+    response = connect(f)
+    assert response.json()["auto_approved_tasks"] == 1
+    assert EmailWorker(f["app"].state.pool).process_one()
+    assert logs(f)[0]["state"] == "captured"
+    assert not EmailWorker(f["app"].state.pool).process_one()
+
+
+def test_explicitly_disabled_settings_do_not_send_or_auto_approve(flow):
+    f = flow
+    response = f["client"].put(
+        f"/api/v1/projects/{f['project']}/followup",
+        json={"email_enabled": False, "auto_approve": False},
+    )
+    assert response.status_code == 200
     response = connect(f)
     assert response.json()["auto_approved_tasks"] == 0
     assert (

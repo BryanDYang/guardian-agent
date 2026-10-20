@@ -9,6 +9,7 @@ struct FollowupSettingsSheet: View {
     @State private var autoApprove = false
     @State private var receiveEmail = true
     @State private var busy = false
+    @State private var saving = false
     @State private var error: String?
 
     var body: some View {
@@ -20,10 +21,6 @@ struct FollowupSettingsSheet: View {
                             .disabled(!settings.can_manage || busy)
                         Toggle("Automatically approve clear commitments", isOn: $autoApprove)
                             .disabled(!settings.can_manage || busy)
-                        if settings.can_manage {
-                            Button("Save project settings") { Task { await saveProject() } }
-                                .disabled(busy)
-                        }
                     } header: {
                         Text("Project automation")
                     } footer: {
@@ -31,8 +28,6 @@ struct FollowupSettingsSheet: View {
                     }
                     Section {
                         Toggle("Receive emails for my tasks", isOn: $receiveEmail)
-                        Button("Save my preference") { Task { await savePreference() } }
-                            .disabled(busy)
                     } footer: {
                         Text("Messages go to your signed-in account's email address. Recurring reminders are not enabled by this setting.")
                     }
@@ -42,7 +37,7 @@ struct FollowupSettingsSheet: View {
                              ? "Messages are captured below. Nothing is sent to anyone's inbox."
                              : "Provider acceptance does not confirm inbox delivery.")
                             .font(.footnote).foregroundStyle(.secondary)
-                        Button("Refresh delivery history") { Task { await load() } }
+                        Button("Refresh delivery history") { Task { await refreshHistory() } }
                             .disabled(busy)
                     }
                     Section("Recent follow-ups") {
@@ -73,15 +68,45 @@ struct FollowupSettingsSheet: View {
                 if let error {
                     Section {
                         Text(error).foregroundStyle(.red)
-                        Button("Retry") { Task { await load() } }
+                        if settings == nil {
+                            Button("Retry") { Task { await load() } }
+                        }
                     }
                 }
             }
+            .disabled(busy)
             .navigationTitle("Follow-through")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } } }
+            .toolbar {
+                if hasChanges {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { dismiss() }.disabled(busy)
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        Task { await saveAndClose() }
+                    } label: {
+                        if saving {
+                            ProgressView().accessibilityLabel("Saving settings")
+                        } else {
+                            Text("Done")
+                        }
+                    }
+                    .disabled(busy)
+                    .accessibilityHint("Saves your changes and closes follow-through settings")
+                }
+            }
             .task { await load() }
         }
+        .interactiveDismissDisabled(busy || hasChanges)
+    }
+
+    private var hasChanges: Bool {
+        guard let settings else { return false }
+        return receiveEmail != settings.receive_email
+            || (settings.can_manage && (emailEnabled != settings.email_enabled
+                || autoApprove != settings.auto_approve))
     }
 
     private func apply(_ value: RemoteFollowupSettings) {
@@ -101,22 +126,50 @@ struct FollowupSettingsSheet: View {
         } catch { self.error = error.localizedDescription }
     }
 
-    private func saveProject() async {
+    private func refreshHistory() async {
         busy = true
         defer { busy = false }
         do {
-            apply(try await MeetingAPIClient.shared.saveFollowupSettings(projectID: projectID, email: emailEnabled, autoApprove: autoApprove))
             emails = try await MeetingAPIClient.shared.followupEmails(projectID: projectID)
             error = nil
         } catch { self.error = error.localizedDescription }
     }
 
-    private func savePreference() async {
+    @MainActor
+    private func saveAndClose() async {
+        guard !busy else { return }
+        guard let original = settings, hasChanges else {
+            dismiss()
+            return
+        }
+        let wantedEmail = emailEnabled
+        let wantedAutoApprove = autoApprove
+        let wantedReceiveEmail = receiveEmail
         busy = true
-        defer { busy = false }
+        saving = true
+        error = nil
+        defer {
+            busy = false
+            saving = false
+        }
         do {
-            apply(try await MeetingAPIClient.shared.saveFollowupPreference(projectID: projectID, receive: receiveEmail))
-            error = nil
-        } catch { self.error = error.localizedDescription }
+            // Save opt-out first: enabling project automation may immediately
+            // approve eligible candidates and queue their follow-up messages.
+            // Keep draft switches intact if a later request fails.
+            if wantedReceiveEmail != original.receive_email {
+                settings = try await MeetingAPIClient.shared.saveFollowupPreference(
+                    projectID: projectID, receive: wantedReceiveEmail
+                )
+            }
+            if original.can_manage && (wantedEmail != original.email_enabled
+                || wantedAutoApprove != original.auto_approve) {
+                settings = try await MeetingAPIClient.shared.saveFollowupSettings(
+                    projectID: projectID, email: wantedEmail, autoApprove: wantedAutoApprove
+                )
+            }
+            dismiss()
+        } catch {
+            self.error = "Couldn't save all settings. Your changes are still here. Tap Done to retry. \(error.localizedDescription)"
+        }
     }
 }

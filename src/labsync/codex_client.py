@@ -14,6 +14,7 @@ from .extraction import (
     build_prompt,
     save_rejected,
 )
+from .providers import codex_executable
 
 
 def extract(
@@ -45,7 +46,7 @@ def extract(
             save_rejected(rejected, raw)
         raise
     version = subprocess.run(
-        ["codex", "--version"],
+        [codex_executable(), "--version"],
         capture_output=True,
         text=True,
         check=True,
@@ -89,7 +90,7 @@ def run(
         output = root / "output.json"
         schema_path.write_text(json.dumps(schema), encoding="utf-8")
         command = [
-            "codex",
+            codex_executable(),
             "exec",
             "--ignore-user-config",
             "--ephemeral",
