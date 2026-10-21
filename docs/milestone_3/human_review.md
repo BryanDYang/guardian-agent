@@ -1,7 +1,9 @@
 # Milestone 3 human review worksheet
 
 Prepared October 21, 2026. Packet: `personal-2026-10-20-v1`.
-Review status: **not reviewed**. Source: the October 20 before-action snapshot,
+Human judgment status: **not reviewed**. Assistant app testing is already
+[documented in the walkthrough](../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed);
+its results are separate from the blank human judgments below. Source: the October 20 before-action snapshot,
 collected before the assistant's subsequent manual edits. A had already been
 auto-approved. Speaker names/account mappings were supplied by the tester;
 this packet cannot establish automatic speaker identification.

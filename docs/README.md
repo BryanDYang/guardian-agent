@@ -17,6 +17,7 @@ the Week 8 group-message draft. Each document below has one responsibility.
 | Where do we review model outputs? | [Human-review worksheet](milestone_3/human_review.md) |
 | What remains for Milestone 3? | [Roadmap, scope, and acceptance](milestone_3/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](milestone_3/follow_through.md) |
+| How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
 | What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |
 | What will we submit? | [Milestone 3 report draft](milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
 | How do I operate/recover the backend? | [Shared-backend guide](reference/shared_backend.md) |

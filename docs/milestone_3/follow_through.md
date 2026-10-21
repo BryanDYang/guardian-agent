@@ -399,6 +399,12 @@ has been established by the current capture tests.
 
 ### Result log
 
+Start with the [copy-and-fill `result.md` template](../evidence/result.md).
+It explains what to fill before testing, what to observe afterward, and which
+claims require separate evidence. Paste completed runs into the walkthrough;
+keep the template blank. Existing recordings do not need to be recreated for
+human review.
+
 October 20 actual results are recorded in the [native walkthrough](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
 The F1 intended revised date was October 23, 2026; ASR reported October 3.
 Keep the error and manual correction in the evidence.

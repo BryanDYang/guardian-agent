@@ -381,6 +381,27 @@ Still needed: a clean manual A demo with recorded visual evidence, live inbox
 acceptance after sender setup, automatic date/completion improvements, recurring
 reminder lifecycle, and the independent AMI a-d review/evaluation.
 
+### Who recorded, who checked, and what was reviewed
+
+Bryan supplied the personal audio recordings and account/speaker mappings.
+The assistant executed the native app checks and inspected stored transcripts,
+extracted tasks, UI state, audit records, and captured email counts. Bryan
+confirmed that F1's intended revised date was October 23, 2026. The assistant
+made the documented manual corrections through the app.
+
+This is **assistant-executed integration testing**, not a signed human review
+of model quality. A systematic listen-through comparing every recording to its
+transcript was not documented; audio/transcript accuracy remains **Not checked**
+for that purpose. No independent human reviewer has completed the
+[review worksheet](../milestone_3/human_review.md). The worksheet's unfilled
+judgments do not mean the app tests were unrun, and the app test passes do not
+mean the human review is complete.
+
+The existing audio can be reused for review. Do not re-record the October 20
+cases merely to fill a worksheet. The separately planned clean demo is a
+**screen recording of an app journey**; its new recording/project is only needed
+to demonstrate an uncontaminated manual approval, since A was already approved.
+
 ### Versioned run ledger
 
 This ledger is the repository copy of the observed results, derived from the
