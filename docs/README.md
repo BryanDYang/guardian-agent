@@ -1,7 +1,8 @@
 # Start here
 
-**Your next step:** review the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1),
-then record a clean [Clip A manual approval demo](milestone_3/follow_through.md#a-manual-approval-to-captured-follow-up).
+**Your next step:** fill [Bryan’s human-review worksheet](milestone_3/human_review.md#bryans-judgments),
+then follow the [clean app recording script](milestone_3/follow_through.md#clean-app-journey-screen-recording).
+For prior evidence, review the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
 Capture delivery passed selected cases; real inbox delivery and automatic
 date/completion handling still need work.
 
@@ -13,6 +14,7 @@ the Week 8 group-message draft. Each document below has one responsibility.
 | --- | --- |
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
+| Where do we review model outputs? | [Human-review worksheet](milestone_3/human_review.md) |
 | What remains for Milestone 3? | [Roadmap, scope, and acceptance](milestone_3/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](milestone_3/follow_through.md) |
 | What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |

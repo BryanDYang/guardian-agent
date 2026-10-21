@@ -365,3 +365,9 @@ Draft only; not sent. Share after this journal update is pushed or otherwise
 available to the team.
 
 > Hi team! I may miss tomorrow's check-in with Derrick because of an urgent work meeting. I've pushed the preliminary in-app recording, manual Zoom summary import, and updated logo. The Week 9 journal is updated, and I plan to record the follow-through tests this week and document the results for Milestone 3. Please share Derrick's feedback and any action items afterward. Thanks!
+
+### October 21 independent-review request draft
+
+Draft only; not sent.
+
+> Hi Will and Guadalupe! The M3 follow-through results are documented. Could one of you independently review the eight short cases in `docs/milestone_3/human_review.md`? Copy the blank worksheet and review the source/output pairs before reading my judgments or the walkthrough conclusions. Please flag unsupported or missing information and return your notes before we compare. I’ll record the clean app demo next. Let me know who can take this. Thanks!

@@ -424,3 +424,106 @@ For a short demo, record the screen while showing A, B, C and a relaunch. Keep t
 original audio files and label this as personal scripted acceptance. Run negative
 cases too; a successful-looking email alone does not establish safe automation.
 See [implementation and delivery limits](#live-email-setup).
+
+## Clean app journey screen recording
+
+Prepared October 21, 2026. **Planned, not executed.** This is a separate clean
+manual-approval demonstration. Keep the October 20 projects/results intact.
+Read aloud only the quoted meeting paragraph below. The other instructions are
+screen actions, not additional meeting audio. You can review this script before
+recording; observed model behavior may differ from the checkpoints.
+
+### Prepare before you start the screen recording
+
+1. Use your signed-in app and reachable backend. Note the app commit/build,
+   device/iOS, actual date, time zone, and delivery mode in the walkthrough.
+   Never record credentials or account settings that expose tokens.
+2. Create a fresh server project named `M3 Demo - [ACTUAL_DATE] - manual`.
+   Open the project's **... > Follow-through**. Set **Email task owners after
+   approval ON**, **Automatically approve clear commitments OFF**, and
+   **Receive emails for my tasks ON**. Tap **Done**, reopen and verify saved
+   values. New projects default automation on, so do this before processing.
+3. Check Delivery says **Test inbox** for this capture-mode demo. This will
+   show a captured message, not send mail to your actual inbox. If it says
+   Live email, pause and choose the intended delivery setup before proceeding.
+4. Choose `[DUE_DATE]` a few days ahead and say the full date. If recording on
+   October 21, use October 23, 2026. Replace both values if recording later.
+   The meeting date must be your actual recording date, not the due date.
+5. Have a screen-recording tool ready. On Mac you can use Screenshot's
+   **Record Selected Portion** around the simulator. On iPhone use Control
+   Center's Screen Recording. The app's microphone records meeting audio;
+   the screen recording is separate demo evidence. Keep notifications hidden.
+
+### Meeting paragraph to record in the app
+
+> This is a consented test recording. I am Bryan Yang. I will prepare the evaluation checklist by [DUE_DATE_SPOKEN]. The checklist will cover task ownership, due dates, and supporting evidence. Our test project is called Cedar. No budget amount has been decided.
+
+This is synthetic test data. The spoken name does not establish the diarized
+speaker's account; confirm that mapping yourself in the next steps.
+
+### Screen actions and checkpoints
+
+1. **Start screen recording.** Show the fresh project name and saved
+   Follow-through switches, then return to the project.
+2. **Record/upload.** Use the project's **+** menu and recording option; give
+   microphone permission/consent if prompted. Read the paragraph once clearly,
+   stop, preview it, and submit using the recorder's upload action. Set the
+   actual meeting date if the upload form asks. Use meeting title
+   `M3 manual task demo` if editable; otherwise retain the timestamped title
+   and record that name. Do not upload the same audio twice if processing is slow.
+3. **Wait for completion.** Show the completed meeting. If it fails, record the
+   error and pause to troubleshoot. You may trim waiting time in a presentation
+   copy, but preserve the original evidence and label any edits.
+4. **Inspect Transcript and Summary.** Play the relevant audio and compare the
+   checklist action and full date with the transcript. Note omissions/wrong
+   words before any correction. Summary should not invent a budget amount.
+5. **Confirm speaker.** Open **Review speaker names**, find your speaking
+   cluster, name it Bryan Yang and connect it to your signed-in project member
+   using the available account selector. Save/confirm. If already mapped,
+   inspect it rather than claim automatic identification.
+6. **Review the task.** Open meeting **Tasks**. Show the checklist candidate
+   and source quote/timestamp. It should still await manual approval. If it
+   already approved, record the settings problem; this run does not demonstrate
+   clean manual approval. Do not reset history to hide it.
+7. **Set the date manually.** Tap candidate **Edit**, confirm the assignee,
+   turn Due date on, select `[DUE_DATE]`, and save. Show the saved date, then
+   tap **Approve** once. Say in your narration that this date entry is manual.
+   Missing/incorrect candidate content is a result to record, not silently fix.
+8. **Verify follow-up.** Return to project **... > Follow-through**, refresh
+   history, and expand **Read captured email**. Check one entry for this task,
+   correct assignee, title, date, meeting, and evidence. Show its captured status.
+   If absent or wrong, mark failed/pending and retain the observation.
+9. **Verify Tasks/Calendar.** Open bottom **Tasks**. Find the checklist in To-do.
+   Open **Calendar**, select `[DUE_DATE]`, and show the same task. Complete it,
+   show Completed, tap **Undo**, and verify it reopens. Leave it open for the
+   persistence check. System Reminders permission/export is a separate claim.
+10. **Supported chat.** Open **Chat**. In the scope menu choose this fresh
+    project and the completed demo meeting. Type exactly:
+    `What did Bryan commit to prepare, and what should it cover?`
+    Save the actual answer. Check against the transcript: checklist; ownership,
+    due dates, supporting evidence. Open the citation and confirm it points to
+    this meeting and the relevant words/timestamp. A plausible answer without
+    supporting evidence is not a pass.
+11. **Unsupported chat.** In the same selected scope, type exactly:
+    `What exact dollar amount was approved for the Cedar budget?`
+    Check that the answer says the amount is not established, rather than
+    inventing a number. Preserve the response and citations as returned.
+12. **Relaunch.** Close and reopen the app. Verify the task remains open with
+    the chosen date; reopen Chat history and check the saved conversation's
+    scope/answers. Refresh follow-up history and verify there is still one
+    captured message. Stop screen recording.
+
+If a label differs in your installed build, stop at that step and tell the
+assistant which screen you see. Do not guess destructive actions. This short
+journey does not test cross-project isolation, natural multi-speaker accuracy,
+automatic date resolution, live inbox delivery, or recurring reminders.
+
+### Save the observed run
+
+Keep original video/audio in `artifacts/follow-through/[RUN_LABEL]/evidence/`
+and `audio/` when exported. Record their actual filenames. Add a dated run under
+[the walkthrough](../evidence/demo_walkthrough.md) with step numbers, observed
+results, manual edits, exact chat answers/citations, commit/configuration, and
+**Passed / Failed / Blocked / Not run**. A script is not evidence of execution.
+Share the resulting questions/answers for human review; keep their gold labels
+and any later retrieval comparison separate from this rehearsed demo.
