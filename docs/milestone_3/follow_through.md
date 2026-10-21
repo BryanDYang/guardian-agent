@@ -433,6 +433,10 @@ See [implementation and delivery limits](#live-email-setup).
 
 ## Clean app journey screen recording
 
+For the audience-facing presentation, use the [research-team demo story](../evidence/demo_walkthrough.md#milestone-3-product-demo-a-research-team-remembers-and-follows-through).
+The procedure below is a manual-approval acceptance check, not the main product
+narrative. You do not need to present A-F as a sequence of feature tests.
+
 Prepared October 21, 2026. **Planned, not executed.** This is a separate clean
 manual-approval demonstration. Keep the October 20 projects/results intact.
 Read aloud only the quoted meeting paragraph below. The other instructions are

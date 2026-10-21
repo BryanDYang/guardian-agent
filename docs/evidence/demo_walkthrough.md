@@ -2,6 +2,116 @@
 
 Start from the story we want to demonstrate, perform it in the iOS UI, and use failures to choose the next implementation work. Repository checkboxes track implementation only. A successful build, API health check, or scripted backend response does not establish that the corresponding UI journey works.
 
+
+## Milestone 3 product demo: a research team remembers and follows through
+
+Prepared October 21, 2026. **Planned story, not executed acceptance.** Aim for a
+4-5 minute presentation after rehearsing the real app path. The audience should
+understand the team's problem and outcome; A-F test cases remain evidence in the
+background. Use the [test script](../milestone_3/follow_through.md#clean-app-journey-screen-recording)
+for detailed controls and [result.md](result.md) to record observations.
+
+**Story:** A small research team discussed how to start a pilot. At its next
+check-in, Bryan volunteers to prepare an interview guide. LabSync captures the
+meeting, proposes supported work, connects that work to a confirmed account,
+and retains the decision history so the team can ask why it chose this plan.
+The organizer should not have to reconstruct every action item from memory.
+
+**Opening narration:** “Meeting notes tell us what people said. We also need to
+know what happens next, who owns it, and why we made the decision. Here is one
+research project across two short meetings.”
+
+### Prepare the story once
+
+Use a fresh server project `Cedar Research Pilot - [RUN_DATE]`. Keep existing
+AMI and October 20 test projects intact. Existing audio remains valid for those
+checks and human review; these two optional short clips provide a coherent demo
+scenario, not replacements for the test recordings. Label the clips as synthetic
+and consented. Record only the quoted words, not the narration or headings.
+
+- Clip 1 is the earlier meeting, processed before the presentation. Its real
+  recording date must be used, even if both clips are recorded the same day.
+  Names “Kickoff” and “Check-in” describe their intended sequence; do not invent
+  historical recording dates. If titles cannot be edited, note timestamped titles
+  in the run log and point to the right recording on screen.
+- Clip 2 is the check-in: record/upload it in the app during the demo, or show
+  the actual recorded upload sequence with a clearly labeled processing-time cut.
+  A completed preprocessed result alone is not end-to-end upload evidence.
+- Use capture delivery. Verify email automation, auto-approval, and the recipient
+  preference are on before Clip 2. Confirm the correct speaker/account when
+  reviewing results. Clear undated commitments are eligible for the bounded
+  policy; dated commitments can remain pending and are not this story's main path.
+- Verify both recordings and actual chat outputs in rehearsal. Save unexpected
+  output and errors. Three model timeouts in the AMI diagnostic mean processing
+  availability is a real risk; do not promise instant completion or invent results.
+
+**Clip 1: Kickoff, about 20 seconds**
+
+> This is a consented example meeting for the Cedar research pilot. We decided to start with three individual interviews before considering a larger survey. The reason is to learn which questions people find confusing before recruiting more participants. We have not approved a budget amount.
+
+**Clip 2: Check-in, about 15 seconds**
+
+> This is a consented Cedar research pilot check-in. I am Bryan Yang. I will prepare the interview guide. The guide will cover participants' current workflow and the problems they encounter. I might also prepare a survey if we need one, but I am not committing to that yet.
+
+Do not assign an expected pass before processing. The conditional survey may
+appear as a pending suggestion; it must not become an approved promise. Read
+only the script; do not deliberately announce completion or a deadline that the
+main demo does not exercise.
+
+### Presentation sequence
+
+| Beat | What to show in the app | Suggested narration and honest boundary |
+| --- | --- | --- |
+| 1. A real team context, 20 s | Meetings > Cedar project > existing Kickoff recording | “We agreed to start small. That decision is already part of this project's history.” This is a previously processed example, not a live result. |
+| 2. Capture the next meeting, 30-45 s plus actual processing | Project + > record Clip 2 > preview > consent/upload; show processing, then completed result | “At the next check-in I volunteer for the guide. The app records and processes the meeting.” Preserve actual waiting/error evidence; disclose edits in the presentation copy. |
+| 3. Show what the AI understood, 30 s | Summary and the relevant Transcript passage; open/play its timestamp | “Here is the commitment and its source. We can check what was actually said.” Confirm the guide is present and the tentative survey is not treated as a promise. |
+| 4. Connect speech to a person, 30 s | Review speaker names and confirm/connect Bryan's cluster to the actual signed-in member | “A speaker label alone is not an email recipient. I confirm who this person is.” This is a human mapping, not proof of automatic recognition. |
+| 5. Move from conversation to work, 30 s | Tasks > To-do: the interview-guide task, evidence, and owner; project Follow-through > refresh > one captured email preview | “A clear commitment can become assigned work after confirmation without the organizer approving every task. This preview is captured for testing; it has not been sent to a real inbox.” If it remains pending, show the actual gate and manual review; do not claim automatic approval passed. |
+| 6. Recall the reason, 45-60 s | Chat scope: Cedar project, All meetings. Ask the two supported questions below; open the relevant citation | “We can recover both the next action and the earlier reason, with sources across this project's meetings.” Verify actual answers and citation destinations. |
+| 7. Show a boundary, 20 s | Ask the budget question below in the same scope | “The app should admit when the meeting history doesn't establish an answer.” A made-up amount is a failure, not a line to skip. |
+| 8. Close the loop, 20-30 s | Relaunch and show the task and saved chat; optionally mark the guide complete as a user action | “The work and its context survive the meeting. I can update the task as I finish it.” User-marked completion is not automatic completion inference. |
+
+Type these questions verbatim, then preserve the actual responses:
+
+1. `What did Bryan commit to prepare, and what should it cover?`
+2. `Why did we decide to start with three interviews before a larger survey?`
+3. `What exact budget amount was approved for Cedar?`
+
+For question 2, a useful answer should locate Kickoff's reason rather than
+invent a rationale from the later task. The expected budget boundary is that
+no amount was approved; a grounded statement of that fact or refusal is
+acceptable. Literal quote validation alone does not prove answer support.
+These rehearsed questions are demo checks, not a new held-out evaluation set.
+
+**Closing narration:** “The value is continuity from conversation to owned work
+and back to the evidence behind it. The current alpha still needs stronger date
+resolution, completion inference, and real inbox/reminder validation. We have
+recorded those gaps alongside the working paths.”
+
+### Optional detail, outside the main story
+
+- **Calendar:** edit the accepted guide task to a chosen future date manually,
+  then show its Calendar placement. Say explicitly that the date was entered
+  manually. The already-captured email is a one-time original follow-up; date
+  edits do not establish an updated email or reminder rescheduling.
+- **Update/completion:** demonstrate reviewed repeat reconciliation or manual
+  completion only if time permits. Automatic completion inference is a known gap.
+- **Zoom:** briefly mention the implemented manual summary-import option if
+  relevant to the professor's suggestion. Do not show or claim an unimplemented
+  live Zoom connection/webhook path.
+- Keep login/setup, repeated settings screens, negative-case permutations,
+  abrupt worker recovery, and detailed metrics for an appendix or questions.
+  They remain separate acceptance/evaluation work; a short story does not waive them.
+
+### Rehearsal and evidence gate
+
+This story has **not run**. Before presenting it as a working demo, use a fresh
+run record, check the displayed outputs/citations, confirm one captured follow-up,
+and verify relaunch persistence. Stop and document the earliest blocking failure.
+Keep original audio/video locally or in the restricted team evidence location,
+with sanitized observed outcomes in a new dated section of this walkthrough.
+Do not reset or relabel an older accepted task to make a clean run appear to pass.
+
 ## Record each run
 
 Record the commit, device/iOS version, backend URL (no keys), date, project and meeting names, screenshots, and observed results. Use **Passed**, **Failed**, **Blocked**, or **Not run** for each step. Mark Passed only after performing the action and observing its result. A local fixture run and a connected backend run are separate evidence.

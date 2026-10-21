@@ -1,7 +1,8 @@
 # Start here
 
 **Your next step:** fill [Bryan’s human-review worksheet](milestone_3/human_review.md#bryans-judgments),
-then follow the [clean app recording script](milestone_3/follow_through.md#clean-app-journey-screen-recording).
+then rehearse the [research-team demo story](evidence/demo_walkthrough.md#milestone-3-product-demo-a-research-team-remembers-and-follows-through).
+Use the [detailed acceptance script](milestone_3/follow_through.md#clean-app-journey-screen-recording) for the separate manual-approval check.
 Latest evidence: [October 21 retrieval comparison and partial live answers](evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run),
 plus the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
 For answer review, use the [nine completed answers with source text](milestone_3/human_review.md#completed-rag-answer-packet).
