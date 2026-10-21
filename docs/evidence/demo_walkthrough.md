@@ -464,3 +464,134 @@ automatic deadline revision did not pass. F2 automatic completion is unsupported
 Live inbox delivery, recurring reminders, multi-speaker identity accuracy, and
 external testers were not tested here. No standalone screenshot/video files
 were produced for this run; record the clean manual A demo separately.
+
+## October 21 AMI retrieval comparison and partial live-answer run
+
+Run: `m3-rag-2026-10-21`. Tester/executor: assistant on Bryan's behalf, with
+explicit authorization for these AMI questions/excerpts and the configured
+embedding/Codex destinations. No personal recordings or unrelated projects
+were used. Baseline checkout: `4048fbb` plus the runner/fixture in this update.
+No application database rows or production retrieval defaults were changed.
+All 319 backend tests passed after adding scope/dismissal and interruption checks;
+Ruff lint/format and diff checks passed.
+No iOS source changed, so the October 20 signed build was not rerun.
+
+**Versioned evidence:** [exact questions/proposed targets](../../tests/fixtures/rag/development.json),
+[protocol and reproduction command](../../tests/fixtures/rag/README.md),
+[machine outputs with retrieved sources, actual prompts, answers, usage, hashes,
+and explicit statuses](rag_2026-10-21.json), and
+[metrics/cost assumptions/source-loading timings](rag_2026-10-21_summary.json).
+Raw corpus vectors, cached query vectors, the pre-interruption-fix runner, and
+initial output remain ignored under `artifacts/evaluation/m3-rag-2026-10-21/`.
+The measured runner hash is retained; the current runner additionally preserves
+interruption status and stops after three failed calls. That control-flow fix
+does not change the saved retrieval queries, prompts, rankings, or answers.
+AMI source attribution and limits are in the fixture protocol.
+
+### Design and retrieval results
+
+The corpus is the existing 219-chunk TS3005a-d development index. Four positive
+questions and two proposed unsupported questions are project-scoped; eight
+positive questions are scoped to their specific meeting. Twelve designated
+existing decision chunks were chosen before retrieving. These labels are
+assistant-proposed from model-generated decisions plus inspected stored quotes,
+not independent human gold or an exhaustive inventory of relevant chunks.
+
+Both variants reuse identical 1,536-dimensional `text-embedding-3-small` query
+vectors, K=8, corpus snapshot, project/meeting and dismissal filters, source
+builder, `project-chat-v2` instructions, empty history, and requested
+`gpt-5.6-sol`. Hybrid uses the production sparse/dense RRF implementation,
+k=60 and leg depth=40; dense removes that sparse/fusion leg. A REPEATABLE READ,
+READ ONLY transaction froze corpus/source state. Each variant/question had three
+retrieval timings, alternating which variant ran first. CLI version was
+`0.163.0-alpha.10.2`. Exact prompt/corpus/dataset/vector hashes are saved.
+
+| Variant | Designated target Hit@1 | Hit@3 | Hit@8 | Target MRR@8 | Median retrieval round trip (42 samples) |
+| --- | --- | --- | --- | --- | --- |
+| Dense | 9/12 | 10/12 | 11/12 | 0.7944 | 87.30 ms |
+| Hybrid | 4/12 | 7/12 | 11/12 | 0.5188 | 88.31 ms |
+
+This is target recovery, not exhaustive Recall@K or answer accuracy. Both reach
+11/12 at K=8 but miss different targets: hybrid recovers the price-decision chunk
+missed by dense; dense recovers the rubber-housing decision lost by hybrid.
+Dense's price answer still found alternative transcript evidence. Target MRR
+alone cannot choose a semantic winner. The approximately 1 ms timing difference
+is not evidence of a material speed advantage. Production hybrid stays unchanged
+pending broader data and human answer/citation review.
+
+### Answer-run disposition and failures
+
+All 28 retrieval rankings completed. Answer generation is **partial**: 9 completed
+answers, 3 calls that timed out at 180 seconds, 1 interrupted in-flight call, and
+15 calls not run. All three timed-out calls were dense (`phases`, `style`, `power`).
+After the third timeout, the operator interrupted `teletext-b/dense`; its final
+provider completion and token consumption are unknown. Other uncompleted cases
+are not passes or failures. Both unsupported-question answer pairs were **not
+run**, so refusal accuracy is unmeasured. Human correctness/entailment is pending
+for every completed output. A nonzero model-call completion count is not a
+correct-answer count.
+
+| Variant | Completed answers | Timeouts | Interrupted | Not run | Successful-call median / longest |
+| --- | --- | --- | --- | --- | --- |
+| Dense | 3 | 3 | 1 | 7 | 108.93 s / 110.83 s |
+| Hybrid | 6 | 0 | 0 | 8 | 4.52 s / 7.52 s |
+
+The successful subsets are unequal and exclude timed-out calls. These are
+observations of this CLI/service run, not a causal latency claim for retrieval
+strategy or an acceptable overall user latency. Upstream timeout causes remain
+unknown. Do not average away the three 180-second timeouts or claim zero cost
+for failed/interrupted requests with unavailable usage.
+
+One concrete pipeline failure occurred on `lcd/hybrid`: the target decision was
+retrieved at rank 4. The raw model response's sole quote prepended `Decision:`
+to source text that lacks that prefix. Literal verification rejected the quote
+and the application returned its fixed refusal. Across 9 completed calls, 1 of
+12 raw citations failed literal validation (hybrid 1/7; dense 0/5). This is not
+semantic citation-support scoring. Preserve raw output alongside final output;
+review prompt/source-format changes as a later version, not a silent correction
+to the frozen experiment.
+
+### Latency, tokens, and estimated cost
+
+These measurements are service components, not mobile end-to-end latency.
+Query embedding took 1.825 seconds for one batch of 14 texts. Local
+`cl100k_base` counting estimates 206 input tokens, not API-reported usage;
+the vectors were reused by both variants. Additional source-loading checks
+matched the frozen sources and measured about 0.72-0.88 seconds for price,
+LCD, and unsupported-unicorn source sets (three repeats per variant). Source
+loading is excluded from retrieval-only and model-only columns.
+
+| Completed-call workload | N | Median model + validation | Mean input / output tokens | Mean observed cached-input tokens | Hypothetical standard API-equivalent per completed call |
+| --- | --- | --- | --- | --- | --- |
+| Project-scoped supported chat | 6 | 5.082 s | 17,432.17 / 117.17 | 0 | $0.072072 |
+| Meeting-scoped supported chat | 3 | 4.955 s | 18,021.33 / 87.33 | 8,874.67 | $0.041883 |
+
+Usage is reported by the CLI and includes its request overhead; do not substitute
+these counts for the visible prompt's token count. Both workload cohorts are
+selected completed calls; report the timeouts above alongside them. No P95,
+concurrency/load benchmark, standalone single-query embedding latency, or native
+end-to-end latency was established.
+
+Rates checked October 21 against [official OpenAI pricing](https://developers.openai.com/api/docs/pricing):
+standard short-context `gpt-5.6-sol` input $4/M, cached input $0.40/M, output
+$20/M; `text-embedding-3-small` $0.02/M input. Estimate per completed answer =
+`((input-cached)*4 + cached*0.40 + output*20)/1,000,000`.
+For all nine completed answers the hypothetical total is $0.558082; the query
+embedding estimate is $0.00000412. These are **not measured subscription-backed
+CLI charges** or a total cost for the incomplete run. Failed/interrupted usage,
+subscription allocation, index creation, database/storage, hosting, network,
+regional/priority charges and other operational costs are excluded. No model,
+provider, or billing setup was switched for the experiment.
+
+### Next actions
+
+- Human-review target labels and the actual completed answers/sources using the
+  [RAG review section](../milestone_3/human_review.md#retrieval-diagnostic-review-ami-rag-pilot-v1).
+  Preserve original judgments and any adjudicated corrections.
+- Investigate the repeated CLI timeouts before attempting full answer coverage;
+  keep a rerun separate and retain this partial run.
+- Test the citation-prefix failure as a later prompt/source-format version,
+  without changing this run's labels or declaring a retrieval winner.
+- Complete the supported/unsupported native demo and expanded scope/isolation
+  evaluation. AMI development results are not a held-out quality claim or a
+  substitute for the personal task-extraction worksheet.

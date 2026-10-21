@@ -1,0 +1,135 @@
+{
+  "version": "ami-rag-pilot-v1",
+  "label_status": "assistant-proposed, human review pending",
+  "split": "development diagnostic; questions derived from existing generated decisions before retrieval runs; not held out",
+  "project_id": "ee15c913-607a-4a5b-a01f-51fa21f61a7c",
+  "project_name": "AMI Remote Control - Dev",
+  "questions": [
+    {
+      "id": "price",
+      "question": "What selling price and maximum manufacturing cost were targeted for the remote control?",
+      "meeting_id": null,
+      "scope_name": "project",
+      "target_chunk_id": "d33fc51e-7b41-4990-b6d9-a3495b3602d1",
+      "target_text": "Decision: The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market.",
+      "expected_answerable": true
+    },
+    {
+      "id": "phases",
+      "question": "What are the three stages of the remote-control design project?",
+      "meeting_id": null,
+      "scope_name": "project",
+      "target_chunk_id": "e31a3fa7-edb8-47bb-bd68-272bb1addf4a",
+      "target_text": "Decision: The project will use three phases: functional design, conceptual design, and detailed design, with individual work and a meeting in each phase.",
+      "expected_answerable": true
+    },
+    {
+      "id": "whiteboard",
+      "question": "Should someone erase a whole smart-board page when starting over?",
+      "meeting_id": null,
+      "scope_name": "project",
+      "target_chunk_id": "e8aa2510-3b40-48d0-a62c-7d7cef5b548e",
+      "target_text": "Decision: Smart-board pages should be preserved; users may erase mistakes but should create a new page instead of deleting an entire page.",
+      "expected_answerable": true
+    },
+    {
+      "id": "style",
+      "question": "What qualities should the new remote control have?",
+      "meeting_id": null,
+      "scope_name": "project",
+      "target_chunk_id": "955d9ddb-ba80-4eda-ab99-598e896aae15",
+      "target_text": "Decision: The project will design a new remote control that is original, trendy, and user-friendly.",
+      "expected_answerable": true
+    },
+    {
+      "id": "lcd",
+      "question": "What screen technology was chosen in TS3005b and what was the fallback if it cost too much?",
+      "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+      "scope_name": "TS3005b",
+      "target_chunk_id": "843479b5-c25b-43e1-85d1-04906219149a",
+      "target_text": "Decision: Use an LCD screen for the remote for now, with rubber buttons as the fallback if the LCD is too expensive.",
+      "expected_answerable": true
+    },
+    {
+      "id": "power",
+      "question": "In TS3005b, how would users recharge the remote and know when power was low?",
+      "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+      "scope_name": "TS3005b",
+      "target_chunk_id": "6cfaf2b0-800d-461a-9de5-90338658bab3",
+      "target_text": "Decision: Use rechargeable power with a docking station and show a low-battery indicator on the screen.",
+      "expected_answerable": true
+    },
+    {
+      "id": "teletext-b",
+      "question": "In TS3005b, where should teletext be accessed?",
+      "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+      "scope_name": "TS3005b",
+      "target_chunk_id": "2cf8c3a7-c32c-438b-9cf5-a7c6a54ace7f",
+      "target_text": "Decision: Keep teletext available but place it in a separate menu rather than emphasizing it on the main screen.",
+      "expected_answerable": true
+    },
+    {
+      "id": "rubber",
+      "question": "What material was chosen for the housing in TS3005c?",
+      "meeting_id": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39",
+      "scope_name": "TS3005c",
+      "target_chunk_id": "fb044aa4-7a4d-4774-b08c-4bef2348cd54",
+      "target_text": "Decision: The remote-control case will be made from rubber.",
+      "expected_answerable": true
+    },
+    {
+      "id": "curve",
+      "question": "Which curved shape was selected for the TS3005c remote design?",
+      "meeting_id": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39",
+      "scope_name": "TS3005c",
+      "target_chunk_id": "4b35de3e-fdb0-43ce-a14d-d38260915f9d",
+      "target_text": "Decision: The remote control will use a single-curved form as a distinctive design feature.",
+      "expected_answerable": true
+    },
+    {
+      "id": "removed",
+      "question": "Which parts and voice feature were removed in the TS3005d redesign?",
+      "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+      "scope_name": "TS3005d",
+      "target_chunk_id": "e6c9b0bc-3f52-43cf-8879-cee95b8d57a4",
+      "target_text": "Decision: The redesigned remote will omit the scroll wheel and microphone, thereby dropping speech recognition; the rest of the design remains the same.",
+      "expected_answerable": true
+    },
+    {
+      "id": "teletext-d",
+      "question": "In TS3005d, should teletext be under options or on a separate control?",
+      "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+      "scope_name": "TS3005d",
+      "target_chunk_id": "ce9ad0e2-d5d0-4967-b443-2a72d638e66a",
+      "target_text": "Decision: A separate button using the teletext sign will be used for teletext rather than placing it under the options menu.",
+      "expected_answerable": true
+    },
+    {
+      "id": "score",
+      "question": "What average score did the product evaluation receive in TS3005d?",
+      "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+      "scope_name": "TS3005d",
+      "target_chunk_id": "06baa1ae-4064-4a37-9847-5d3b1d788245",
+      "target_text": "Decision: The product evaluation result was an average score of two.",
+      "expected_answerable": true
+    },
+    {
+      "id": "unicorn",
+      "question": "What is the approved unicorn-insurance policy number for this remote-control project?",
+      "meeting_id": null,
+      "scope_name": "project",
+      "target_chunk_id": null,
+      "target_text": null,
+      "expected_answerable": false
+    },
+    {
+      "id": "mars",
+      "question": "What exact launch date was approved for the Mars rover built by this team?",
+      "meeting_id": null,
+      "scope_name": "project",
+      "target_chunk_id": null,
+      "target_text": null,
+      "expected_answerable": false
+    }
+  ]
+}

@@ -4,42 +4,42 @@
 **Track:** AI Engineering
 **Team:** Will Liu, Guadalupe Cantera, and Bryan Yang
 **Repository:** https://github.com/BryanDYang/guardian-agent
-**Draft updated:** October 18, 2026
+**Draft updated:** October 21, 2026
 **Planned submission date:** October 26, 2026
 
 > **Draft status:** This document follows the AI Engineering requirements and 100-point rubric in `contexts/milestone_3/Milestone 3.pdf`. It records the alpha implementation currently present in the repository and separates implemented features from verified end-to-end behavior. Bracketed placeholders identify work or evidence that must be completed before submission. The final deliverable must be submitted as a single PDF unless the teaching staff directs otherwise.
 
-## October 18 status checkpoint
+## October 21 status checkpoint
 
-Bryan completed the October 17 immediate-follow-up implementation and reports
-progress on the AMI development walkthrough on October 18. User-supplied
-screenshots show accepted tasks in To-do and enabled follow-through settings;
-the Test inbox remains empty. These observations do not establish a reviewed or
-scored TS3005a-d sequence, a personal audio-to-email run, or real inbox delivery.
+Personal audio acceptance was executed October 20. Bryan supplied eight short
+scripted recordings and account mappings; assistant-run native checks verified
+bounded automatic approval, tentative-statement abstention, manual date/Calendar
+handling, recipient opt-out, repeated-task reconciliation, manual completion/Undo,
+and relaunch persistence. Four messages were captured; zero real-inbox deliveries
+were tested. C/D dates were entered manually. F1's ASR date was October 3 rather
+than the speaker-confirmed October 23, and its candidate omitted the deadline.
+F2 yielded no completion candidate. A was already auto-approved at baseline,
+so it does not count as a clean manual-approval demo. See the
+[run ledger and provenance](../evidence/demo_walkthrough.md#versioned-run-ledger).
 
-Implemented: optional evidence-gated automatic approval after current human
-speaker/account confirmation; project email controls and recipient opt-out;
-transactional email outbox, retry/deduplication, captured previews and delivery
-history. All 311 backend tests, Ruff lint/format, and the simulator build passed
-on October 17. Google OAuth's simulator Keychain signing failure was repaired
-and storage access verified; complete fresh Google sign-in still needs recording.
-See [architecture](../architecture.md), [follow-through details](follow_through.md),
-and the [Week 8 journal](../weekly_journal.md#week-8-october-12-18-2026).
+The October 20 implementation passed 317 backend tests, Ruff, and a signed
+simulator build. New-project automation defaults are on; recipient opt-out and
+evidence/identity gates remain. Settings save through Done. The failed D/E
+recordings recovered with a configured working Codex CLI; the cause of the
+older CLI's upstream HTTP 429 remains unresolved.
 
-Next: Bryan records a consented personal meeting in a separate test project,
-connects its speaker to his actual app account, and runs the
-[replaceable-date acceptance scripts](follow_through.md#personal-recording-test-scripts). AMI speakers
-must not be treated as real account holders. Date-bearing tasks need manual
-review; relative-date prefilling, completion-only update extraction, recurring
-reminders, live inbox delivery, independent sequence labels, paired evaluations,
-external feedback, and live two-host recovery remain unfinished.
+The eight-case [human-review worksheet](human_review.md) is prepared but its
+human judgments are blank. Assistant integration checks are not independent
+human review or a systematic audio/transcript fidelity evaluation. A clean
+screen-recorded journey with actual supported/unsupported chat outputs remains
+pending. Automatic dates/completion, recurring reminders, live inbox delivery,
+reviewed AMI sequence scores, and live two-host recovery remain open.
 
-The professor's Zoom/CCB direction is documented as a proposed future input path:
-authorized summaries/transcripts could feed the same backend and standalone
-mobile app. No Zoom integration or account-permission test has been completed.
-Validate the existing task loop first, then try one authorized artifact and
-report Zoom-input results separately. The original exploratory note is local-only
-in `contexts/zoom_integration_direction.md`; the tracked roadmap summarizes it.
+Manual in-app recording and **Import Zoom Summary** are implemented. Automatic
+Zoom account connection/webhooks/live-call ingestion and a real authorized Zoom
+artifact have not been validated. These are separate from the audio acceptance.
+The current priority is a frozen retrieval comparison, human-reviewed output
+quality, representative latency/usage measurements, and complete report artifacts.
 
 ## 1. Project and Milestone Goal
 
@@ -271,7 +271,7 @@ The smallest coherent evaluation plan is:
 4. Evaluate speaker matching on consented labeled recordings with enrolled and unenrolled speakers if it is presented as an advanced extension. Report correct/incorrect identification, abstentions, unknown-speaker false matches, and downstream owner attribution. Calibrate on development recordings and keep evaluation recordings separate.
 5. Evaluate a reviewed recurring-meeting sequence if we claim cross-meeting reconciliation. Measure reviewed reconciliation separately from autonomous proposals and retain the remaining continuity limitations.
 
-The RAG set and controlled comparison are the immediate priority. Speaker and sequence evaluations support our feature claims; the assignment does not prescribe these particular datasets. No new Milestone 3 model-quality measurements are recorded in this draft yet.
+The RAG set and controlled comparison are the immediate priority. A 14-question assistant-proposed AMI development diagnostic and read-only runner are prepared in `tests/fixtures/rag/` and `scripts/evaluate_rag.py`. Retrieval results are in Section 5.2; human validation and answer-quality scoring remain pending. The live answer run is partial due to repeated 180-second timeouts. Speaker and sequence evaluations support our feature claims; the assignment does not prescribe these particular datasets.
 
 ### 5.1 Results carried forward from Milestone 2
 
@@ -283,17 +283,51 @@ The prior error review identified candidate issues involving negated promises, q
 
 ### 5.2 Required ablation
 
-The rubric requires at least one targeted comparison that isolates a key design choice. Dense-only versus hybrid is our primary two-version ablation; sparse-only is an optional diagnostic. Our proposed comparison evaluates retrieval strategies on the same frozen question set, indexed corpus, answer model, prompt, and top-K setting.
+The October 21 development diagnostic compares dense-only retrieval with the
+production hybrid/full-text/RRF path. The frozen set contains 12 designated
+source-target questions and two proposed unsupported questions over the existing
+219-chunk TS3005a-d index. Questions and targets were assistant-authored before
+retrieval execution from generated decisions and inspected stored evidence;
+human validation remains pending. This is not held-out natural-meeting accuracy.
 
-| Variant     | Dense retrieval | Full-text retrieval | RRF fusion |      Recall@K |           MRR | Faithful answers | Refusal accuracy | Median latency |
-| ----------- | --------------- | ------------------- | ---------- | ------------: | ------------: | ---------------: | ---------------: | -------------: |
-| Dense only  | Yes             | No                  | No         | [PLACEHOLDER] | [PLACEHOLDER] |    [PLACEHOLDER] |    [PLACEHOLDER] |  [PLACEHOLDER] |
-| Sparse only | No              | Yes                 | No         | [PLACEHOLDER] | [PLACEHOLDER] |    [PLACEHOLDER] |    [PLACEHOLDER] |  [PLACEHOLDER] |
-| Hybrid      | Yes             | Yes                 | Yes        | [PLACEHOLDER] | [PLACEHOLDER] |    [PLACEHOLDER] |    [PLACEHOLDER] |  [PLACEHOLDER] |
+Both variants use the same query embeddings (`text-embedding-3-small`, 1,536
+dimensions), eligible corpus and dismissal filters, scope, K=8, source builder,
+empty history, chat instructions, and requested `gpt-5.6-sol` answer model. Hybrid
+adds full-text ranking and RRF (k=60, leg depth=40). Eight positive questions
+are meeting-scoped; four positive and both negative questions are project-scoped.
+Production retrieval defaults were not changed by this experiment.
 
-This comparison will show whether hybrid retrieval improves evidence recall or ranking enough to justify its added complexity and latency. If time permits, a secondary comparison will test individual transcript turns against 150-word complete-turn windows.
+The live answer run also exposed a citation-format failure in the hybrid LCD
+case. The target was retrieved at rank 4, but the model's quotation added a
+`Decision:` prefix absent from the source's quotable text. The validator dropped
+that sole citation, so the final output refused despite the available evidence.
+The raw response, sources, and final output must remain together for review.
+This is an observed pipeline failure, not evidence that retrieval alone missed
+the answer. Prompt/source-format changes should be a subsequent version, not
+silently applied during this frozen run.
 
-[PLACEHOLDER: freeze the question set, run each variant, add results, interpret the differences, and record the resulting design decision.]
+| Variant | Target Hit@1 | Target Hit@3 | Target Hit@8 | Target MRR@8 | Median retrieval round trip |
+| --- | --- | --- | --- | --- | --- |
+| Dense only | 9/12 | 10/12 | 11/12 | 0.7944 | 87.30 ms |
+| Hybrid | 4/12 | 7/12 | 11/12 | 0.5188 | 88.31 ms |
+
+Each positive question designates one decision chunk. These metrics measure
+recovery/rank of that target, not exhaustive Recall@K or answer correctness:
+alternative transcript chunks may support the answer. Three retrieval timings
+per question/variant include client/database network time; variant-first order
+alternates. The roughly 1 ms median difference on this tiny sample is not a
+reliable service-speed advantage. No significance test or load test was run.
+
+**Interpretation:** both retrieve 11/12 designated targets at K=8. Dense ranks
+more designated targets first; hybrid recovers the price-decision target that
+dense misses, but loses the rubber-housing target from the top eight. Equal
+Hit@8 hides these different misses. In the returned price answers, dense still
+used another source to answer the values. Therefore target rank alone cannot
+establish a quality winner. Keep production hybrid unchanged pending source-level
+human answer review and a broader frozen set. Sparse-only and chunking ablations
+were not run. The dataset/protocol is in
+[`tests/fixtures/rag/`](../../tests/fixtures/rag/README.md); machine outputs and
+human review status are in the [walkthrough](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
 
 ### 5.3 Milestone 3 evaluation targets
 
@@ -357,23 +391,38 @@ For `matches_task`, label repeated obligations and similar but distinct tasks ac
 
 The extraction providers already return elapsed time and token usage, and the evaluation harness summarizes observed latency. Milestone 3 should extend this instrumentation to the integrated alpha path and chat queries.
 
-For each tested workload, report:
+October 21 measurements separate retrieval, source loading, and model response
+from the native UI. Query embedding was 1.825 s for a batch of 14 questions.
+Retrieval round-trip medians were 87.30 ms dense and 88.31 ms hybrid (42 samples
+each). Verified source loading for three representative questions took about
+0.72-0.88 s. These components were measured separately; do not sum their medians
+and call the result mobile end-to-end latency.
 
-- Model and provider version.
-- Input duration or transcript size.
-- Retrieved chunk count and prompt size for chat.
-- Input and output tokens when exposed by the provider.
-- End-to-end and model-call latency.
-- Estimated monetary cost using the price in effect on the measurement date.
-- Cache behavior, if any. No cache benefit should be claimed without observed cache-hit data.
+| Completed-call workload | N | Median model + validation | Mean input/output tokens | Mean cached-input tokens | Hypothetical API-equivalent per completed call |
+| --- | --- | --- | --- | --- | --- |
+| Project-scoped supported chat | 6 | 5.082 s | 17,432.17 / 117.17 | 0 | $0.072072 |
+| Meeting-scoped supported chat | 3 | 4.955 s | 18,021.33 / 87.33 | 8,874.67 | $0.041883 |
 
-| Workload              |   Sample size | Median latency |   P95 latency | Mean input/output tokens | Estimated cost |
-| --------------------- | ------------: | -------------: | ------------: | -----------------------: | -------------: |
-| Meeting transcription | [PLACEHOLDER] |  [PLACEHOLDER] | [PLACEHOLDER] |                      N/A |  [PLACEHOLDER] |
-| Structured extraction | [PLACEHOLDER] |  [PLACEHOLDER] | [PLACEHOLDER] |            [PLACEHOLDER] |  [PLACEHOLDER] |
-| Project chat          | [PLACEHOLDER] |  [PLACEHOLDER] | [PLACEHOLDER] |            [PLACEHOLDER] |  [PLACEHOLDER] |
+**Failure boundary:** the answer run stopped after 3 dense calls timed out at
+180 s. There were 9 completed calls, 3 timeouts, 1 interrupted request, and 15
+not run; unsupported-answer refusal accuracy is not measured. Successful-call
+medians omit failed calls and do not establish typical reliability or a causal
+speed advantage. Dense completed-call median was 108.93 s (N=3), hybrid 4.52 s
+(N=6); these unequal selected samples and observed caching prevent a fair model
+latency conclusion. Human answer/citation judgments remain pending. The precise
+[outputs, timing and failure ledger](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
+are in the repository.
 
-Latency and cost must be interpreted together with quality. A faster or cheaper configuration is useful only if it preserves the required extraction, retrieval, citation, and refusal behavior.
+Pricing assumptions checked October 21: [official OpenAI standard rates](https://developers.openai.com/api/docs/pricing)
+for short-context `gpt-5.6-sol` are $4/M input, $0.40/M cached input, $20/M output;
+embedding input is $0.02/M for `text-embedding-3-small`. Applying those rates to
+CLI-reported completed-call usage gives a hypothetical $0.558082 for nine
+answers, not the observed subscription charge. Locally counted embedding input
+is 206 tokens, estimated $0.00000412; API embedding usage was not captured.
+The formula and actual usage are in the versioned summary. Failed/interrupted
+request usage, infrastructure, indexing, subscription allocation, and any
+regional/priority surcharges are excluded. Cost for those requests is unknown,
+not zero. No P95, load/concurrency result, or mobile end-to-end latency is claimed.
 
 ## 6. Model Card Draft
 
@@ -397,7 +446,7 @@ The system is not intended to record people without consent, evaluate employee o
 
 ### Evaluation summary and limitations
 
-Milestone 2 measured ASR and independent-meeting extraction. Milestone 3 will add retrieval, grounded-answer, refusal, isolation, latency, and cost measurements plus the required ablation. ASR errors can propagate into extraction, anonymous speaker labels do not establish identity, and candidate tasks may merge, omit, or misattribute work. Human review is required before approval. The evaluation data remains small and partly synthetic, so claims are limited to the measured inputs and configurations.
+Milestone 2 measured ASR and independent-meeting extraction. Milestone 3 now includes a source-recovery ablation and partial answer/latency/cost evidence; human semantic review, refusal-answer coverage, and expanded isolation evaluation remain pending. ASR errors can propagate into extraction, anonymous speaker labels do not establish identity, and candidate tasks may merge, omit, or misattribute work. Automatic approval is experimental and limited to confirmed accounts and explicit evidence-gated self-commitments; ambiguous candidates remain in review. The evaluation data remains small and partly synthetic, so claims are limited to the measured inputs and configurations.
 
 ## 7. System Card Draft
 
@@ -491,6 +540,46 @@ The rubric requires a substantive advanced-extension write-up and metrics for ea
 
 [PLACEHOLDER: replace contribution summaries with team-confirmed descriptions and include the required individual/group reporting format from the rubric.]
 
+### Bryan: evaluation and auditable follow-through extension (draft)
+
+Bryan's extension combines reproducible evaluation with the application's
+meeting-to-task evidence trail. The implementation separates transcript/model
+outputs from reviewed application state: a named voice is not automatically a
+verified account, a candidate is not an approved task, and a quoted passage is
+not sufficient proof of semantic correctness. Reviewed reconciliation preserves
+the original task identity and records the source meeting and lifecycle audit.
+Immediate follow-up uses a transactional outbox and a task/recipient uniqueness
+constraint; it is separate from recurring reminder scheduling.
+
+The October 20 personal sequence exposed these boundaries in use. Eight scripted
+clips exercised clear/tentative promises, dates, opt-out, a repeated obligation,
+and completion. Four follow-ups were captured. Manual approval, date edits,
+reconciliation, completion/Undo, and relaunch persistence were verified. The
+same run exposed a date transcription error and absent completion proposals;
+those were preserved as failures instead of being counted as automatic successes.
+The implemented auto-approval policy remains narrow and uncalibrated on natural
+meetings. The assistant executed the native checks and bookkeeping from Bryan's
+recordings; independent human quality judgments remain pending.
+
+For retrieval, Bryan's evaluation work now includes a frozen 14-question
+assistant-proposed development diagnostic, read-only dense/hybrid runner, saved
+source targets and rankings, and measured timing. Both variants recover 11/12
+designated targets at K=8, while dense has higher target MRR in this sample
+(0.7944 versus 0.5188). Alternative transcript evidence can still support an
+answer when the designated decision is missing. This motivates separating
+source-target ranking from human answer/citation evaluation; it does not justify
+a blanket production retrieval change. One new local regression verifies that
+the dense baseline retains project/meeting filters and dismissal behavior; all
+319 backend tests passed. Live model-call failures and completed-call usage
+must be reported alongside successful latency, not discarded.
+
+Evidence is versioned in the walkthrough, question fixture, and run artifacts.
+Bryan must review this contribution description; teammates must confirm shared
+ownership. Remaining extension evidence includes human adjudication, broader
+scope/isolation questions, semantic answer scores, and the clean native demo.
+This draft does not attribute independent human review to the assistant or claim
+that every cross-meeting update is inferred automatically.
+
 ### Individual reflection survey
 
 Each team member must separately submit the non-graded reflection survey covering work completed and lessons learned, whether every member contributed materially, and any other feedback for the teaching staff. This survey is separate from the single group PDF.
@@ -527,7 +616,7 @@ Assignments remain proposed until confirmed by the team.
 - No recorded clean end-to-end alpha verification exists yet.
 - Task-similarity flags are implemented, but automatic cross-meeting state reconciliation and its sequence evaluation remain incomplete.
 - Human review of labels and semantic matches is incomplete.
-- The required ablation, updated RAG results, and latency/cost table are not complete.
+- Source-recovery ablation and partial latency/cost results are recorded; human labels, semantic answer scores, and full live answer coverage remain incomplete after repeated timeouts.
 - The iOS build and real model/embedding behavior must be verified on the team environment.
 - Legacy local-mode JSON status remains; shared-mode status and real playback are implemented. Seed-free launch, server refresh, and the full native flow still need clean-run evidence.
 
@@ -548,9 +637,9 @@ The current evidence does not yet establish reliable cross-meeting reconciliatio
 | Track declaration                                           | Front matter and Section 1 | Complete                                                    |
 | Development path, M2 changes, and decision log              | Sections 1 and 2           | Draft complete; evidence pending                            |
 | Configuration and reproducibility                           | Sections 3-7 and 15        | Partial; exact final settings pending                       |
-| At least one ablation                                       | Section 5.2                | Planned; results required                                   |
+| At least one ablation                                       | Section 5.2                | Source-recovery pilot executed; human labels/answer scoring pending |
 | Targeted tests, robustness, bias, safety, and hallucination | Sections 4, 5.3, and 8     | Partial; updated results required                           |
-| Latency and cost                                            | Section 5.3                | Planned; measurements required                              |
+| Latency and cost                                            | Section 5.3                | Component/partial completed-call measurements; failures disclosed |
 | Updated results and error analysis                          | Section 5                  | Partial; M3 results and human adjudication required         |
 | Alpha flow and inference service                            | Sections 1-4               | Implemented in parts; recorded end-to-end evidence required |
 | README run instructions and examples                        | Section 15 references      | Present; clean-run verification required                    |

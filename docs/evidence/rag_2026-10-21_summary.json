@@ -1,0 +1,163 @@
+{
+  "review_status": "assistant-authored labels; human answer/entailment judgments pending",
+  "pricing": {
+    "checked_date": "2026-10-21",
+    "source": "https://developers.openai.com/api/docs/pricing",
+    "gpt-5.6-sol_standard_short_context_usd_per_million": {
+      "input": 4,
+      "cached_input": 0.4,
+      "output": 20
+    },
+    "embedding_usd_per_million_input": 0.02,
+    "billing_boundary": "Hypothetical standard API-equivalent estimate from CLI usage; not observed subscription charges. No cache write charge observed; regional/priority fees excluded."
+  },
+  "query_embedding_estimate": {
+    "encoding": "cl100k_base",
+    "query_token_count": 206,
+    "by_question": {
+      "price": 14,
+      "phases": 12,
+      "whiteboard": 12,
+      "style": 9,
+      "lcd": 21,
+      "power": 19,
+      "teletext-b": 14,
+      "rubber": 13,
+      "curve": 14,
+      "removed": 15,
+      "teletext-d": 19,
+      "score": 14,
+      "unicorn": 15,
+      "mars": 15
+    },
+    "estimated_usd": 4.12e-06
+  },
+  "variants": [
+    {
+      "mode": "dense",
+      "targets": 12,
+      "target_hit_at_1": 9,
+      "target_hit_at_3": 10,
+      "target_hit_at_8": 11,
+      "target_mrr_at_8": 0.7944444444444444,
+      "retrieval_median_seconds": 0.08729793748352677,
+      "successful_answer_calls": 3,
+      "failed_answer_calls": 3,
+      "unsupported_refusals": 0,
+      "unsupported_completed": 0,
+      "model_median_seconds": 108.92826387519017,
+      "api_equivalent_estimated_usd": 0.1779168,
+      "raw_citations": 5,
+      "invalid_raw_citations": 0,
+      "longest_success_seconds": 110.82623995887116
+    },
+    {
+      "mode": "hybrid",
+      "targets": 12,
+      "target_hit_at_1": 4,
+      "target_hit_at_3": 7,
+      "target_hit_at_8": 11,
+      "target_mrr_at_8": 0.5188492063492064,
+      "retrieval_median_seconds": 0.08830620860680938,
+      "successful_answer_calls": 6,
+      "failed_answer_calls": 0,
+      "unsupported_refusals": 0,
+      "unsupported_completed": 0,
+      "model_median_seconds": 4.517559082945809,
+      "api_equivalent_estimated_usd": 0.38016479999999997,
+      "raw_citations": 7,
+      "invalid_raw_citations": 1,
+      "longest_success_seconds": 7.516358707798645
+    }
+  ],
+  "workloads": [
+    {
+      "workload": "meeting-scoped-chat",
+      "n": 3,
+      "median_model_seconds": 4.95475395815447,
+      "mean_input_tokens": 18021.333333333332,
+      "mean_output_tokens": 87.33333333333333,
+      "mean_cached_input_tokens": 8874.666666666666,
+      "mean_api_equivalent_usd": 0.041883199999999995
+    },
+    {
+      "workload": "project-supported-chat",
+      "n": 6,
+      "median_model_seconds": 5.081693749991246,
+      "mean_input_tokens": 17432.166666666668,
+      "mean_output_tokens": 117.16666666666667,
+      "mean_cached_input_tokens": 0,
+      "mean_api_equivalent_usd": 0.072072
+    }
+  ],
+  "measured_runner_sha256": "1839edd99200a774655a4f24db3a0151cb8a9a0efc6f6cd2b70ee081820a2746",
+  "current_runner_sha256": "06c7cf67eadde763ff660af2a2ee757d11578e37b4551378fa2f1cf58e5095c4",
+  "source_loading_measurements": [
+    {
+      "question_id": "price",
+      "mode": "dense",
+      "source_load_seconds": [
+        0.7320460421033204,
+        0.8798450001049787,
+        0.7208581250160933
+      ]
+    },
+    {
+      "question_id": "price",
+      "mode": "hybrid",
+      "source_load_seconds": [
+        0.7193067090120167,
+        0.7203037501312792,
+        0.8857960838358849
+      ]
+    },
+    {
+      "question_id": "lcd",
+      "mode": "dense",
+      "source_load_seconds": [
+        0.8036845829337835,
+        0.7980803749524057,
+        0.7996548330411315
+      ]
+    },
+    {
+      "question_id": "lcd",
+      "mode": "hybrid",
+      "source_load_seconds": [
+        0.7245214169379324,
+        0.7206604578532279,
+        0.7188484589569271
+      ]
+    },
+    {
+      "question_id": "unicorn",
+      "mode": "dense",
+      "source_load_seconds": [
+        0.8804572499357164,
+        0.8791117088403553,
+        0.8801605841144919
+      ]
+    },
+    {
+      "question_id": "unicorn",
+      "mode": "hybrid",
+      "source_load_seconds": [
+        0.799824999878183,
+        0.8000835829880089,
+        0.8002275000326335
+      ]
+    }
+  ],
+  "execution_status": {
+    "retrieval": "completed: 28 variant/question rankings",
+    "answers": "partial: stopped after three 180-second timeouts",
+    "completed_answers": 9,
+    "failed_calls": 3,
+    "interrupted_calls": 1,
+    "not_run_calls": 15,
+    "interrupted_question": "teletext-b/dense",
+    "human_quality_review": "pending"
+  },
+  "raw_local_results_sha256": "e67f1af3b5630df950febccae643a35787341abc3f5e2800fd017d94e6f94cac",
+  "tracked_machine_output_sha256": "6335f8792282a379c07130e638241b267bc257363bca106383dbd940db187bb7"
+}

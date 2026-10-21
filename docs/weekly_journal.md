@@ -371,3 +371,27 @@ available to the team.
 Draft only; not sent.
 
 > Hi Will and Guadalupe! The M3 follow-through results are documented. Could one of you independently review the eight short cases in `docs/milestone_3/human_review.md`? Copy the blank worksheet and review the source/output pairs before reading my judgments or the walkthrough conclusions. Please flag unsupported or missing information and return your notes before we compare. I’ll record the clean app demo next. Let me know who can take this. Thanks!
+
+### October 21 retrieval comparison and performance evidence
+
+Prepared and ran the AMI development retrieval diagnostic on Bryan's behalf:
+14 frozen assistant-proposed questions, 219 indexed chunks, K=8, identical query
+vectors and scope filters. Both dense and hybrid recovered 11/12 designated
+source targets at K=8; target MRR was 0.7944 dense and 0.5188 hybrid. These are
+target-recovery proxies, not human-validated answer accuracy. Production hybrid
+was unchanged. Added local scope/dismissal and interruption-checkpoint checks.
+
+The live answer phase is partial: 9 completed, 3 timeouts at 180 s, 1 interrupted,
+15 not run. A hybrid LCD answer became a refusal after its only citation added
+an invalid `Decision:` prefix. Model-call timing, actual returned usage, and
+explicit hypothetical API-equivalent costs are recorded with the failures;
+subscription charges were not measured. Human review remains pending.
+See the [dated evidence and machine outputs](evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
+Updated the report checkpoint, ablation/error analysis, performance table, and
+Bryan's extension draft. This does not complete the clean native demo, independent
+review, or full answer-quality evaluation.
+
+Validation for the final evaluation change: all 319 backend tests passed against
+isolated PostgreSQL; Ruff lint/format and diff checks passed. Two existing
+dependency deprecation warnings remain. No iOS code changed or new simulator
+build was required for this evaluation-only update.

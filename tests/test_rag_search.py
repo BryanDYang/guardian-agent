@@ -184,3 +184,90 @@ def test_limit_and_stopword_only_question(embedder, seeded):
     assert len(search(embedder, seeded["project"], "learning rate", limit=2)) == 2
     # "what is the" has no searchable words; the dense leg still answers.
     assert search(embedder, seeded["project"], "what is the")
+
+
+def test_ablation_dense_baseline_preserves_scope_and_dismissal(embedder, seeded):
+    # The diagnostic must not gain an advantage by reading another project or
+    # a task the production hybrid path excludes.
+    import runpy
+    from pathlib import Path
+
+    baseline = runpy.run_path(
+        str(Path(__file__).parents[1] / "scripts" / "evaluate_rag.py")
+    )["dense"]
+    [vector] = embedder.encode(["sentencepiece tokenizer learning rate"])
+    with connect() as conn:
+        conn.execute(
+            "UPDATE tasks SET review_status='dismissed' WHERE meeting_id=%s",
+            (seeded["sync"],),
+        )
+        hits = baseline(conn, seeded["project"], None, vector)
+        assert hits
+        assert {str(h["meeting_id"]) for h in hits} <= {
+            seeded["kickoff"],
+            seeded["sync"],
+        }
+        assert not any(h["kind"] == "task" for h in hits)
+        scoped = baseline(conn, seeded["project"], seeded["kickoff"], vector)
+        assert scoped and {str(h["meeting_id"]) for h in scoped} == {seeded["kickoff"]}
+        assert baseline(conn, seeded["project"], seeded["leak"], vector) == []
+
+
+def test_ablation_interrupt_preserves_results_without_inventing_completions(
+    embedder, seeded, monkeypatch, tmp_path
+):
+    import json
+    import runpy
+    from pathlib import Path
+
+    namespace = runpy.run_path(
+        str(Path(__file__).parents[1] / "scripts" / "evaluate_rag.py")
+    )["main"].__globals__
+    dataset = tmp_path / "questions.json"
+    dataset.write_text(
+        json.dumps(
+            {
+                "project_id": str(seeded["project"]),
+                "questions": [
+                    {
+                        "id": "learning-rate",
+                        "question": "What learning rate was chosen?",
+                        "meeting_id": None,
+                        "target_chunk_id": "not-labelled",
+                    }
+                ],
+            }
+        )
+    )
+    output = tmp_path / "run"
+    monkeypatch.setenv("DATABASE_URL", DATABASE_URL)
+    monkeypatch.setitem(namespace, "OpenAIEmbedder", lambda: embedder)
+    from types import SimpleNamespace
+
+    monkeypatch.setitem(
+        namespace,
+        "subprocess",
+        SimpleNamespace(check_output=lambda *a, **kw: "test-version\n"),
+    )
+
+    def interrupt(*args, **kwargs):
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(namespace["codex_client"], "run", interrupt)
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "evaluate_rag",
+            "--dataset",
+            str(dataset),
+            "--output",
+            str(output),
+            "--answers",
+        ],
+    )
+    namespace["main"]()
+    result = json.loads((output / "results.json").read_text())
+    assert [r["answer_status"] for r in result["runs"]] == ["interrupted", "not_run"]
+    assert all("answer" not in r for r in result["runs"])
+    assert result["answer_stop_reason"] == "operator interruption"
+    assert all(v["answer_median_seconds"] is None for v in result["summary"].values())

@@ -10,7 +10,7 @@ remains authoritative. This is the single current planning document. Use the
 
 ## Current status and next action
 
-**Current checkpoint: `214dd5f`.** Implementation tested October 20 was committed
+**Evaluation baseline: `4048fbb` plus the runner/fixture in this update.** Implementation tested October 20 was committed
 as `1d09bc6`; later commits added evidence and review instructions. This is a
 working alpha with partial acceptance evidence, not a completed Milestone 3.
 
@@ -19,10 +19,10 @@ working alpha with partial acceptance evidence, not a completed Milestone 3.
 | Personal recording tests | Bryan supplied eight scripted recordings; assistant-run native checks verified automatic approval/abstention, manual dates/Calendar, opt-out, repeated-task reconciliation, manual completion/Undo, and relaunch persistence | A was approved before baseline; no clean manual A demo video. These are not natural-meeting quality scores. |
 | Follow-through | Four captured messages total, one each for A, B-positive, C, D; zero for E and B-negative. Done saves settings; new-project automation defaults are on | Actual inbox delivery, recurring reminder lifecycle, and calibration of automatic approval |
 | Dates and continuity | Original task identity survived repeat reconciliation and manual edits | F1 ASR said October 3 instead of the confirmed October 23; deadline quote was omitted. C/D dates required manual entry. F2 produced no completion candidate. |
-| Engineering checks | 317 backend tests, Ruff lint/format, signed simulator build passed for the October 20 implementation; D/E processing recovered using the configured working CLI | Rerun checks on the final submission commit; software tests are not AI-quality measurements |
+| Engineering checks | October 21 evaluation change passed 319 backend tests and Ruff; signed simulator build passed October 20 (no iOS changes in this evaluation). Dense baseline scope/dismissal checks added | Rerun checks on the final submission commit; software tests are not AI-quality measurements |
 | Human review | Eight source/output examples and blank reviewer tables prepared in [the worksheet](human_review.md) | Bryan's judgments, another reviewer's independent judgments, and adjudication; systematic audio/transcript comparison not documented |
-| Chat and evaluation | Grounded chat implemented; supported/unsupported questions and clean-demo procedure prepared | Actual demo chat answers/citations, frozen RAG labels, controlled comparison, latency/cost, and updated quality metrics |
-| Evidence process | [Dated test ledger](../evidence/demo_walkthrough.md#versioned-run-ledger) and [reusable result.md](../evidence/result.md) are in Git | Screen-recorded clean journey, final report/cards, per-member extension evidence |
+| Chat and evaluation | October 21 source-recovery comparison executed on 14 frozen AMI development questions: both variants recover 11/12 designated targets at K=8; dense target MRR 0.7944, hybrid 0.5188 | Human validation, semantic answer/citation judgments, answer rerun after repeated CLI timeouts, native demo chat, and broader evaluation |
+| Evidence process | [Retrieval outputs and partial-answer evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run), [dated test ledger](../evidence/demo_walkthrough.md#versioned-run-ledger) and [reusable result.md](../evidence/result.md) are in Git | Screen-recorded clean journey, final report/cards, per-member extension evidence |
 
 The [provenance note](../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed)
 identifies who recorded and who checked what. Assistant integration tests do not
@@ -48,7 +48,7 @@ reviewer count.
 | --- | --- | --- |
 | 1 | Fill [Bryan's worksheet](human_review.md#bryans-judgments) using existing source/output pairs. Another reviewer completes the same sample before seeing Bryan's judgments. Preserve disagreements and freeze adjudicated labels before tuning. | Bryan; Will or Guadalupe independently |
 | 2 | Follow the [clean app journey script](follow_through.md#clean-app-journey-screen-recording): fresh project, recording/upload, transcript/evidence, confirmed owner, manual approval/date, captured follow-up, Tasks/Calendar, supported and unsupported cited chat, relaunch. Save actual answers and video references in the walkthrough using [result.md](../evidence/result.md). | Bryan records; assistant assists and documents |
-| 3 | Freeze supported/unsupported and scope/isolation questions with human-checked expected sources. Compare dense-only and hybrid on identical corpus/questions/K/prompt/model. Save outputs/configuration and a scored comparison table with denominators and failures. The eight extraction examples alone are not a RAG evaluation. | Bryan with assistant execution; human reviewer validates labels |
+| 3 | Review the 14-question AMI diagnostic and its actual answers/sources. Retrieval ranking comparison is executed; validate labels, score semantic correctness/entailment, preserve model-call failures, and expand scope/isolation coverage. The eight extraction examples alone are not a RAG evaluation. | Bryan with assistant execution; human reviewer validates labels |
 | 4 | Measure 1-3 representative workloads: observed latency, token usage and estimated cost with assumptions. Report subscription-backed inference billing limits honestly; do not invent a per-call charge. | Bryan with assistant execution |
 | 5 | Update the report around measured behavior, configuration/decision log, errors, limitations, Model/System Cards, and each member's substantive extension and metrics. Verify run instructions, run final checks, export/review the single PDF, and complete individual reflections. | Team |
 
@@ -149,7 +149,8 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - [ ] Run Milestone 2 extraction regressions.
 - [ ] Compare baseline independent extraction and updated reconciliation on identical frozen transcripts/settings.
 - [ ] Measure state accuracy, duplicate creation, incorrect assignments/updates, unsupported completions, and unresolved cases with denominators.
-- [ ] Compare dense-only and hybrid retrieval on identical questions, corpus, K, prompt, and answer model.
+- [x] Run dense-only versus hybrid source-recovery comparison on 14 frozen development questions at K=8; report target-specific metrics, not exhaustive Recall@K.
+- [ ] Complete human label/answer/citation review and live answer-run coverage before claiming semantic accuracy or a production winner.
 - [ ] Measure retrieval Recall@K, answer correctness, citation support, refusal/isolation errors, latency, tokens, and estimated cost.
 - [ ] Review representative successes/failures and disagreements. Do not treat a valid quotation as sufficient answer support.
 - [x] Run separate personal audio-to-app checks; October 20 evidence records ASR/date and missing completion problems.
