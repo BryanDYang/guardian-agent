@@ -1,7 +1,7 @@
 # Milestone 3 roadmap, scope, and acceptance
 
-Updated October 20, 2026. Target submission: October 26, subject to confirming
-Canvas. Proposed owners and schedule need team agreement; the course rubric
+Updated October 21, 2026. Target submission: October 26; Canvas remains the
+source of truth for the exact deadline. Proposed owners need team agreement; the course rubric
 remains authoritative. This is the single current planning document. Use the
 [weekly journal](../weekly_journal.md#week-8-october-12-18-2026) for progress history,
 [native walkthrough](../evidence/demo_walkthrough.md) for observed evidence,
@@ -10,42 +10,56 @@ remains authoritative. This is the single current planning document. Use the
 
 ## Current status and next action
 
-- Implemented: shared audio/jobs and recoverable worker leases, authenticated
-  native uploads, project membership, extraction/cited chat, speaker/account
-  review, undated To-do and dated Calendar tasks, reviewed reconciliation with
-  stable identity/audits, and completion/Undo. A seeded four-meeting native test
-  passed October 11; it did not test audio extraction or model accuracy.
-- October 17 added immediate task email, recipient preferences, durable delivery
-  history/capture previews, and optional evidence-gated automatic approval.
-  All 311 backend tests, Ruff lint/format, and the simulator build passed. The
-  policy is experimental, not calibrated confidence. Capture mode sends nothing
-  externally; recurring reminders remain unfinished.
-- The simulator OAuth signing failure was repaired and temporary Keychain
-  write/read/delete verified. A fresh Google flow still needs recorded acceptance.
-- October 18 screenshots show accepted AMI tasks, including TS3005d evidence,
-  and enabled follow-through settings with an empty Test inbox. Bryan reports
-  the dev path is working for these checks. The full a-d ledger/score and
-  personal audio-to-email acceptance remain open. AMI speakers are not real app
-  recipients; approved assignments are not changed by later speaker mapping,
-  and enabling email does not bulk-send old tasks.
+**Current checkpoint: `214dd5f`.** Implementation tested October 20 was committed
+as `1d09bc6`; later commits added evidence and review instructions. This is a
+working alpha with partial acceptance evidence, not a completed Milestone 3.
 
-- October 20 personal scripted native acceptance verified bounded automatic
-  approval, tentative-statement abstention, manual dates/Calendar, opt-out,
-  duplicate reconciliation, and manual completion/Undo with relaunch persistence.
-  Four messages were captured; none were sent to real inboxes. Done now saves
-  settings; new-project automation defaults are on. All 317 backend tests and
-  the signed simulator build passed. See the
-  [case-by-case evidence](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
-  A was already auto-approved, F1 required a corrected date, and F2 yielded no
-  completion candidate. Do not count those as clean manual A or automatic
-  date/completion passes.
+| Area | Verified or prepared | Still open |
+| --- | --- | --- |
+| Personal recording tests | Bryan supplied eight scripted recordings; assistant-run native checks verified automatic approval/abstention, manual dates/Calendar, opt-out, repeated-task reconciliation, manual completion/Undo, and relaunch persistence | A was approved before baseline; no clean manual A demo video. These are not natural-meeting quality scores. |
+| Follow-through | Four captured messages total, one each for A, B-positive, C, D; zero for E and B-negative. Done saves settings; new-project automation defaults are on | Actual inbox delivery, recurring reminder lifecycle, and calibration of automatic approval |
+| Dates and continuity | Original task identity survived repeat reconciliation and manual edits | F1 ASR said October 3 instead of the confirmed October 23; deadline quote was omitted. C/D dates required manual entry. F2 produced no completion candidate. |
+| Engineering checks | 317 backend tests, Ruff lint/format, signed simulator build passed for the October 20 implementation; D/E processing recovered using the configured working CLI | Rerun checks on the final submission commit; software tests are not AI-quality measurements |
+| Human review | Eight source/output examples and blank reviewer tables prepared in [the worksheet](human_review.md) | Bryan's judgments, another reviewer's independent judgments, and adjudication; systematic audio/transcript comparison not documented |
+| Chat and evaluation | Grounded chat implemented; supported/unsupported questions and clean-demo procedure prepared | Actual demo chat answers/citations, frozen RAG labels, controlled comparison, latency/cost, and updated quality metrics |
+| Evidence process | [Dated test ledger](../evidence/demo_walkthrough.md#versioned-run-ledger) and [reusable result.md](../evidence/result.md) are in Git | Screen-recorded clean journey, final report/cards, per-member extension evidence |
 
-**Next:** record a clean manual A demo with visual evidence and validate actual
-inbox delivery after sender setup. Automatic date resolution and completion
-extraction remain gaps. Then finish the independently reviewed a-d ledger,
-bounded reminder lifecycle, paired evaluations, external alpha acceptance, and
-submission evidence below. Keep manual actions, captured email, real inbox
-receipt, and recurring reminders as separate claims.
+The [provenance note](../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed)
+identifies who recorded and who checked what. Assistant integration tests do not
+complete the human-review worksheet. Reuse the existing recordings for review;
+do not record them again just to fill judgments. The new screen-recorded demo
+uses a fresh project because existing A cannot establish clean manual approval.
+Historical October 10-20 observations remain in the walkthrough and journal.
+
+## Submission priorities
+
+Prioritize the graded evidence before expanding features. The official AI
+Engineering rubric requires at least one targeted comparison, updated evaluation
+and error analysis, representative latency/cost notes, an end-to-end alpha with
+run instructions, Model/System Card drafts, and per-member extension write-ups
+and metrics. Its 60-point evidence and 40-point alpha/documentation categories
+are summarized in the [submission draft](submission_draft.md#14-rubric-coverage).
+The rubric does not prescribe two outside testers. Confirm any separate
+instructor guidance; external feedback remains a useful team acceptance target.
+A second independent reviewer is our chosen reliability protocol, not a mandated
+reviewer count.
+
+| Priority | Next action and completion evidence | Proposed responsibility |
+| --- | --- | --- |
+| 1 | Fill [Bryan's worksheet](human_review.md#bryans-judgments) using existing source/output pairs. Another reviewer completes the same sample before seeing Bryan's judgments. Preserve disagreements and freeze adjudicated labels before tuning. | Bryan; Will or Guadalupe independently |
+| 2 | Follow the [clean app journey script](follow_through.md#clean-app-journey-screen-recording): fresh project, recording/upload, transcript/evidence, confirmed owner, manual approval/date, captured follow-up, Tasks/Calendar, supported and unsupported cited chat, relaunch. Save actual answers and video references in the walkthrough using [result.md](../evidence/result.md). | Bryan records; assistant assists and documents |
+| 3 | Freeze supported/unsupported and scope/isolation questions with human-checked expected sources. Compare dense-only and hybrid on identical corpus/questions/K/prompt/model. Save outputs/configuration and a scored comparison table with denominators and failures. The eight extraction examples alone are not a RAG evaluation. | Bryan with assistant execution; human reviewer validates labels |
+| 4 | Measure 1-3 representative workloads: observed latency, token usage and estimated cost with assumptions. Report subscription-backed inference billing limits honestly; do not invent a per-call charge. | Bryan with assistant execution |
+| 5 | Update the report around measured behavior, configuration/decision log, errors, limitations, Model/System Cards, and each member's substantive extension and metrics. Verify run instructions, run final checks, export/review the single PDF, and complete individual reflections. | Team |
+
+**Product gaps, separate from submission requirements:** automatic date resolution,
+completion proposals, live inbox delivery, recurring reminders, multi-speaker
+calibration, and two-host recovery remain open. They are not individually named
+requirements in the rubric. Disclose their limits and evaluate claimed behavior;
+do not silently mark them complete or require every product improvement before
+running the comparison and assembling the alpha evidence. A real inbox claim
+requires sender setup plus observed recipient receipt; capture mode is sufficient
+only for the explicitly labeled captured-follow-up demonstration.
 
 ## Product scope
 
@@ -61,13 +75,13 @@ in the walkthrough and journal, not as current totals here.
 | Target | Acceptance evidence | Proposed lead |
 | --- | --- | --- |
 | Repeatable native alpha | Fresh-account sign-in, project creation/invitation, authenticated upload, completed results, relaunch persistence, access denial for non-members, and purge verified in the app | Will, with team testers |
-| Useful task workflow | Review evidence, confirm owner, accept an undated task into a to-do list; dated tasks also appear in the calendar; completion/edit/undo persist | Will |
+| Useful task workflow | October 20 scripted native checks cover these actions; record a clean end-to-end demo with chat and visual evidence | Bryan, with Will |
 | Narrow cross-meeting continuity | On a frozen sequence, create one commitment, update its deadline, explicitly complete it, leave unmentioned tasks unchanged, and send ambiguous matches to review; retain evidence/audit history | Will, Bryan evaluates |
 | Grounded project chat | Supported answers cite the correct meeting/time; unsupported questions refuse; meeting/project scopes remain isolated | Bryan and Will |
 | Follow-through proof | Demonstrate the current reminder export plus a bounded reminder lifecycle test: schedule, reschedule, complete/cancel, and retry without duplicate delivery | Will, Bryan checks |
 | Measured AI behavior | Reuse Milestone 2 regressions; compare independent extraction and reconciliation on identical sequence inputs; dense-only versus hybrid retrieval on identical questions/settings | Bryan |
 | Reviewed dataset | Freeze inputs, speaker/account mapping, task-state labels, questions, timestamps, provenance, and second-reviewer disagreements/adjudication | Guadalupe, second team reviewer |
-| External alpha feedback | Verify tester sign-in/access, provide a repeatable walkthrough, record observed failures and feedback; confirm course-required participant count from rubric | Team |
+| External alpha feedback | Verify tester sign-in/access, provide a repeatable walkthrough, record observed failures and feedback; confirm any additional tester requirement with teaching staff | Team |
 | Submission evidence | Exact commit/configuration, tests, metrics with denominators, error analysis, demo, Model/System Cards, and member extension write-ups | Team |
 
 These targets define what to shoot for, not completed commitments. If a target is not implemented and accepted, report the limitation explicitly. Cross-meeting continuity and follow-through are central product gaps, not optional polish that can silently disappear from the report. The existing similarity flag is not reconciliation; one-time Reminders export is not automatic follow-up.
@@ -85,7 +99,7 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 
 ## Stage 1: establish a trustworthy baseline
 
-**Aim: October 10-13. Proposed leads: Guadalupe for labels, Bryan for baseline, Will for native inspection.**
+**Baseline work remaining; original October 10-13 aim elapsed. Proposed leads: Guadalupe for labels, Bryan for baseline, Will for native inspection.**
 
 - [ ] Inspect TS3005a in the app: transcript, summary, evidence, candidates, owner labels, and date handling. Record failures before making fixes.
 - [ ] Inventory reproducible Milestone 2 fixtures, expected outputs, extraction prompts/settings, and saved results. Preserve historical results.
@@ -93,27 +107,30 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - [ ] Have a second reviewer check the ledger and record adjudication. Verify corpus dates before interpreting relative deadlines; current app dates are import dates.
 - [ ] Map corpus speakers explicitly to consenting test accounts. Do not describe this fixture mapping as voice recognition.
 - [ ] Freeze supported, unsupported, meeting-scope, and cross-project RAG questions with expected sources.
-- [ ] Record corpus gaps. Add a clearly labeled scripted sequence for deadline changes/completion if AMI does not contain them.
+- [x] Prepare and execute a separate personal scripted sequence for deadline changes/completion; preserve ASR/date/completion failures and manual actions.
+- [ ] Review AMI coverage and record which sequence cases actually have natural source evidence.
 - [ ] Run the independent-meeting baseline on frozen inputs and save raw outputs/configuration.
 
 **Gate:** Inputs and reviewed expectations are versioned and reproducible. Every intended acceptance case has evidence or is explicitly assigned to a scripted fixture. No new comparison is based on incompatible historical scores.
 
 ## Stage 2: complete the first native task loop
 
-**Aim: October 13-16. Proposed lead: Will; Bryan verifies.**
+**Partial acceptance completed October 20; remaining evidence below. Proposed lead: Will; Bryan verifies.**
 
-- [ ] Reproduce review/assignment/calendar behavior with one supported candidate in the app.
-- [x] Implement an accepted-task to-do view that includes undated work; retain dated calendar placement. Native acceptance gate remains open.
-- [x] Define owner mapping and confirmation behavior. Names remain suggestions until confirmed; account mapping is explicit and deadlines optional. Native acceptance remains open.
-- [ ] Verify approval, owner selection, date editing, completion, undo, and refresh/relaunch persistence.
+- [x] Reproduce review/assignment/calendar behavior on the personal scripted inputs; C/D manual dates and approval verified October 20.
+- [x] Implement accepted To-do including undated work and dated Calendar placement; both observed October 20. Broader alpha acceptance remains open.
+- [x] Define owner mapping/confirmation and exercise account mapping on personal recordings. This does not establish voice recognition quality or a second user's access.
+- [x] Verify manual approval/date edit, confirmed owner, completion/Undo, and relaunch persistence on the October 20 scripted run.
+- [ ] Record the clean end-to-end screen demo including actual chat answers/citations; previous A was already auto-approved.
 - [ ] Verify project invitations and a non-member's access denial using separate accounts.
-- [ ] Fix the earliest blocking UI/API failure, add a meaningful regression check, and repeat the same native action.
+- [x] Recover D/E processing after reproducing the CLI failure; add executable-selection regressions and retry original recordings.
+- [x] Simplify settings to Done-save and verify native persistence/history refresh. Forced partial-save/network failure remains untested.
 
 **Gate:** A real uploaded meeting produces an evidence-reviewed assigned task, visible in the appropriate user's to-do view and calendar when dated. State changes persist. Record screenshots, commit, backend settings, and actual results in the [walkthrough](../evidence/demo_walkthrough.md).
 
 ## Stage 3: implement bounded continuity and follow-through
 
-**Aim: October 16-20. Proposed lead: Will; Bryan evaluates; Guadalupe reviews evidence.**
+**Partial scripted checks completed; automatic continuity/reminders remain open. Proposed lead: Will; Bryan evaluates; Guadalupe reviews evidence.**
 
 - [ ] Start with failing tests for a new commitment, duplicate mention, supported deadline update, explicit completion, ambiguous match, and unmentioned task remaining unchanged.
 - [x] Implement reviewed reconciliation with stable identity and evidence/audit history. Scripted native evidence exists; real-sequence acceptance remains open.
@@ -135,7 +152,8 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - [ ] Compare dense-only and hybrid retrieval on identical questions, corpus, K, prompt, and answer model.
 - [ ] Measure retrieval Recall@K, answer correctness, citation support, refusal/isolation errors, latency, tokens, and estimated cost.
 - [ ] Review representative successes/failures and disagreements. Do not treat a valid quotation as sufficient answer support.
-- [ ] Run audio-to-app tests separately from transcript-only comparisons to expose ASR/persistence/UI errors.
+- [x] Run separate personal audio-to-app checks; October 20 evidence records ASR/date and missing completion problems.
+- [ ] Score frozen model outputs separately from manual workflow outcomes; complete human audio/transcript checks where claiming audio accuracy.
 - [ ] Disclose prior IS1009a/ES2004a ASR exposure; select fresh data before claiming untouched held-out evaluation.
 
 **Gate:** Saved inputs/outputs and exact configuration reproduce the reported comparisons. Findings include failures and limits, not only favorable examples.
@@ -149,7 +167,7 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - [ ] Verify Google sign-in for an external tester account; identify any Google audience/test-user restrictions before inviting testers.
 - [ ] Provide a reachable backend during the agreed test window. A laptop tmux session is not always-on hosting or automatic API failover.
 - [ ] Run the native walkthrough: upload, inspect, assign/review, to-do/calendar, reminders, later update/completion, cited answer, refusal, isolation, relaunch, and purge.
-- [ ] Record tester feedback, task success/failure, and fixes. Confirm required tester count from the course rubric.
+- [ ] Record tester feedback, task success/failure, and fixes. No two-person outside-tester requirement appears in the inspected M3 rubric; confirm separate instructor guidance.
 - [ ] Verify clean installation and deletion of both private audio and associated database records.
 
 **Gate:** Documented native evidence and external feedback support the alpha claims. Worker recovery, manual endpoint switching, and automatic routing are reported separately.
@@ -194,7 +212,7 @@ old inventory. Its unchecked items are not automatically new milestone gates:
 | Work | Boundary and reason |
 | --- | --- |
 | Broad automatic task assignment and follow-up | Expand beyond the bounded evaluated path only after measuring harmful assignments/updates and defining user controls |
-| Direct Zoom/Teams/calendar ingestion | Current alpha imports recordings manually; provider ingestion needs separate permissions, consent, retries, and provenance |
+| Direct Zoom/Teams/calendar ingestion | Manual audio recording/upload and Zoom summary import exist; automated provider ingestion still needs account permissions, consent, retries, and provenance |
 | Production availability | Always-on hosting, health-based API routing, automatic restarts, monitoring, and operational ownership; tmux cannot keep a sleeping laptop available |
 | Wider continuity and personalization | More projects, speakers, ambiguous references, multilingual recordings, and longer histories require broader labeled evaluation |
 | Speaker recognition calibration | Separate calibration/evaluation audio and measure false matches/abstention before relying on names for automatic ownership |
