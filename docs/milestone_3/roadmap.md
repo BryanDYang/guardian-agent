@@ -10,7 +10,8 @@ remains authoritative. This is the single current planning document. Use the
 
 ## Current status and next action
 
-**Evaluation baseline: `4048fbb` plus the runner/fixture in this update.** Implementation tested October 20 was committed
+**Latest evaluation/evidence commit: `af3a4b8`.** The experiment used `4048fbb`
+plus the recorded runner/fixture changes. Implementation tested October 20 was committed
 as `1d09bc6`; later commits added evidence and review instructions. This is a
 working alpha with partial acceptance evidence, not a completed Milestone 3.
 
@@ -49,7 +50,7 @@ reviewer count.
 | 1 | Fill [Bryan's worksheet](human_review.md#bryans-judgments) using existing source/output pairs. Another reviewer completes the same sample before seeing Bryan's judgments. Preserve disagreements and freeze adjudicated labels before tuning. | Bryan; Will or Guadalupe independently |
 | 2 | Follow the [clean app journey script](follow_through.md#clean-app-journey-screen-recording): fresh project, recording/upload, transcript/evidence, confirmed owner, manual approval/date, captured follow-up, Tasks/Calendar, supported and unsupported cited chat, relaunch. Save actual answers and video references in the walkthrough using [result.md](../evidence/result.md). | Bryan records; assistant assists and documents |
 | 3 | Review the 14-question AMI diagnostic and its actual answers/sources. Retrieval ranking comparison is executed; validate labels, score semantic correctness/entailment, preserve model-call failures, and expand scope/isolation coverage. The eight extraction examples alone are not a RAG evaluation. | Bryan with assistant execution; human reviewer validates labels |
-| 4 | Measure 1-3 representative workloads: observed latency, token usage and estimated cost with assumptions. Report subscription-backed inference billing limits honestly; do not invent a per-call charge. | Bryan with assistant execution |
+| 4 | Review the measured retrieval/source-loading timings and two completed-call workload cohorts in the report. Retain three 180-second timeouts and unknown failed-call usage. Broaden or rerun after diagnosing the runtime issue; mobile end-to-end latency is still unmeasured. | Bryan with assistant execution |
 | 5 | Update the report around measured behavior, configuration/decision log, errors, limitations, Model/System Cards, and each member's substantive extension and metrics. Verify run instructions, run final checks, export/review the single PDF, and complete individual reflections. | Team |
 
 **Product gaps, separate from submission requirements:** automatic date resolution,
@@ -151,7 +152,8 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - [ ] Measure state accuracy, duplicate creation, incorrect assignments/updates, unsupported completions, and unresolved cases with denominators.
 - [x] Run dense-only versus hybrid source-recovery comparison on 14 frozen development questions at K=8; report target-specific metrics, not exhaustive Recall@K.
 - [ ] Complete human label/answer/citation review and live answer-run coverage before claiming semantic accuracy or a production winner.
-- [ ] Measure retrieval Recall@K, answer correctness, citation support, refusal/isolation errors, latency, tokens, and estimated cost.
+- [x] Record component latency, completed-call token usage and dated hypothetical API-equivalent cost assumptions, with failed/interrupted coverage disclosed.
+- [ ] Complete human semantic answer/citation scoring, supported/unsupported and isolation coverage. Target Hit@K is not exhaustive Recall@K; failed-call cost and native end-to-end latency remain unknown.
 - [ ] Review representative successes/failures and disagreements. Do not treat a valid quotation as sufficient answer support.
 - [x] Run separate personal audio-to-app checks; October 20 evidence records ASR/date and missing completion problems.
 - [ ] Score frozen model outputs separately from manual workflow outcomes; complete human audio/transcript checks where claiming audio accuracy.

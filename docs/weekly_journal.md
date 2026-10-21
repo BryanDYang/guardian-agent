@@ -49,9 +49,9 @@
 ## What got done
 
 - Met with the professor and TA twice to discuss the revised project direction and received approval to proceed with a research meeting follow-through assistant.
-- Updated the [Milestone 1 proposal](milestone_1/project_proposal.md) from the team's Word submission draft, covering the project charter, MVP, architecture, evaluation plan, responsible use, roles, timeline, and $75 planning budget.
+- Updated the [Milestone 1 proposal](archive/milestone_1/project_proposal.md) from the team's Word submission draft, covering the project charter, MVP, architecture, evaluation plan, responsible use, roles, timeline, and $75 planning budget.
 - Clarified that proactive follow-through is a required MVP capability based on the professor discussion. Added scheduled reminders for outstanding commitments, user-configured delivery, cancellation and rescheduling after task changes, and corresponding evaluation and demo requirements.
-- Revised the six-slide [pitch deck](milestone_1/pitch_deck.pptx) to emphasize follow-through between meetings, show reminder and completion examples, and align its scope with the proposal.
+- Revised the six-slide [pitch deck (archived PDF)](archive/milestone_1/pitch_deck.pdf) to emphasize follow-through between meetings, show reminder and completion examples, and align its scope with the proposal.
 - Drafted the Milestone 2 evaluation-harness checkpoint with task owners: one synthetic three-meeting sequence, expected task states, an independent-meeting extraction baseline, and an offline scorer checked against correct and deliberately incorrect outputs.
 - Set up the repository with an installable Python CLI scaffold, locked dependencies, setup and contribution documentation, and a GitHub Actions smoke-test workflow. The application remains a scaffold; meeting processing and reminder delivery are not implemented yet.
 - Reviewed the professor's `agent-sandbox` as a reference for packaging, dependency management, and offline testing, and documented its provenance. It is a simulation framework, separate from the meeting-artifact pipeline.
@@ -77,7 +77,7 @@
 
 ## What got done
 
-- Compared the [submitted Milestone 1 proposal](milestone_1/milestone1_proposal.pdf), [pitch deck](milestone_1/pitch_deck.pdf), and current repository against the [Milestone 2 requirements](<milestone_2/Milestone 2.pdf>) for the AI Engineering track.
+- Compared the [submitted Milestone 1 proposal](archive/milestone_1/milestone1_proposal.pdf), [pitch deck](archive/milestone_1/pitch_deck.pdf), and current repository against the Milestone 2 requirements (local reference: `contexts/milestone_2/Milestone 2.pdf`) for the AI Engineering track.
 - Identified the remaining graded deliverables: assembled data and a Data Card (40 points), plus a runnable evaluation harness, qualitative rubric, baselines, measured results, and initial error analysis (60 points).
 - Confirmed that the repository currently provides a CLI scaffold and smoke tests. Meeting extraction, labeled evaluation fixtures, scoring, and baseline results remain unimplemented.
 - Identified inconsistencies between the Milestone 1 artifacts: the submitted proposal specifies a native iOS client and PostgreSQL/pgvector, while the Markdown proposal and pitch deck describe a CLI/local service with SQLite. The submitted proposal also mentions SQLite in its budget. These choices need to be reconciled in Milestone 2.
@@ -353,26 +353,8 @@ review, reminder lifecycle, external testers, and paired evaluations. Zoom
 remains manual summary import; automatic account integration has not been
 validated.
 
-## Team coordination
 
-Bryan may miss the Tuesday, October 20 check-in with Derrick because of an urgent
-work meeting. Ask teammates to share Derrick's feedback and action items so the
-recording tests and Milestone 3 priorities can be adjusted accordingly.
-
-### Short Slack draft
-
-Draft only; not sent. Share after this journal update is pushed or otherwise
-available to the team.
-
-> Hi team! I may miss tomorrow's check-in with Derrick because of an urgent work meeting. I've pushed the preliminary in-app recording, manual Zoom summary import, and updated logo. The Week 9 journal is updated, and I plan to record the follow-through tests this week and document the results for Milestone 3. Please share Derrick's feedback and any action items afterward. Thanks!
-
-### October 21 independent-review request draft
-
-Draft only; not sent.
-
-> Hi Will and Guadalupe! The M3 follow-through results are documented. Could one of you independently review the eight short cases in `docs/milestone_3/human_review.md`? Copy the blank worksheet and review the source/output pairs before reading my judgments or the walkthrough conclusions. Please flag unsupported or missing information and return your notes before we compare. I’ll record the clean app demo next. Let me know who can take this. Thanks!
-
-### October 21 retrieval comparison and performance evidence
+## October 21 retrieval comparison and performance evidence
 
 Prepared and ran the AMI development retrieval diagnostic on Bryan's behalf:
 14 frozen assistant-proposed questions, 219 indexed chunks, K=8, identical query
@@ -395,3 +377,45 @@ Validation for the final evaluation change: all 319 backend tests passed against
 isolated PostgreSQL; Ruff lint/format and diff checks passed. Two existing
 dependency deprecation warnings remain. No iOS code changed or new simulator
 build was required for this evaluation-only update.
+
+**Reproducible checkpoint:** committed and pushed as `af3a4b8`. The
+[protocol](../tests/fixtures/rag/README.md) explains the read-only runner,
+source-target metric, configuration, AMI attribution, and partial-run limits.
+The [completed answer packet](milestone_3/human_review.md#completed-rag-answer-packet)
+lets reviewers read the nine actual answers beside their cited source text;
+no human judgments have been filled by the assistant.
+
+**Reflection and decision:** designated-target ranking and answer usefulness are
+different measures. Dense missed the designated price decision but answered
+from an alternative source; hybrid retrieved the LCD decision but its quote
+format caused rejection and refusal. We kept the production retrieval choice
+unchanged. Model timeouts remain an operational finding, not proof that credits
+were exhausted or that one retrieval method causes slow inference.
+
+**Next steps:** Bryan and another reviewer complete the existing personal-output
+and RAG judgments, preserving initial disagreements. Investigate CLI timeouts
+before a separately labeled answer rerun; both unsupported answer pairs remain
+unrun. Record the clean native demo, get team-confirmed extension contributions,
+and finish the submission PDF. Existing audio can be reused for human review;
+no re-recording is needed just to fill the worksheets.
+
+
+## Team coordination
+
+Bryan reported emailing Derrick to request rescheduling the check-in to the
+week of November 2 after the team agreed that week would work. Derrick's
+acceptance/new meeting time has not been recorded here. Earlier absence-message
+drafts below are historical; they are not the current testing status.
+
+### Short Slack draft
+
+Draft only; not sent. Share after this journal update is pushed or otherwise
+available to the team.
+
+> Hi team! I may miss tomorrow's check-in with Derrick because of an urgent work meeting. I've pushed the preliminary in-app recording, manual Zoom summary import, and updated logo. The Week 9 journal is updated, and I plan to record the follow-through tests this week and document the results for Milestone 3. Please share Derrick's feedback and any action items afterward. Thanks!
+
+### October 21 independent-review request draft
+
+Draft only; not sent.
+
+> Hi Will and Guadalupe! The M3 follow-through results are documented. Could one of you independently review the eight short cases in `docs/milestone_3/human_review.md`? Copy the blank worksheet and review the source/output pairs before reading my judgments or the walkthrough conclusions. Please flag unsupported or missing information and return your notes before we compare. I’ll record the clean app demo next. Let me know who can take this. Thanks!

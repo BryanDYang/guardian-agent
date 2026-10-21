@@ -2,13 +2,16 @@
 
 **Your next step:** fill [Bryan’s human-review worksheet](milestone_3/human_review.md#bryans-judgments),
 then follow the [clean app recording script](milestone_3/follow_through.md#clean-app-journey-screen-recording).
-For prior evidence, review the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+Latest evidence: [October 21 retrieval comparison and partial live answers](evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run),
+plus the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+For answer review, use the [nine completed answers with source text](milestone_3/human_review.md#completed-rag-answer-packet).
+The retrieval run completed; answer coverage and human judgments remain partial.
 Capture delivery passed selected cases; real inbox delivery and automatic
 date/completion handling still need work.
 
 After that, use the [Milestone 3 roadmap](milestone_3/roadmap.md) to choose the
 next task. The [weekly journal](weekly_journal.md) records progress and contains
-the Week 8 group-message draft. Each document below has one responsibility.
+the Week 8/9 group-message drafts. Each document below has one responsibility.
 
 | Question | Authoritative document |
 | --- | --- |

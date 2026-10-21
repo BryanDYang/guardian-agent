@@ -232,9 +232,11 @@ adjudicated/date. Preserve initial judgments. Freeze agreed labels before tuning
 or evaluating a new version. Report counts/denominators and policy decisions;
 do not combine manual workflow passes with model extraction accuracy.
 
-## Chat-answer review
+## Native demo chat-answer review
 
-Status: **not run; no answer outputs captured in this packet**. Use the clean-demo
+Status: **not run for the clean native demo**. The separate AMI service-level
+run captured nine answers in the [completed RAG packet](#completed-rag-answer-packet);
+those do not establish execution of the app demo. Use the clean-demo
 script in [follow-through](follow_through.md#clean-app-journey-screen-recording).
 Save the exact question, project/meeting scope, answer, citation text/timestamp,
 and source excerpt in the walkthrough when executed. Then review answer

@@ -218,12 +218,17 @@ The architecture intentionally separates audio recognition, structured extractio
 
 ### 4.1 Automated tests
 
-Latest recorded run, October 17: all **311 backend tests** passed on disposable
-PostgreSQL, with Ruff lint/format and the simulator build passing. The suite
-reported two dependency deprecation warnings. See [follow-through verification](follow_through.md#verification)
-and commits `88f517a`, `ff58d1c`, and `0d01cf4`. No new test suite or model-quality
-evaluation was run during the October 18 documentation update. Final submission
-checks still need to be repeated on the submission commit.
+Latest recorded run, October 21: all **319 backend tests** passed against
+isolated PostgreSQL; Ruff lint/format and diff checks passed. Added coverage
+checks the evaluation baseline's project/meeting/dismissal filters and retention
+of interrupted/not-run statuses. Two existing dependency deprecation warnings
+remain. The implementation and results are committed as `af3a4b8`.
+
+The signed simulator build last passed October 20. No iOS code changed in the
+October 21 evaluation update, so no new build was run. These engineering checks
+are separate from the partial live-model experiment and pending human quality
+review. See the [dated evaluation evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
+Repeat required checks on the final submission commit.
 
 The chat implementation report records 116 passing tests against PostgreSQL 16 and pgvector, including 25 tests added for chat and retrieval. These tests cover chunk construction, citation verification, refusal rules, project isolation, meeting scoping, task-state freshness, dismissed-task exclusion, hybrid ranking, history, model failure behavior, purge behavior, and index replacement after retry.
 
