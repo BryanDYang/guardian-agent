@@ -1,9 +1,9 @@
 # Milestone 3 human review worksheet
 
 Prepared October 21, 2026. Packet: `personal-2026-10-20-v1`.
-Human judgment status: **not reviewed**. Assistant app testing is already
+Human judgment status: **Bryan reviewed the eight personal cases on October 22, 2026; independent review and adjudication pending**. Assistant app testing is already
 [documented in the walkthrough](../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed);
-its results are separate from the blank human judgments below. Source: the October 20 before-action snapshot,
+its results are separate from the human judgments below. Source: the October 20 before-action snapshot,
 collected before the assistant's subsequent manual edits. A had already been
 auto-approved. Speaker names/account mappings were supplied by the tester;
 this packet cannot establish automatic speaker identification.
@@ -14,12 +14,33 @@ Bryan: fill the Bryan table below in this Markdown file, or send your rows in
 chat and have them transcribed here verbatim. No code or app approvals required.
 A blank cell means not reviewed, never pass. Date and sign your completed review.
 
-Will or Guadalupe: copy only this worksheet into your own local file before
-reviewing. Fill the independent table without reading Bryan's answers or the
-walkthrough's conclusions. Return your completed copy privately to Bryan, then
-we can merge both tables and record disagreements here. Do not overwrite one
-another's table. Prior exposure to these outputs/results must be disclosed; do
-not describe an informed review as blinded or fully independent.
+### Independent review without audio
+
+Will or Guadalupe: use the [transcript-only reviewer packet](independent_review.md).
+It contains the eight frozen source transcripts, original task outputs, and a
+blank judgment table, without Bryan's judgments. Bryan should share that file
+alone rather than this completed worksheet or the walkthrough's conclusions.
+
+The recordings are in Bryan's account and are not available to this reviewer.
+No access to Bryan's account, new recordings, or app actions are required.
+Review whether each original task output is supported by its saved transcript.
+Mark **Audio checked? = Not checked** for every case. Bryan's own audio check
+does not count as the second reviewer's audio verification.
+
+Complete the packet before reading Bryan's judgments or discussing conclusions.
+Record reviewer name, date, and any prior exposure. Return the completed packet
+to Bryan, who can transcribe the judgments into the independent table below,
+preserving the original completed packet. If the reviewer has already seen
+Bryan's answers, disclose that exposure rather than claiming an independent
+first assessment.
+
+This review assesses transcript-to-task extraction quality. It does not verify
+transcription accuracy, speaker identity, or successful app state updates.
+Treat owner mappings as tester-supplied context. Where the packet lacks task
+lifecycle evidence, record uncertainty about reconciliation or completion.
+After both reviews, compare extraction judgments and record disagreements and
+agreed corrections below. Keep audio-check results separate because only Bryan
+had access to the recordings.
 
 Start with the source transcript, then read the task output. For each case:
 
@@ -36,15 +57,15 @@ Start with the source transcript, then read the task output. For each case:
 These are eight short, scripted, single-speaker examples. They are a starter
 review set, not a representative natural-meeting benchmark, calibrated approval
 accuracy estimate, or replacement for the AMI sequence and RAG evaluations.
-No reviewer judgments or gold labels have been filled by the assistant.
+Bryan approved the proposed judgments in chat and confirmed that he checked the audio for all eight cases. The assistant transcribed those judgments below; independent review remains pending.
 
 ## Source and observed output
 
 All recordings have meeting date October 20, 2026. The following are stored
 transcripts and task fields, not claims about the intended spoken wording.
 `null` means missing. Owner labels reflect tester mapping. The original
-recordings can be located in the app using the meeting IDs below; they are not
-included in Git. Any later audio-based correction belongs in reviewer notes,
+recordings are available in Bryan's account using the meeting IDs below; they
+are not included in Git or required for the transcript-only independent review. Any later audio-based correction belongs in reviewer notes,
 not silently substituted into this frozen transcript.
 
 ### A
@@ -194,35 +215,41 @@ Observed task fields:
 
 ## Bryan's judgments
 
-Reviewer: Bryan Yang. Review date: **not entered**. Prior exposure: tester and
+Reviewer: Bryan Yang. Review date: **October 22, 2026**. Prior exposure: tester and
 prior discussion of the run; this is an informed review, not blinded review.
+Judgments proposed in chat, approved by Bryan, and transcribed by the assistant.
+Bryan confirmed that he checked the audio for all eight cases.
 
 | Case | Source-supported action/owner/date/state | Support judgment | Missing/misleading details and corrected output | Audio checked? |
 | --- | --- | --- | --- | --- |
-| A | | | | |
-| B-positive | | | | |
-| B-negative | | | | |
-| C | | | | |
-| D | | | | |
-| E | | | | |
-| F1 | | | | |
-| F2 | | | | |
+| A | Prepare the evaluation checklist. Owner: Bryan if confirmed by speaker mapping. No deadline stated. Firm commitment. | Supported, assuming owner mapping is correct. | None observed in the displayed fields. | Yes; transcript matches |
+| B-positive | Share the recording. Owner: Bryan if confirmed by speaker mapping. No deadline stated. Firm commitment. | Supported, assuming owner mapping is correct. | None observed in the displayed fields. | Yes; transcript matches |
+| B-negative | Preparing the budget spreadsheet is tentative and conditional on having time. No firm commitment or deadline. | Partly supported. | The wording preserves uncertainty, but storing it as a task could imply a commitment. Keep it as a tentative suggestion rather than an active committed task. Leaving the owner unknown is reasonable without confirmed mapping. | Yes; transcript matches |
+| C | Send the project summary by October 21, 2026. Owner: the speaker, Bryan if mapping is confirmed. Firm commitment. | Partly supported. | Task and raw deadline are captured. Owner and structured calendar date are missing. Set the date to `2026-10-21`; assign Bryan only with confirmed mapping. | Yes; transcript matches |
+| D | Upload the presentation slides tomorrow. Owner: Bryan if mapping is confirmed. With the recorded meeting date of October 20, 2026, tomorrow is October 21. | Partly supported. | Task, owner, and raw deadline are captured, but the structured calendar date is missing. Set it to `2026-10-21` after confirming the meeting date. | Yes; transcript matches |
+| E | Review the deployment instructions. Owner: Bryan if confirmed by speaker mapping. No deadline stated. Firm commitment. | Supported, assuming owner mapping is correct. | None observed in the displayed fields. | Yes; transcript matches |
+| F1 | Refers to the same project-summary task and appears to revise its deadline to October 3, 2026. The transcript is garbled, so the intended change needs confirmation. | Partly supported. | The output captures the task reference but omits the apparent revised deadline. If the intended change is confirmed, update C's existing task instead of creating a duplicate. October 3 precedes the meeting date, so do not silently substitute another date. | Yes; transcript matches |
+| F2 | The speaker reports that the project summary is complete. This should affect the existing task from C/F1. | Uncertain for the state update. | An empty extraction is reasonable because there is no new commitment. However, `[]` does not show whether the existing task was marked complete. Check its saved lifecycle state before judging completion handling. | Yes; transcript matches |
 
 ## Independent review
 
 Reviewer: **not assigned**. Date: **not entered**. Prior exposure: **not entered**.
-Complete independently before discussing judgments.
+Use the [transcript-only reviewer packet](independent_review.md) before reading
+Bryan's judgments or discussing conclusions. Audio is unavailable to this
+reviewer; enter **Not checked** in every audio cell. Blank judgment cells remain
+not reviewed. Copy completed judgments here after the reviewer returns the packet.
 
-| Case | Source-supported action/owner/date/state | Support judgment | Missing/misleading details and corrected output | Audio checked? |
-| --- | --- | --- | --- | --- |
-| A | | | | |
-| B-positive | | | | |
-| B-negative | | | | |
-| C | | | | |
-| D | | | | |
-| E | | | | |
-| F1 | | | | |
-| F2 | | | | |
+| Case       | Source-supported action/owner/date/state | Support judgment | Missing/misleading details and corrected output | Audio checked? |
+| ---------- | ---------------------------------------- | ---------------- | ----------------------------------------------- | -------------- |
+| A          |                                          |                  |                                                 | Not checked |
+| B-positive |                                          |                  |                                                 | Not checked |
+| B-negative |                                          |                  |                                                 | Not checked |
+| C          |                                          |                  |                                                 | Not checked |
+| D          |                                          |                  |                                                 | Not checked |
+| E          |                                          |                  |                                                 | Not checked |
+| F1         |                                          |                  |                                                 | Not checked |
+| F2         |                                          |                  |                                                 | Not checked |
+
 
 ## Adjudication and scoring
 
@@ -265,21 +292,21 @@ Reviewer / date / prior exposure: **not entered**. Fill separately before
 comparing reviews. These columns are for human judgments, not assistant scores.
 
 | Question ID | Proposed label supported by source? | Dense answer correctness / citation support | Hybrid answer correctness / citation support | Missing facts / corrected label / uncertainty |
-| --- | --- | --- | --- | --- |
-| price | | | | |
-| phases | | | | |
-| whiteboard | | | | |
-| style | | | | |
-| lcd | | | | |
-| power | | | | |
-| teletext-b | | | | |
-| rubber | | | | |
-| curve | | | | |
-| removed | | | | |
-| teletext-d | | | | |
-| score | | | | |
-| unicorn | | | | |
-| mars | | | | |
+| ----------- | ----------------------------------- | ------------------------------------------- | -------------------------------------------- | --------------------------------------------- |
+| price       |                                     |                                             |                                              |                                               |
+| phases      |                                     |                                             |                                              |                                               |
+| whiteboard  |                                     |                                             |                                              |                                               |
+| style       |                                     |                                             |                                              |                                               |
+| lcd         |                                     |                                             |                                              |                                               |
+| power       |                                     |                                             |                                              |                                               |
+| teletext-b  |                                     |                                             |                                              |                                               |
+| rubber      |                                     |                                             |                                              |                                               |
+| curve       |                                     |                                             |                                              |                                               |
+| removed     |                                     |                                             |                                              |                                               |
+| teletext-d  |                                     |                                             |                                              |                                               |
+| score       |                                     |                                             |                                              |                                               |
+| unicorn     |                                     |                                             |                                              |                                               |
+| mars        |                                     |                                             |                                              |                                               |
 
 The October 21 answer run is partial: 9 completed answers, 3 timeouts, 1
 interrupted request, 15 not run. Review only actual completed answers; mark

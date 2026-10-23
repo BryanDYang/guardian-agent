@@ -5,6 +5,8 @@ then rehearse the [research-team demo story](evidence/demo_walkthrough.md#milest
 Use the [detailed acceptance script](milestone_3/follow_through.md#clean-app-journey-screen-recording) for the separate manual-approval check.
 Latest evidence: [October 21 retrieval comparison and partial live answers](evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run),
 plus the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+For the second reviewer, share the [transcript-only packet](milestone_3/independent_review.md):
+no account access or recordings required; audio is marked Not checked.
 For answer review, use the [nine completed answers with source text](milestone_3/human_review.md#completed-rag-answer-packet).
 The retrieval run completed; answer coverage and human judgments remain partial.
 Capture delivery passed selected cases; real inbox delivery and automatic
