@@ -265,7 +265,7 @@ Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`,
 
 # Week 9 (October 19-25, 2026)
 
-## What got done so far
+## What got done
 
 - **October 19:** Committed and pushed the preliminary implementation to `main`
   in [`afeaded`](https://github.com/BryanDYang/guardian-agent/commit/afeaded).
@@ -308,7 +308,7 @@ call, not the full pipeline or a quality benchmark. Later rechecks hit provider
 **HTTP 429 (Too Many Requests)** despite a signed-in CLI; live processing needs
 rechecking after the rate limit clears. No real follow-up email was sent.
 
-## Planned work this week
+## October 20 processing and native acceptance
 
 **October 20 processing update:** Diagnosed the failed personal D/E recordings
 as Codex extraction failures after successful transcription/diarization. An
@@ -400,6 +400,40 @@ and finish the submission PDF. Existing audio can be reused for human review;
 no re-recording is needed just to fill the worksheets.
 
 
+## October 22-23 human review and demo preparation
+
+- **Bryan, October 22:** Completed judgments for all eight personal source/output
+  cases and confirmed listening to their audio. The assistant transcribed the
+  approved judgments into the [human-review worksheet](milestone_3/human_review.md#bryans-judgments).
+  This was an informed review with prior exposure to the tests, not a blinded
+  assessment. The frozen F1 transcript still says October 3; the earlier
+  walkthrough records October 23 as the tester-confirmed intended date. That
+  discrepancy remains visible rather than silently changing the source.
+- **Guadalupe, October 23:** Added transcript-only judgments for all eight cases,
+  merged through [PR #20](https://github.com/BryanDYang/guardian-agent/pull/20)
+  in `93f540e`. Audio was **Not checked** for every case. Prior exposure has not
+  been entered, so independence/blinding is not yet established by the record.
+- Both reviewers' support categories align across the eight cases: A,
+  B-positive, and E are Supported; B-negative, C, D, and F1 are Partly supported;
+  F2 is Uncertain about the existing task's state update. This is a descriptive
+  comparison of the recorded categories, not an adjudicated accuracy score.
+  Formal adjudication and agreed labels remain **not run**.
+- The reviews identify tentative-task handling, missing structured dates and
+  owners, omitted deadline-change evidence, and missing completion-state
+  evidence as priorities. Owner mappings are tester supplied. These eight
+  scripted cases do not establish natural-meeting quality or speaker recognition.
+- Prepared the [research-team product demo narrative](evidence/demo_walkthrough.md#milestone-3-product-demo-a-research-team-remembers-and-follows-through)
+  in `537d468`, alongside the separate clean manual-approval acceptance script.
+  Preparing the story does not establish that either demo has been recorded.
+
+The October 21 statements above that human judgments were pending describe that
+checkpoint. Personal-case judgments now exist from both reviewers; adjudication,
+AMI sequence labels, and RAG answer/citation judgments remain open. The worksheet's
+opening status and the roadmap/report still contain older pending-review wording
+that needs reconciliation before submission. No new runtime test run, clean demo,
+real inbox delivery, or completed submission is established by these review commits.
+
+
 ## Team coordination
 
 Bryan reported emailing Derrick to request rescheduling the check-in to the
@@ -419,3 +453,63 @@ available to the team.
 Draft only; not sent.
 
 > Hi Will and Guadalupe! The M3 follow-through results are documented. Could one of you independently review the eight short cases in `docs/milestone_3/human_review.md`? Copy the blank worksheet and review the source/output pairs before reading my judgments or the walkthrough conclusions. Please flag unsupported or missing information and return your notes before we compare. I’ll record the clean app demo next. Let me know who can take this. Thanks!
+
+
+# Week 10 (October 26-November 1, 2026)
+
+## Starting point
+
+Prepared October 24 from the Week 9 checkpoint; Week 10 work has not yet been
+recorded. The latest repository checkpoint is `93f540e`. Personal audio acceptance
+and the retrieval comparison have partial evidence, and both personal-case review
+tables are filled. Adjudication, RAG human judgments, a clean recorded native
+journey, and final submission assembly remain open. Use the
+[Milestone 3 roadmap](milestone_3/roadmap.md) for scope and acceptance; the list
+below carries forward weekly priorities rather than defining new milestone gates.
+
+## Planned next steps
+
+1. **Team:** Confirm the Milestone 3 deadline in Canvas. The roadmap lists an
+   October 26 target, not a verified deadline. Reconcile stale review-status
+   wording in the worksheet, documentation index, roadmap, and submission draft;
+   confirm each member's contribution and extension evidence, then assemble and
+   visually review the required submission PDF.
+2. **Bryan and Guadalupe:** Record Guadalupe's prior exposure, compare the eight
+   initial judgments, and document adjudication and agreed corrections without
+   overwriting either review. Keep the F1 audio/transcript discrepancy and
+   transcript-only review limits explicit. Freeze agreed labels before tuning.
+3. **Bryan, with team review:** Review the AMI diagnostic labels and the nine
+   completed RAG answers against their actual sources. Preserve the timeouts,
+   interrupted call, and unrun pairs. Diagnose CLI timeouts before a separately
+   labeled rerun; do not count target recovery as answer accuracy.
+4. **Bryan, with assistant support:** Record a fresh-project native journey using
+   the [clean acceptance script](milestone_3/follow_through.md#clean-app-journey-screen-recording).
+   Capture manual approval, dates/Calendar, captured follow-up, cited chat and
+   refusal, and relaunch with the actual configuration and evidence. Existing A
+   cannot establish clean manual approval. Use the product narrative separately
+   when rehearsing the broader research-team story.
+5. **Team, proposed owners to confirm:** Continue the reviewed AMI sequence and
+   paired continuity evaluation. Prioritize automatic date/completion gaps and
+   the bounded reminder lifecycle according to the roadmap. Live inbox delivery,
+   separate-account access, physical-device acceptance, and two-host recovery
+   require their own observed evidence. Zoom remains manual summary import.
+6. **Team:** Prepare progress, remaining limitations, and questions for the
+   requested check-in during the week of November 2. Derrick's acceptance and
+   exact meeting time still need confirmation.
+
+## What got done
+
+- Not recorded yet. Add dated outcomes, contributors, evidence links, and actual
+  validation results as Week 10 work is completed.
+
+## Blockers and evidence still needed
+
+- Submission timing and member contributions need team confirmation; final
+  report/PDF and demo evidence are not recorded as complete.
+- Review provenance and adjudication remain incomplete. Personal transcript
+  review does not replace AMI sequence labels or RAG semantic review.
+- Live answer coverage is partial because of timeouts/interruption. No new
+  inference run or runtime validation is implied by this journal setup.
+- Real inbox delivery, recurring reminders, automatic date/completion handling,
+  and broader alpha acceptance remain product gaps, with scope and priorities
+  maintained in the roadmap.
