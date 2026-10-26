@@ -9,9 +9,9 @@ Do not overwrite them, reset their tasks, or record their audio again for review
 
 1. Choose the activity: **app workflow test**, **audio/transcript comparison**,
    or **human output review**. They are different evidence. For human judgments
-   use the [existing worksheet](../milestone_3/human_review.md); do not approve
+   use the [existing worksheet](../archive/milestone_3/human_review.md); do not approve
    app tasks just to complete that worksheet.
-2. For an app test, follow the [recording script](../milestone_3/follow_through.md#clean-app-journey-screen-recording).
+2. For an app test, follow the [recording script](../archive/milestone_3/follow_through.md#clean-app-journey-screen-recording).
    Create a fresh project for a fresh run. Keep C/F1/F2 together in order when
    testing that sequence. Use the actual recording date and replace spoken dates.
 3. Copy **Run record** through **Sign-off** below into a new dated section of

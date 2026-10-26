@@ -1,4 +1,4 @@
-> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
 
 The Acoustic Ingestion & Diarization Pipeline converts raw multi-party audio recordings into timestamped, speaker-attributed transcript turns on Apple Silicon hardware. It executes sequentially on the M4 Mac to keep peak unified memory under 10 GB while isolating speakers using voice biometrics and calendar context.
 

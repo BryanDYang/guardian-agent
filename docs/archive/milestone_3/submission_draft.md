@@ -20,7 +20,7 @@ were tested. C/D dates were entered manually. F1's ASR date was October 3 rather
 than the speaker-confirmed October 23, and its candidate omitted the deadline.
 F2 yielded no completion candidate. A was already auto-approved at baseline,
 so it does not count as a clean manual-approval demo. See the
-[run ledger and provenance](../evidence/demo_walkthrough.md#versioned-run-ledger).
+[run ledger and provenance](../../evidence/demo_walkthrough.md#versioned-run-ledger).
 
 The October 20 implementation passed 317 backend tests, Ruff, and a signed
 simulator build. New-project automation defaults are on; recipient opt-out and
@@ -227,7 +227,7 @@ remain. The implementation and results are committed as `af3a4b8`.
 The signed simulator build last passed October 20. No iOS code changed in the
 October 21 evaluation update, so no new build was run. These engineering checks
 are separate from the partial live-model experiment and pending human quality
-review. See the [dated evaluation evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
+review. See the [dated evaluation evidence](../../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
 Repeat required checks on the final submission commit.
 
 The chat implementation report records 116 passing tests against PostgreSQL 16 and pgvector, including 25 tests added for chat and retrieval. These tests cover chunk construction, citation verification, refusal rules, project isolation, meeting scoping, task-state freshness, dismissed-task exclusion, hybrid ranking, history, model failure behavior, purge behavior, and index replacement after retry.
@@ -331,8 +331,8 @@ used another source to answer the values. Therefore target rank alone cannot
 establish a quality winner. Keep production hybrid unchanged pending source-level
 human answer review and a broader frozen set. Sparse-only and chunking ablations
 were not run. The dataset/protocol is in
-[`tests/fixtures/rag/`](../../tests/fixtures/rag/README.md); machine outputs and
-human review status are in the [walkthrough](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
+[`tests/fixtures/rag/`](../../../tests/fixtures/rag/README.md); machine outputs and
+human review status are in the [walkthrough](../../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run).
 
 ### 5.3 Milestone 3 evaluation targets
 
@@ -415,7 +415,7 @@ medians omit failed calls and do not establish typical reliability or a causal
 speed advantage. Dense completed-call median was 108.93 s (N=3), hybrid 4.52 s
 (N=6); these unequal selected samples and observed caching prevent a fair model
 latency conclusion. Human answer/citation judgments remain pending. The precise
-[outputs, timing and failure ledger](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
+[outputs, timing and failure ledger](../../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
 are in the repository.
 
 Pricing assumptions checked October 21: [official OpenAI standard rates](https://developers.openai.com/api/docs/pricing)
@@ -495,7 +495,7 @@ Current limits must be stated clearly:
 
 ## 9. What Remains Before Submission
 
-The [roadmap, scope, and acceptance plan](roadmap.md) defines current targets, execution order, validation gates, and next-phase boundaries. The [implementation checklist](../archive/checklist.md) tracks code; the [native walkthrough](../evidence/demo_walkthrough.md) tracks observed acceptance. Targets are not completed claims.
+The [roadmap, scope, and acceptance plan](roadmap.md) defines current targets, execution order, validation gates, and next-phase boundaries. The [implementation checklist](../checklist.md) tracks code; the [native walkthrough](../../evidence/demo_walkthrough.md) tracks observed acceptance. Targets are not completed claims.
 
 ### Required for a credible Milestone 3 alpha
 
@@ -679,7 +679,7 @@ Primary repository documentation:
 
 The signed-in iOS app created four real AMI projects and uploaded seven recordings: TS3005a-d (one connected dev project), IS1008a (isolation/validation), IS1009a (evaluation candidate), and ES2004a (separate evaluation trial). All uploads were confirmed in shared PostgreSQL job records. At the checkpoint, TS3005a and b had completed processing and other jobs were running or queued. Project-list persistence across app relaunch was observed. The simulator build passed, and Profile was visually verified in light and dark appearances. The third voice-enrollment prompt is now scripted; its effect on retries remains unmeasured.
 
-This is partial native integration evidence. Transcript correctness, task review and continuity, cited answers/refusals, cross-project isolation, purge, clean-install behavior, external tester availability, and live two-host failover still require recorded acceptance runs. IS1009a and ES2004a were used in the Milestone 2 ASR pilot and cannot be presented as untouched evaluation inputs. See [shared backend setup](../reference/shared_backend.md) and [native walkthrough](../evidence/demo_walkthrough.md).
+This is partial native integration evidence. Transcript correctness, task review and continuity, cited answers/refusals, cross-project isolation, purge, clean-install behavior, external tester availability, and live two-host failover still require recorded acceptance runs. IS1009a and ES2004a were used in the Milestone 2 ASR pilot and cannot be presented as untouched evaluation inputs. See [shared backend setup](../../reference/shared_backend.md) and [native walkthrough](../../evidence/demo_walkthrough.md).
 
 ## October 11 implementation checkpoint (not final acceptance)
 

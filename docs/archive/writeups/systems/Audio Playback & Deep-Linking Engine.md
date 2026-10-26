@@ -1,4 +1,4 @@
-> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
 
 The Audio Playback & Deep-Linking Engine is the AVFoundation-powered media controller inside the native iOS client that binds raw audio buffers directly to structured text, transcripts, tasks, and conversational RAG citations. Built around `AVPlayer` and Core Media's `CMTime`, it turns static meeting notes into an interactive, verifiable audio archive.
 

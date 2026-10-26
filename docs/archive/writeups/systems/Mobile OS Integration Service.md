@@ -1,4 +1,4 @@
-> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
 
 The Mobile OS Integration Service is the native device bridge built around Apple's **EventKit framework (`EKEventStore`)** and iOS system services that synchronizes meeting intelligence directly with the native iOS ecosystem. It translates AI-extracted deliverables into OS-level calendar events and reminders while extracting schedule context to improve transcription accuracy.
 

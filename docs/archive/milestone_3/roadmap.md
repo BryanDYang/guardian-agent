@@ -2,9 +2,9 @@
 
 Updated October 21, 2026. Target submission: October 26; Canvas remains the
 source of truth for the exact deadline. Proposed owners need team agreement; the course rubric
-remains authoritative. This is the single current planning document. Use the
-[weekly journal](../weekly_journal.md#week-8-october-12-18-2026) for progress history,
-[native walkthrough](../evidence/demo_walkthrough.md) for observed evidence,
+remains authoritative. This is the archived Milestone 3 planning document. Use [Milestone 4](../../milestone_4/roadmap.md) for current planning. Use the
+[weekly journal](../../weekly_journal.md#week-8-october-12-18-2026) for progress history,
+[native walkthrough](../../evidence/demo_walkthrough.md) for observed evidence,
 [follow-through guide](follow_through.md) for setup and recording scripts, and
 [submission draft](submission_draft.md) for the course deliverable.
 
@@ -23,9 +23,9 @@ working alpha with partial acceptance evidence, not a completed Milestone 3.
 | Engineering checks | October 21 evaluation change passed 319 backend tests and Ruff; signed simulator build passed October 20 (no iOS changes in this evaluation). Dense baseline scope/dismissal checks added | Rerun checks on the final submission commit; software tests are not AI-quality measurements |
 | Human review | Eight source/output examples and blank reviewer tables prepared in [the worksheet](human_review.md) | Bryan's judgments, another reviewer's independent judgments, and adjudication; systematic audio/transcript comparison not documented |
 | Chat and evaluation | October 21 source-recovery comparison executed on 14 frozen AMI development questions: both variants recover 11/12 designated targets at K=8; dense target MRR 0.7944, hybrid 0.5188 | Human validation, semantic answer/citation judgments, answer rerun after repeated CLI timeouts, native demo chat, and broader evaluation |
-| Evidence process | [Retrieval outputs and partial-answer evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run), [dated test ledger](../evidence/demo_walkthrough.md#versioned-run-ledger) and [reusable result.md](../evidence/result.md) are in Git | Screen-recorded clean journey, final report/cards, per-member extension evidence |
+| Evidence process | [Retrieval outputs and partial-answer evidence](../../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run), [dated test ledger](../../evidence/demo_walkthrough.md#versioned-run-ledger) and [reusable result.md](../../evidence/result.md) are in Git | Screen-recorded clean journey, final report/cards, per-member extension evidence |
 
-The [provenance note](../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed)
+The [provenance note](../../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed)
 identifies who recorded and who checked what. Assistant integration tests do not
 complete the human-review worksheet. Reuse the existing recordings for review;
 do not record them again just to fill judgments. The new screen-recorded demo
@@ -48,7 +48,7 @@ reviewer count.
 | Priority | Next action and completion evidence | Proposed responsibility |
 | --- | --- | --- |
 | 1 | Fill [Bryan's worksheet](human_review.md#bryans-judgments) using existing source/output pairs. Another reviewer completes the [transcript-only packet](independent_review.md) before seeing Bryan's judgments; no account access or recordings required, and audio is marked Not checked. Preserve disagreements and freeze adjudicated labels before tuning. | Bryan; Will or Guadalupe independently |
-| 2 | Follow the [clean app journey script](follow_through.md#clean-app-journey-screen-recording): fresh project, recording/upload, transcript/evidence, confirmed owner, manual approval/date, captured follow-up, Tasks/Calendar, supported and unsupported cited chat, relaunch. Save actual answers and video references in the walkthrough using [result.md](../evidence/result.md). | Bryan records; assistant assists and documents |
+| 2 | Follow the [clean app journey script](follow_through.md#clean-app-journey-screen-recording): fresh project, recording/upload, transcript/evidence, confirmed owner, manual approval/date, captured follow-up, Tasks/Calendar, supported and unsupported cited chat, relaunch. Save actual answers and video references in the walkthrough using [result.md](../../evidence/result.md). | Bryan records; assistant assists and documents |
 | 3 | Review the 14-question AMI diagnostic and its actual answers/sources. Retrieval ranking comparison is executed; validate labels, score semantic correctness/entailment, preserve model-call failures, and expand scope/isolation coverage. The eight extraction examples alone are not a RAG evaluation. | Bryan with assistant execution; human reviewer validates labels |
 | 4 | Review the measured retrieval/source-loading timings and two completed-call workload cohorts in the report. Retain three 180-second timeouts and unknown failed-call usage. Broaden or rerun after diagnosing the runtime issue; mobile end-to-end latency is still unmeasured. | Bryan with assistant execution |
 | 5 | Update the report around measured behavior, configuration/decision log, errors, limitations, Model/System Cards, and each member's substantive extension and metrics. Verify run instructions, run final checks, export/review the single PDF, and complete individual reflections. | Team |
@@ -127,7 +127,7 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 - [x] Recover D/E processing after reproducing the CLI failure; add executable-selection regressions and retry original recordings.
 - [x] Simplify settings to Done-save and verify native persistence/history refresh. Forced partial-save/network failure remains untested.
 
-**Gate:** A real uploaded meeting produces an evidence-reviewed assigned task, visible in the appropriate user's to-do view and calendar when dated. State changes persist. Record screenshots, commit, backend settings, and actual results in the [walkthrough](../evidence/demo_walkthrough.md).
+**Gate:** A real uploaded meeting produces an evidence-reviewed assigned task, visible in the appropriate user's to-do view and calendar when dated. State changes persist. Record screenshots, commit, backend settings, and actual results in the [walkthrough](../../evidence/demo_walkthrough.md).
 
 ## Stage 3: implement bounded continuity and follow-through
 
@@ -165,7 +165,7 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 
 **Aim: next joint meeting for worker recovery; October 22-24 for alpha acceptance. Proposed lead: team.**
 
-- [ ] Will configures shared mode following [the guide](../reference/shared_backend.md); match code/migrations/storage/settings and use distinct worker IDs.
+- [ ] Will configures shared mode following [the guide](../../reference/shared_backend.md); match code/migrations/storage/settings and use distinct worker IDs.
 - [ ] Run abrupt worker-loss recovery in both directions on disposable data. Check one published result, expired-lease reclaim, and surviving API access through a manual URL switch.
 - [ ] Verify Google sign-in for an external tester account; identify any Google audience/test-user restrictions before inviting testers.
 - [ ] Provide a reachable backend during the agreed test window. A laptop tmux session is not always-on hosting or automatic API failover.
@@ -190,13 +190,13 @@ Use human confirmation for ambiguous owners, dates, or task matches. Clear autom
 
 ## Shared-backend coordination
 
-Before the next joint meeting, Will pulls the checkpoint and follows [shared-mode setup](../reference/shared_backend.md), using `will-mac`; Bryan uses `bryan-mac`. Match database/storage, migrations, code, and compatible processing settings. Existing local mode remains available, but must not be mixed with shared mode behind a shared endpoint.
+Before the next joint meeting, Will pulls the checkpoint and follows [shared-mode setup](../../reference/shared_backend.md), using `will-mac`; Bryan uses `bryan-mac`. Match database/storage, migrations, code, and compatible processing settings. Existing local mode remains available, but must not be mixed with shared mode behind a shared endpoint.
 
 At the joint meeting, both hosts stay awake/online. Bryan supplies a disposable recording and checks job/output state. Will starts/stops his server and checks logs. Identify the claiming worker, stop it abruptly during processing, verify the other reclaims the expired lease and publishes one result, restart the stopped host, and repeat in the opposite direction. Normal Ctrl-C waits for in-flight processing, so it does not demonstrate abrupt recovery. Manually switch the app URL to test the surviving API. Live two-host recovery and automatic routing remain unverified.
 
 ## Next phase after Milestone 3
 
-The [archived implementation checklist](../archive/checklist.md) preserves the
+The [archived implementation checklist](../checklist.md) preserves the
 old inventory. Its unchecked items are not automatically new milestone gates:
 
 - **Keep in current acceptance:** a short, human-verified audio/transcript fixture,

@@ -3,7 +3,7 @@
 Updated October 17, 2026. This describes the current code, including immediate
 follow-up email. It is a navigation and troubleshooting guide, not evidence that
 every path has passed native or model-quality acceptance. See the
-[Milestone 3 roadmap](milestone_3/roadmap.md) for remaining validation.
+[Milestone 4 roadmap](milestone_4/roadmap.md) for remaining validation.
 
 ## 1. System shape
 
@@ -219,7 +219,7 @@ flowchart TD
 - EventKit export is a separate phone-side copy into Apple Reminders. It does not
   implement the backend email queue or a recurring reminder lifecycle.
 
-See [follow-through setup and acceptance](milestone_3/follow_through.md) for exact
+See [follow-through setup and acceptance](archive/milestone_3/follow_through.md) for exact
 policy boundaries, account controls, retry behavior, and test steps.
 
 ## 7. Chat and retrieval

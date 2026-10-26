@@ -189,7 +189,7 @@ as the **meeting title**; copy the actual audio filename into your result log.
   recordings. Exporting is a manual backup; uploading does not create these Mac
   copies. Keep the original filename or record any renamed copy in the log.
 - **For observed results in Git:** fill the run results and ledger in the
-  existing [walkthrough](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+  existing [walkthrough](../../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
   Record the tested commit/configuration, actual dates, before/after state,
   manual actions, audit actions, delivery counts, failures, and unrun checks.
   Keep this as the authoritative team-readable result rather than maintaining
@@ -399,13 +399,13 @@ has been established by the current capture tests.
 
 ### Result log
 
-Start with the [copy-and-fill `result.md` template](../evidence/result.md).
+Start with the [copy-and-fill `result.md` template](../../evidence/result.md).
 It explains what to fill before testing, what to observe afterward, and which
 claims require separate evidence. Paste completed runs into the walkthrough;
 keep the template blank. Existing recordings do not need to be recreated for
 human review.
 
-October 20 actual results are recorded in the [native walkthrough](../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
+October 20 actual results are recorded in the [native walkthrough](../../evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
 The F1 intended revised date was October 23, 2026; ASR reported October 3.
 Keep the error and manual correction in the evidence.
 
@@ -433,7 +433,7 @@ See [implementation and delivery limits](#live-email-setup).
 
 ## Clean app journey screen recording
 
-For the audience-facing presentation, use the [research-team demo story](../evidence/demo_walkthrough.md#milestone-3-product-demo-a-research-team-remembers-and-follows-through).
+For the audience-facing presentation, use the [research-team demo story](../../evidence/demo_walkthrough.md#milestone-3-product-demo-a-research-team-remembers-and-follows-through).
 The procedure below is a manual-approval acceptance check, not the main product
 narrative. You do not need to present A-F as a sequence of feature tests.
 
@@ -532,7 +532,7 @@ automatic date resolution, live inbox delivery, or recurring reminders.
 
 Keep original video/audio in `artifacts/follow-through/[RUN_LABEL]/evidence/`
 and `audio/` when exported. Record their actual filenames. Add a dated run under
-[the walkthrough](../evidence/demo_walkthrough.md) with step numbers, observed
+[the walkthrough](../../evidence/demo_walkthrough.md) with step numbers, observed
 results, manual edits, exact chat answers/citations, commit/configuration, and
 **Passed / Failed / Blocked / Not run**. A script is not evidence of execution.
 Share the resulting questions/answers for human review; keep their gold labels

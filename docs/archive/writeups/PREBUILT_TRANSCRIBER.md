@@ -1,4 +1,4 @@
-> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../milestone_3/roadmap.md) for current work.
 
 # meeting_transcriber
 

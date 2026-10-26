@@ -1,31 +1,25 @@
 # Start here
 
-**Your next step:** fill [Bryan’s human-review worksheet](milestone_3/human_review.md#bryans-judgments),
-then rehearse the [research-team demo story](evidence/demo_walkthrough.md#milestone-3-product-demo-a-research-team-remembers-and-follows-through).
-Use the [detailed acceptance script](milestone_3/follow_through.md#clean-app-journey-screen-recording) for the separate manual-approval check.
-Latest evidence: [October 21 retrieval comparison and partial live answers](evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run),
-plus the [October 20 personal test results](evidence/demo_walkthrough.md#october-20-personal-audio-acceptance-2026-10-20-run-1).
-For the second reviewer, share the [transcript-only packet](milestone_3/independent_review.md):
-no account access or recordings required; audio is marked Not checked.
-For answer review, use the [nine completed answers with source text](milestone_3/human_review.md#completed-rag-answer-packet).
-The retrieval run completed; answer coverage and human judgments remain partial.
-Capture delivery passed selected cases; real inbox delivery and automatic
-date/completion handling still need work.
+**Your next step:** use the [Milestone 4 roadmap](milestone_4/roadmap.md)
+to define and validate the release candidate. Milestone 3 documents are archived;
+their unfinished acceptance and evaluation work carries forward explicitly.
 
-After that, use the [Milestone 3 roadmap](milestone_3/roadmap.md) to choose the
-next task. The [weekly journal](weekly_journal.md) records progress and contains
-the Week 8/9 group-message drafts. Each document below has one responsibility.
+Bryan and Guadalupe completed the eight personal-case review tables on October
+22-23. Adjudication, review provenance, AMI sequence labels, and RAG answer/citation
+judgments remain open. The [journal](weekly_journal.md) records the latest review
+status; the [walkthrough](evidence/demo_walkthrough.md) records runtime evidence.
+Each document below has one responsibility.
 
 | Question | Authoritative document |
 | --- | --- |
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
-| Where do we review model outputs? | [Human-review worksheet](milestone_3/human_review.md) |
-| What remains for Milestone 3? | [Roadmap, scope, and acceptance](milestone_3/roadmap.md) |
-| How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](milestone_3/follow_through.md) |
+| Where do we review model outputs? | [Human-review worksheet](archive/milestone_3/human_review.md) |
+| What remains for Milestone 4? | [Release scope, gap assessment, and acceptance](milestone_4/roadmap.md) |
+| How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
 | What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |
-| What will we submit? | [Milestone 3 report draft](milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
+| What did we prepare for Milestone 3? | [Milestone 3 report draft](archive/milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
 | How do I operate/recover the backend? | [Shared-backend guide](reference/shared_backend.md) |
 | How do I contribute/run checks? | [Contributing](../CONTRIBUTING.md) and [CI](../.github/workflows/ci.yml) |
 

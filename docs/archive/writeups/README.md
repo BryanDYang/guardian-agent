@@ -1,4 +1,4 @@
-> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../architecture.md) for implementation and [the roadmap](../milestone_3/roadmap.md) for current work.
 
 # Design writeups and reference material
 
@@ -8,7 +8,7 @@ is not implemented or differs from the current application.
 
 For current behavior and code entry points, use [Current architecture](../../architecture.md).
 For tested behavior and limitations, use the [native walkthrough](../../evidence/demo_walkthrough.md)
-and [Milestone 3 roadmap](../../milestone_3/roadmap.md).
+and [Milestone 3 roadmap](../milestone_3/roadmap.md).
 
 Examples of distinctions to preserve:
 

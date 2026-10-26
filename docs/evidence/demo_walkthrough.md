@@ -8,7 +8,7 @@ Start from the story we want to demonstrate, perform it in the iOS UI, and use f
 Prepared October 21, 2026. **Planned story, not executed acceptance.** Aim for a
 4-5 minute presentation after rehearsing the real app path. The audience should
 understand the team's problem and outcome; A-F test cases remain evidence in the
-background. Use the [test script](../milestone_3/follow_through.md#clean-app-journey-screen-recording)
+background. Use the [test script](../archive/milestone_3/follow_through.md#clean-app-journey-screen-recording)
 for detailed controls and [result.md](result.md) to record observations.
 
 **Story:** A small research team discussed how to start a pilot. At its next
@@ -344,7 +344,7 @@ The existing tasks still show anonymous corpus speakers. Those participants are
 not the signed-in account, and speaker mapping does not retrospectively change
 approved assignments. Enabling email does not bulk-send old work. A separate
 personal recording will be used for truthful identity/account and follow-up
-acceptance, using the [dated read-aloud scripts](../milestone_3/follow_through.md#personal-recording-test-scripts).
+acceptance, using the [dated read-aloud scripts](../archive/milestone_3/follow_through.md#personal-recording-test-scripts).
 The recording, captured-message result, and real inbox test remain pending.
 
 ## October 19 Zoom summary import verification
@@ -374,7 +374,7 @@ The recording, captured-message result, and real inbox test remain pending.
   coverage. Ruff lint/format checks and the signed simulator build passed. Two
   existing dependency deprecation warnings remain.
 
-Use the existing [Zoom summary test](../milestone_3/follow_through.md#zoom-summary-test)
+Use the existing [Zoom summary test](../archive/milestone_3/follow_through.md#zoom-summary-test)
 to record the human walkthrough and keep it separate from audio test results.
 
 ## October 20 Codex CLI failure and recording recovery
@@ -503,7 +503,7 @@ This is **assistant-executed integration testing**, not a signed human review
 of model quality. A systematic listen-through comparing every recording to its
 transcript was not documented; audio/transcript accuracy remains **Not checked**
 for that purpose. No independent human reviewer has completed the
-[review worksheet](../milestone_3/human_review.md). The worksheet's unfilled
+[review worksheet](../archive/milestone_3/human_review.md). The worksheet's unfilled
 judgments do not mean the app tests were unrun, and the app test passes do not
 mean the human review is complete.
 
@@ -696,7 +696,7 @@ provider, or billing setup was switched for the experiment.
 ### Next actions
 
 - Human-review target labels and the actual completed answers/sources using the
-  [RAG review section](../milestone_3/human_review.md#retrieval-diagnostic-review-ami-rag-pilot-v1).
+  [RAG review section](../archive/milestone_3/human_review.md#retrieval-diagnostic-review-ami-rag-pilot-v1).
   Preserve original judgments and any adjudicated corrections.
 - Investigate the repeated CLI timeouts before attempting full answer coverage;
   keep a rerun separate and retain this partial run.

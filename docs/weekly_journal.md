@@ -191,7 +191,7 @@ Bryan tested a separate scripted project with four consecutive text-only meeting
 
 The native run exposed a one-day meeting-date shift, completed meetings labeled Processing, outdated deadline guidance, an inaccurate empty review state, and a stale Undo token after reviewed completion. These were fixed and checked in the simulator. Undo after meeting review passed; a valid lifecycle Undo also survived relaunch and was verified in the database. Review and accepted-task detail edits now record actor and old/new values, and Undo cannot discard a later detail edit.
 
-Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/format passed, and the simulator build passed. The existing account/cache survived installation. See the [native walkthrough](evidence/demo_walkthrough.md), [scripted fixture](../tests/fixtures/continuity/README.md), and [Milestone 3 roadmap](milestone_3/roadmap.md).
+Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/format passed, and the simulator build passed. The existing account/cache survived installation. See the [native walkthrough](evidence/demo_walkthrough.md), [scripted fixture](../tests/fixtures/continuity/README.md), and [Milestone 3 roadmap](archive/milestone_3/roadmap.md).
 
 **Limits and next:** Candidates, including completion, were seeded deliberately; this establishes UI and persistence behavior, not extraction accuracy or audio-to-task acceptance. AMI projects were unchanged. Completion-only update extraction, independently reviewed sequence labels, paired evaluations, reminder lifecycle, external alpha feedback, physical audio playback, and two-host recovery remain outstanding.
 
@@ -200,13 +200,13 @@ Validation: 283 backend tests passed against disposable PostgreSQL, Ruff lint/fo
 ## What got done
 
 - **October 17:** Reproduced and fixed deletion of the text-only scripted test project. The shared backend now distinguishes meetings without recordings from real local recordings that still require cleanup on their original backend.
-- Implemented immediate task follow-up email: project-owner controls, recipient opt-out, a durable outbox, captured-email previews/history, and retry/duplicate protection. Added optional evidence-gated automatic approval after a current human-confirmed speaker/account connection. The rule abstains on uncertainty, unresolved deadlines, and possible duplicates; it is experimental, not calibrated confidence. See [implementation and limitations](milestone_3/follow_through.md).
+- Implemented immediate task follow-up email: project-owner controls, recipient opt-out, a durable outbox, captured-email previews/history, and retry/duplicate protection. Added optional evidence-gated automatic approval after a current human-confirmed speaker/account connection. The rule abstains on uncertainty, unresolved deadlines, and possible duplicates; it is experimental, not calibrated confidence. See [implementation and limitations](archive/milestone_3/follow_through.md).
 - Applied the additive database migration with project automation off by default and installed the updated simulator app. The final backend suite passed **311 tests** on disposable PostgreSQL; Ruff lint/format and the simulator build passed. These checks use inference/provider stand-ins and do not establish real inbox delivery or natural-meeting accuracy.
 - Diagnosed Google OAuth's missing PKCE verifier as a simulator signing problem. The unsigned build could not access Keychain (`-34018`). Rebuilt/reinstalled with signing enabled and verified a disposable Keychain write/read/delete inside the running app. A fresh user Google sign-in remains needed to document complete OAuth acceptance.
 - Added the [current architecture/troubleshooting guide](architecture.md) and [repository map/simplification plan](README.md). Distinguished old design proposals from implementation, corrected onboarding guidance and broken links, and documented code paths, cache/backend ownership, worker recovery, and external data boundaries. The source reorganization itself has not been performed.
 - **Bryan, October 18:** Continued the AMI development-set walkthrough. Supplied screenshots show extracted/accepted tasks in To-do, including a TS3005d evidence quote, and enabled follow-through controls with an empty Test inbox. Bryan reports the dev path is working for these checks. This is partial UI evidence, not a reviewed/scored TS3005a-d sequence or completed email acceptance.
 - Confirmed the test-data limitation: AMI speakers are corpus participants, not app members with recipient inboxes. Existing approved tasks retain their assignments, and enabling email does not bulk-send old work. A separate personal recording is needed to test a truthful speaker-to-account-to-email path without relabeling AMI participants as Bryan.
-- Prepared [read-aloud follow-through scripts](milestone_3/follow_through.md#personal-recording-test-scripts) with replaceable meeting/deadline dates, expected results, negative cases, and an evidence log. The personal-recording tests have not been executed yet.
+- Prepared [read-aloud follow-through scripts](archive/milestone_3/follow_through.md#personal-recording-test-scripts) with replaceable meeting/deadline dates, expected results, negative cases, and an evidence log. The personal-recording tests have not been executed yet.
 
 ## Engineering reflection
 
@@ -249,7 +249,7 @@ remaining failure is a model limitation that fine-tuning would address.
 
 ## Zoom direction discussed
 
-Following the professor's discussion of Zoom for CCB meetings, Bryan documented a proposed Zoom connection in the local, gitignored `contexts/zoom_integration_direction.md`. The idea is to import authorized meeting summaries/transcripts into the same project/task backend, retain the standalone mobile app, and eventually maintain commitments and follow-through across meetings. A full interface inside Zoom is a separate later decision. The [tracked Milestone 3 checkpoint](milestone_3/roadmap.md#zoom-proposal) records the proposal for teammates who do not have the local context folder.
+Following the professor's discussion of Zoom for CCB meetings, Bryan documented a proposed Zoom connection in the local, gitignored `contexts/zoom_integration_direction.md`. The idea is to import authorized meeting summaries/transcripts into the same project/task backend, retain the standalone mobile app, and eventually maintain commitments and follow-through across meetings. A full interface inside Zoom is a separate later decision. The [tracked Milestone 3 checkpoint](archive/milestone_3/roadmap.md#zoom-proposal) records the proposal for teammates who do not have the local context folder.
 
 No Zoom integration has been implemented or tested. CCB/host permission, available account features/API access, provenance, and summary-versus-transcript evidence need confirmation. First validate one authorized artifact after the core task loop works; keep any Zoom-input evaluation separate from the current audio pipeline.
 
@@ -261,7 +261,7 @@ No Zoom integration has been implemented or tested. CCB/host permission, availab
 4. Coordinate separate-account invitations/isolation, two-worker recovery with Will, external alpha access/feedback, and physical-device audio acceptance. Proposed owners and timing need team agreement.
 5. Discuss Zoom with the team as a scoped next ingestion experiment, rather than substituting it for unfinished Milestone 3 acceptance and evaluation.
 
-Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`, and `0d01cf4`. October 18 screenshots are user-supplied observations; original screenshot/video artifacts and a completed personal-recording result log still need to be attached to the walkthrough. The [roadmap](milestone_3/roadmap.md) and [submission draft](milestone_3/submission_draft.md) retain the unfinished milestone gates.
+Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`, and `0d01cf4`. October 18 screenshots are user-supplied observations; original screenshot/video artifacts and a completed personal-recording result log still need to be attached to the walkthrough. The [roadmap](archive/milestone_3/roadmap.md) and [submission draft](archive/milestone_3/submission_draft.md) retain the unfinished milestone gates.
 
 # Week 9 (October 19-25, 2026)
 
@@ -286,7 +286,7 @@ Evidence for the October 17 implementation is committed in `88f517a`, `ff58d1c`,
   unresolved. It advances the Week 8 proposal without replacing audio evaluation.
 - Simplified the app logo to a flat speech bubble with a checkmark, with matching
   light/dark icons and sign-in branding.
-- Clarified the [personal recording scripts and storage instructions](milestone_3/follow_through.md#personal-recording-test-scripts):
+- Clarified the [personal recording scripts and storage instructions](archive/milestone_3/follow_through.md#personal-recording-test-scripts):
   eight separate clips, independent projects except the C/F continuity sequence,
   settings and expected outcomes per case, and local audio/evidence/result-log
   locations. Prepared a local run log under
@@ -381,7 +381,7 @@ build was required for this evaluation-only update.
 **Reproducible checkpoint:** committed and pushed as `af3a4b8`. The
 [protocol](../tests/fixtures/rag/README.md) explains the read-only runner,
 source-target metric, configuration, AMI attribution, and partial-run limits.
-The [completed answer packet](milestone_3/human_review.md#completed-rag-answer-packet)
+The [completed answer packet](archive/milestone_3/human_review.md#completed-rag-answer-packet)
 lets reviewers read the nine actual answers beside their cited source text;
 no human judgments have been filled by the assistant.
 
@@ -404,7 +404,7 @@ no re-recording is needed just to fill the worksheets.
 
 - **Bryan, October 22:** Completed judgments for all eight personal source/output
   cases and confirmed listening to their audio. The assistant transcribed the
-  approved judgments into the [human-review worksheet](milestone_3/human_review.md#bryans-judgments).
+  approved judgments into the [human-review worksheet](archive/milestone_3/human_review.md#bryans-judgments).
   This was an informed review with prior exposure to the tests, not a blinded
   assessment. The frozen F1 transcript still says October 3; the earlier
   walkthrough records October 23 as the tester-confirmed intended date. That
@@ -464,7 +464,7 @@ recorded. The latest repository checkpoint is `93f540e`. Personal audio acceptan
 and the retrieval comparison have partial evidence, and both personal-case review
 tables are filled. Adjudication, RAG human judgments, a clean recorded native
 journey, and final submission assembly remain open. Use the
-[Milestone 3 roadmap](milestone_3/roadmap.md) for scope and acceptance; the list
+[Milestone 3 roadmap](archive/milestone_3/roadmap.md) for scope and acceptance; the list
 below carries forward weekly priorities rather than defining new milestone gates.
 
 ## Planned next steps
@@ -483,7 +483,7 @@ below carries forward weekly priorities rather than defining new milestone gates
    interrupted call, and unrun pairs. Diagnose CLI timeouts before a separately
    labeled rerun; do not count target recovery as answer accuracy.
 4. **Bryan, with assistant support:** Record a fresh-project native journey using
-   the [clean acceptance script](milestone_3/follow_through.md#clean-app-journey-screen-recording).
+   the [clean acceptance script](archive/milestone_3/follow_through.md#clean-app-journey-screen-recording).
    Capture manual approval, dates/Calendar, captured follow-up, cited chat and
    refusal, and relaunch with the actual configuration and evidence. Existing A
    cannot establish clean manual approval. Use the product narrative separately
@@ -513,3 +513,18 @@ below carries forward weekly priorities rather than defining new milestone gates
 - Real inbox delivery, recurring reminders, automatic date/completion handling,
   and broader alpha acceptance remain product gaps, with scope and priorities
   maintained in the roadmap.
+
+## October 26 Milestone 4 kickoff assessment
+
+Read both local Milestone 4 references and compared them with implementation and
+recorded acceptance evidence. Added the [Milestone 4 roadmap](milestone_4/roadmap.md)
+as the current scope/acceptance owner, carrying forward unfinished evaluation and
+native acceptance. The initial release flow uses explicit human review and
+captured follow-up; automatic continuity and real delivery remain separate claims.
+
+Preserved the existing Milestone 3 archive move, repaired affected relative links,
+and updated the documentation entry points. Both personal-case review tables are
+filled; adjudication and RAG human judgments remain open. No new application run,
+AI inference, runtime measurement or acceptance pass was performed for this
+documentation assessment. Deadline, TA time and proposed task owners still need
+team confirmation.

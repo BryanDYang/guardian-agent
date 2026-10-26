@@ -1,4 +1,4 @@
-> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../../milestone_3/roadmap.md) for current work.
+> **Historical design/reference:** Preserved for rationale and context. Use [current architecture](../../../architecture.md) for implementation and [the roadmap](../../milestone_3/roadmap.md) for current work.
 
 The Structured Extraction & Task Reconciliation Engine is the post-transcription cognitive service that transforms raw, multi-speaker transcripts into structured relational records and deduplicated action items. Powered by Claude 3.5, Pydantic, and `sentence-transformers`, it executes in the background on the host Mac once the acoustic pipeline outputs aligned transcript turns.
 

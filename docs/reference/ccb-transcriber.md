@@ -82,7 +82,7 @@ Changing the source segmentation changes these IDs, so retain the original artif
 
 ## Measured transcription baseline
 
-The [September 24 pilot](../milestone_2/transcription_results.md) runs these same CCB
+The [September 24 pilot](../archive/milestone_2/transcription_results.md) runs these same CCB
 functions on 12 one-minute AMI clips using Whisper tiny and base, scored with
 JiWER against manual references. Development, validation and test meetings come
 from disjoint series. Test WER is 28.79% for tiny and 24.54% for base over 705

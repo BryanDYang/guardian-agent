@@ -2,13 +2,13 @@
 
 Archived October 18, 2026. Retained for implementation history and design context;
 some statements and checkboxes are superseded by later code and evidence. Use
-the [current roadmap](../milestone_3/roadmap.md) for open work and the
+the [current roadmap](milestone_3/roadmap.md) for open work and the
 [architecture guide](../architecture.md) for implemented behavior. Unique open
 items were triaged into the roadmap before archiving.
 
 Original design references: [Workflow.md](writeups/Workflow.md) and [Story Writeup.md](writeups/Story%20Writeup.md).
 
-Execution order, milestone priorities, and next-phase boundaries: [Milestone 3 roadmap and acceptance plan](../milestone_3/roadmap.md). Use the [native walkthrough](../evidence/demo_walkthrough.md) for acceptance evidence.
+Execution order, milestone priorities, and next-phase boundaries: [Milestone 3 roadmap and acceptance plan](milestone_3/roadmap.md). Use the [native walkthrough](../evidence/demo_walkthrough.md) for acceptance evidence.
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
@@ -142,7 +142,7 @@ Partial: [CCB transcription measurements](milestone_2/transcription_results.md) 
 
 ### Milestone 3 demo pack and updated evaluation
 
-The current 45-second AMI fixture checks upload/transcription, not project continuity. Swift seed data is for previews/tests. Neither is a complete demo corpus. Use the [submission draft](../milestone_3/submission_draft.md) for reporting and the [demo walkthrough](../evidence/demo_walkthrough.md) for observed native behavior. Owners below are proposed until the team confirms them.
+The current 45-second AMI fixture checks upload/transcription, not project continuity. Swift seed data is for previews/tests. Neither is a complete demo corpus. Use the [submission draft](milestone_3/submission_draft.md) for reporting and the [demo walkthrough](../evidence/demo_walkthrough.md) for observed native behavior. Owners below are proposed until the team confirms them.
 
 - [ ] **Data selection (Guadalupe, with team review):** Inspect TS3005a-d manual transcripts for meaningful decisions, commitments, deadline changes, and completion before selecting audio. Annotations and all four TS3005a-d recordings are local under `contexts/datasets/ami`. Select the sequence based on reviewed continuity evidence
 - [ ] **Coverage fallback (Team):** If AMI lacks the required continuity cases, record a clearly labeled scripted sequence with consenting teammates. Keep scripted demonstration evidence separate from natural-meeting accuracy claims

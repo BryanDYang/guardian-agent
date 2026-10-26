@@ -2,7 +2,7 @@
 
 Prepared October 21, 2026. Packet: `personal-2026-10-20-v1`.
 Human judgment status: **Bryan reviewed the eight personal cases on October 22, 2026; independent review and adjudication pending**. Assistant app testing is already
-[documented in the walkthrough](../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed);
+[documented in the walkthrough](../../evidence/demo_walkthrough.md#who-recorded-who-checked-and-what-was-reviewed);
 its results are separate from the human judgments below. Source: the October 20 before-action snapshot,
 collected before the assistant's subsequent manual edits. A had already been
 auto-approved. Speaker names/account mappings were supplied by the tester;
@@ -274,13 +274,13 @@ extraction examples.
 
 Prepared October 21. **Human review not run.** This is separate from the eight
 personal task-extraction cases above. The frozen
-[14-question dataset](../../tests/fixtures/rag/development.json) was authored
+[14-question dataset](../../../tests/fixtures/rag/development.json) was authored
 before retrieval execution, using existing generated AMI decisions and stored
 evidence. Its source targets and two proposed unsupported labels are not human
 gold. Do not treat a missing designated decision chunk as a wrong answer if a
 retrieved transcript independently supports the answer.
 
-Use the [saved outputs and partial-run status](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run) to
+Use the [saved outputs and partial-run status](../../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run) to
 inspect each actual answer and its source text. For each variant, independently
 judge correctness, completeness, citation entailment, and appropriate refusal.
 The application validates literal quote membership only. Record whether the

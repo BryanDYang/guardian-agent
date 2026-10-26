@@ -6,7 +6,7 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Pipeline:** iOS uploads audio through Cloudflare Tunnel → the Mac backend queues processing → local Whisper/diarization and Codex or Claude produce results → PostgreSQL stores meeting/task state → the app refreshes its cache. Optional immediate task email runs through a separate backend worker.
 
-**Understand the system:** [Current architecture, data flows, and troubleshooting](docs/architecture.md). For code ownership, design history, and a staged simplification plan, see the [documentation and repository map](docs/README.md). For remaining milestone work, see the [Milestone 3 roadmap](docs/milestone_3/roadmap.md).
+**Understand the system:** [Current architecture, data flows, and troubleshooting](docs/architecture.md). For code ownership, design history, and a staged simplification plan, see the [documentation and repository map](docs/README.md). For remaining milestone work, see the [Milestone 4 roadmap](docs/milestone_4/roadmap.md).
 
 Pick one:
 
