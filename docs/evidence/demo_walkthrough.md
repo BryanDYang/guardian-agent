@@ -867,3 +867,11 @@ uv run --no-sync python -m labsync.evaluation score \
 
 The suite is synthetic; no personal data or application database writes. Human
 label adjudication and suggestion/state scoring remain outside these proxies.
+
+**Public-access verification:** after pushing `60880fb`, an anonymous HEAD request
+to the README's raw demo URL returned HTTP 200 with content length 7,624,214 bytes.
+GitHub serves the MP4 as `application/octet-stream`, so it is a public downloadable
+video rather than a dedicated streaming/player page. A YouTube/Vimeo showcase
+link can replace it after human demo sign-off. Main revision and clean working
+tree were verified. Runtime fixes are in `5634435`; the evidence/report/video
+package is in `60880fb`.

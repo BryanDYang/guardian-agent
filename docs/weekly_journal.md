@@ -569,3 +569,10 @@ known owner/atomicity/deadline limitations remain. Prepared the 85-second
 1080x2600 captioned review video with synthetic narration and explicit edit labels,
 linked from the README. Human demo sign-off and semantic answer review remain
 open; no TA time is confirmed.
+
+**Delivery:** pushed runtime fixes `5634435` and evidence/report/demo package
+`60880fb` to main. Verified the public raw MP4 URL returns HTTP 200 anonymously;
+GitHub offers a download, not a dedicated streaming page. Remaining gates are
+human semantic review/adjudication, demo sign-off, another reviewer's fresh setup,
+team contribution/extension confirmation and the TA check-in. The transcriber
+still requires team-supplied source; no redistribution rights were established.
