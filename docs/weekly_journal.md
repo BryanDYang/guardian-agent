@@ -457,122 +457,117 @@ Draft only; not sent.
 
 # Week 10 (October 26-November 1, 2026)
 
+Updated October 26 after the Milestone 4 execution checkpoint. **Milestone 4 is
+due November 16, 2026**, confirmed by Bryan from Canvas. Derrick's TA check-in
+time is still unconfirmed. Use the [Milestone 4 roadmap](milestone_4/roadmap.md)
+for current scope and acceptance; Milestone 3 documents are archived.
+
 ## Starting point
 
-Prepared October 24 from the Week 9 checkpoint; Week 10 work has not yet been
-recorded. The latest repository checkpoint is `93f540e`. Personal audio acceptance
-and the retrieval comparison have partial evidence, and both personal-case review
-tables are filled. Adjudication, RAG human judgments, a clean recorded native
-journey, and final submission assembly remain open. Use the
-[Milestone 3 roadmap](archive/milestone_3/roadmap.md) for scope and acceptance; the list
-below carries forward weekly priorities rather than defining new milestone gates.
-
-## Planned next steps
-
-1. **Team:** Confirm the Milestone 3 deadline in Canvas. The roadmap lists an
-   October 26 target, not a verified deadline. Reconcile stale review-status
-   wording in the worksheet, documentation index, roadmap, and submission draft;
-   confirm each member's contribution and extension evidence, then assemble and
-   visually review the required submission PDF.
-2. **Bryan and Guadalupe:** Record Guadalupe's prior exposure, compare the eight
-   initial judgments, and document adjudication and agreed corrections without
-   overwriting either review. Keep the F1 audio/transcript discrepancy and
-   transcript-only review limits explicit. Freeze agreed labels before tuning.
-3. **Bryan, with team review:** Review the AMI diagnostic labels and the nine
-   completed RAG answers against their actual sources. Preserve the timeouts,
-   interrupted call, and unrun pairs. Diagnose CLI timeouts before a separately
-   labeled rerun; do not count target recovery as answer accuracy.
-4. **Bryan, with assistant support:** Record a fresh-project native journey using
-   the [clean acceptance script](archive/milestone_3/follow_through.md#clean-app-journey-screen-recording).
-   Capture manual approval, dates/Calendar, captured follow-up, cited chat and
-   refusal, and relaunch with the actual configuration and evidence. Existing A
-   cannot establish clean manual approval. Use the product narrative separately
-   when rehearsing the broader research-team story.
-5. **Team, proposed owners to confirm:** Continue the reviewed AMI sequence and
-   paired continuity evaluation. Prioritize automatic date/completion gaps and
-   the bounded reminder lifecycle according to the roadmap. Live inbox delivery,
-   separate-account access, physical-device acceptance, and two-host recovery
-   require their own observed evidence. Zoom remains manual summary import.
-6. **Team:** Prepare progress, remaining limitations, and questions for the
-   requested check-in during the week of November 2. Derrick's acceptance and
-   exact meeting time still need confirmation.
+Week 10 began with partial personal-audio/native acceptance and the October 21
+retrieval comparison. Bryan and Guadalupe had filled the eight personal-case
+review tables, but adjudication and RAG semantic review remained open. The live
+RAG answer run had nine completed outputs, three timeouts, one interruption and
+15 unrun pairs. A clean recorded native journey and submission assembly were
+still needed. Those historical results remain preserved alongside the separate
+October 26 runs below.
 
 ## What got done
 
-- Not recorded yet. Add dated outcomes, contributors, evidence links, and actual
-  validation results as Week 10 work is completed.
+### October 26 Milestone 4 kickoff assessment
 
-## Blockers and evidence still needed
-
-- Submission timing and member contributions need team confirmation; final
-  report/PDF and demo evidence are not recorded as complete.
-- Review provenance and adjudication remain incomplete. Personal transcript
-  review does not replace AMI sequence labels or RAG semantic review.
-- Live answer coverage is partial because of timeouts/interruption. No new
-  inference run or runtime validation is implied by this journal setup.
-- Real inbox delivery, recurring reminders, automatic date/completion handling,
-  and broader alpha acceptance remain product gaps, with scope and priorities
-  maintained in the roadmap.
-
-## October 26 Milestone 4 kickoff assessment
-
-Read both local Milestone 4 references and compared them with implementation and
-recorded acceptance evidence. Added the [Milestone 4 roadmap](milestone_4/roadmap.md)
-as the current scope/acceptance owner, carrying forward unfinished evaluation and
-native acceptance. The initial release flow uses explicit human review and
-captured follow-up; automatic continuity and real delivery remain separate claims.
-
-Preserved the existing Milestone 3 archive move, repaired affected relative links,
-and updated the documentation entry points. Both personal-case review tables are
-filled; adjudication and RAG human judgments remain open. No new application run,
-AI inference, runtime measurement or acceptance pass was performed for this
-documentation assessment. Deadline, TA time and proposed task owners still need
-team confirmation.
+- Read both Milestone 4 references and established the
+  [release scope and acceptance gates](milestone_4/roadmap.md). Selected a flow
+  with human task review, manual assignment/date correction and captured email.
+- Preserved the Milestone 3 archive move, repaired affected documentation links
+  and updated entry points to Milestone 4. Corrected the current review status:
+  both personal-case tables are filled; adjudication remains pending.
+- Confirmed the November 16 deadline with Bryan. No TA time or team task-owner
+  assignments were inferred or messages sent on the team's behalf.
 
 ## October 26 Milestone 4 execution
 
-Bryan confirmed November 16, 2026 as the Canvas deadline; no TA check-in time is
-confirmed. Selected the manual-review/capture-mode release flow. Verified a clean
-tracked-source installation and real MLX base transcription with the audited,
-separately supplied CCB source. Reproduced and fixed disabled-diarization flag
-propagation and mixed invalid/valid chat citations through upload/chat API tests.
-Added content-free Codex request metadata logs; rejected citation logs omit quotes.
+Assistant executed the following checks and fixes on Bryan's behalf. Inputs sent
+to models were public AMI derivatives or explicitly synthetic examples. Detailed
+commands, raw outputs and limitations are in the
+[dated walkthrough](evidence/demo_walkthrough.md#october-26-milestone-4-release-checkpoint).
 
-The signed simulator build passed; full isolated-database suite passed 327 tests,
-with two existing dependency deprecation warnings. A separate frozen-source RAG
-pass completed 28/28 answers without reproducing prior timeouts, including four
-unsupported-question refusals. Human semantic judgments remain pending. Ran five
-live synthetic adversarial/control cases and nine representative component
-workloads. The [dated walkthrough](evidence/demo_walkthrough.md#october-26-milestone-4-release-checkpoint)
-links exact outputs, procedures, limitations and the demo edit plan. Prepared the
-[report/TA draft](milestone_4/submission_draft.md) and
-[28-answer human-review packet](milestone_4/human_review.md).
+| Workstream | Completed work and evidence | Limits |
+| --- | --- | --- |
+| Fresh setup | Installed locked dependencies in a separate tracked-source export and ran real MLX Whisper base on the public 45-second AMI fixture | Cached model weights; CCB source remains separately supplied; another reviewer's setup is pending |
+| Processing fix | Reproduced disabled diarization through the upload API; fixed the pipeline to pass `--no-diarize` explicitly and corrected run instructions | Diarization/speaker recognition require separate acceptance |
+| Citation fix | Reproduced unsupported prose surviving a fabricated citation beside a valid one; chat now refuses the entire reply for invalid quotes/refs or mismatched markers | Literal quote verification still does not prove semantic entailment |
+| Observability | Added Codex request IDs, model/task, status, latency, timeout and returned usage; excluded prompt/response/error-body content from those metadata logs and removed rejected quotes from chat logs | No complete end-to-end tracing, Claude logging parity or automatic log-retention policy |
+| Engineering checks | Signed iPhone 18 Pro Max/iOS 27.0 simulator build passed; all **327 backend tests** passed against isolated PostgreSQL; Ruff lint/format passed | Two existing dependency deprecation warnings remain; simulator signing stayed enabled |
+| Native journey | Fresh synthetic upload passed task review/approval, October 30 Calendar placement, completion/Undo, captured follow-up, cited chat/source navigation, unsupported refusal and relaunch persistence | Synthetic upload, manual assignee/date entry and capture mode; no microphone, real identity recognition or inbox-delivery claim |
+| RAG rerun | Separate frozen-source pass completed **28/28 calls**, including four unsupported-question refusals; prior timeouts did not recur | No root cause established; two supported pairs also refused after quote rejection; human semantic judgments remain pending |
+| Extraction rerun | Codex and rules each completed **24/24 synthetic development cases**, with F1 proxies **.897** and **.710** | Replicates earlier proxy scores; AI-authored labels, unknown-owner omission, merged/joint tasks and deadline-span issues remain |
+| Red-teaming | Five live synthetic adversarial/control calls completed; no requested fabricated budget or exfiltration task returned; API enforcement covered by isolation/approval/outbox regression tests | Small bounded exercise, not a comprehensive safety or abuse/load benchmark |
+| Workload measurements | Three serial repeats per workload: median local audio-to-extraction **8.33 s**, supported chat **4.43 s**, unsupported chat **4.54 s**; usage and hypothetical API-equivalent costs recorded | Frozen chat sources; excludes full mobile upload, live retrieval, indexing and database publication; actual CLI charges unmeasured |
 
-Native acceptance uses a fresh `M4 RC - 2026-10-26 - manual` project and synthetic
-Casey audio, with automatic approval off and Test inbox delivery. Processing and
-initial transcript/task review succeeded; final native journey outcomes are
-recorded below when verified. Manual assignment/date entry is not an automatic
-identity/date-resolution claim. No human judgments, real inbox receipt, public
-video or completed TA check-in are claimed by these checks.
+The native acceptance project is `M4 RC - 2026-10-26 - manual`. Its synthetic
+Casey audio is not Bryan's voice; Bryan was explicitly selected as the test task
+assignee. Automatic approval remained off and delivery remained Test inbox. The
+uncut local recording is 12m35s and starts at the audio form; project creation and
+policy setup were observed before recording. The
+[native run ledger](evidence/demo_walkthrough.md#october-26-native-acceptance)
+records the actual source quotes, answers and persistence checks.
 
+### Report, demo and delivery
 
-**Native result:** the fresh synthetic upload journey passed manual review,
-Calendar, captured message, supported citation navigation, unsupported refusal,
-completion/Undo and relaunch persistence. The uncut 12m35s local video begins at
-the audio form; earlier project/policy creation was observed separately. This is
-synthetic upload acceptance, not microphone capture or natural-data accuracy.
+- Prepared the [report/TA packet draft](milestone_4/submission_draft.md), including
+  architecture, reviewer checklist, run instructions, evaluation/error tables,
+  latency/cost assumptions, red-team findings and residual risks. Exported and
+  visually checked the [five-page PDF](milestone_4/submission_draft.pdf).
+- Prepared the [28-answer human-review packet](milestone_4/human_review.md),
+  retaining actual answers and cited source text with judgments left pending.
+- Created an [85-second captioned demo draft](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4)
+  at 1080x2600 with synthetic narration, burned-in captions and explicit labels
+  for synthetic input, removed waits, manual date entry and capture-only email.
+  Sampled all eight sections visually and verified a complete error-free decode.
+- Pushed runtime fixes in `5634435`, evidence/report/video in `60880fb`, and
+  public-access verification in `6e394ad`. The README's video URL returned
+  HTTP 200 anonymously. GitHub serves a downloadable MP4; a dedicated streaming
+  page and human demo sign-off remain separate next steps.
 
+## Planned next steps
 
-**Extraction/demo package:** current Codex and rules extraction reruns completed
-24/24 cases each with no failures. Task F1 proxies reproduced .897 and .710;
-known owner/atomicity/deadline limitations remain. Prepared the 85-second
-1080x2600 captioned review video with synthetic narration and explicit edit labels,
-linked from the README. Human demo sign-off and semantic answer review remain
-open; no TA time is confirmed.
+1. **Bryan and reviewers:** Complete the 28-answer semantic correctness,
+   citation-entailment and refusal judgments. Review the proposed AMI labels and
+   preserve disagreements. Keep the October 21 partial run and October 26 rerun
+   separate; completion and retrieval target recovery are not answer accuracy.
+2. **Bryan and Guadalupe:** Record review exposure and adjudicate the eight
+   personal cases without overwriting initial judgments. Preserve F1's
+   audio/transcript date discrepancy and the transcript-only review limits.
+3. **Team, owners to confirm:** Have another reviewer reproduce setup and the
+   selected flow. Resolve access to the supplied transcriber and discuss the
+   native Mac/MLX reproducibility approach with the TA before claiming portability.
+4. **Bryan with team review:** Review the report and captioned demo, confirm each
+   member's contribution and selected extension progress, and replace the draft
+   with a signed-off showcase version. Use YouTube/Vimeo if a streaming page is
+   preferred to the current public download.
+5. **Team:** Confirm and attend the mandatory TA check-in. Bring the run
+   instructions, results/failure cases, latency/cost summary, red-team mitigations,
+   documentation outline and demo. The requested week of November 2 is not a
+   confirmed appointment.
+6. **Team, scope-dependent:** Prioritize product gaps through the roadmap.
+   Automatic dates/completion, recurring reminders, live inbox delivery,
+   physical-device acceptance and two-host recovery need their own observed
+   evidence before becoming release claims. Measure full mobile latency if it
+   will be claimed in the final report.
 
-**Delivery:** pushed runtime fixes `5634435` and evidence/report/demo package
-`60880fb` to main. Verified the public raw MP4 URL returns HTTP 200 anonymously;
-GitHub offers a download, not a dedicated streaming page. Remaining gates are
-human semantic review/adjudication, demo sign-off, another reviewer's fresh setup,
-team contribution/extension confirmation and the TA check-in. The transcriber
-still requires team-supplied source; no redistribution rights were established.
+## Blockers and evidence still needed
+
+- Human RAG quality judgments, personal-case adjudication, AMI sequence labels
+  and review provenance remain incomplete. Assistant testing does not fill them.
+- The transcriber archive has no verified upstream revision/license and is not
+  redistributed. The fresh setup still requires team-supplied source; no runnable
+  application container or independent fresh-machine reproduction is established.
+- TA check-in time, task owners, member contributions and extension updates need
+  team confirmation. The deadline is confirmed; final submission is not complete.
+- The report and publicly accessible demo are review drafts. No new quality
+  improvement is established by matching the old extraction proxy scores, and no
+  root cause is established merely because the model timeouts did not recur.
+- Known product/operational limits include automatic date/completion handling,
+  identity ambiguity, real delivery/reminders, full mobile timing, comprehensive
+  red-teaming, quota/load controls, log retention and recovery acceptance.
