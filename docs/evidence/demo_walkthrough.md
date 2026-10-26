@@ -705,3 +705,165 @@ provider, or billing setup was switched for the experiment.
 - Complete the supported/unsupported native demo and expanded scope/isolation
   evaluation. AMI development results are not a held-out quality claim or a
   substitute for the personal task-extraction worksheet.
+
+## October 26 Milestone 4 release checkpoint
+
+Baseline export: `a2b078e`; subsequent pipeline, citation and logging changes are
+included in the commit containing this entry. Assistant executed these checks on
+Bryan's behalf. Public AMI or explicitly synthetic data only was sent to models.
+Raw run products remain under `artifacts/m4/2026-10-26/`.
+
+- Fresh tracked-source export installed locked dev/server/audio extras into a new
+  environment and ran MLX base on the 45-second public AMI fixture with the audited
+  external transcriber hash. Cached model weights were reused. No diarization or
+  speaker recognition was tested. Initial omission of `--no-diarize` failed for
+  missing HF_TOKEN; instructions now pass the negative flag explicitly.
+- Upload API regression exposed a second issue: disabled diarization was not
+  forwarded to the transcription subprocess. The shared pipeline now passes an
+  explicit positive or negative flag. Both settings pass HTTP workflow tests.
+- Authenticated chat API regression reproduced an unsupported budget sentence
+  surviving beside a legitimate citation after its fabricated ref was removed.
+  Chat now refuses the entire reply for any invalid quote/ref or mismatched
+  markers, including whitespace-only quotes. The persisted API answer is also
+  checked. Literal verification still does not prove semantic entailment.
+- Ruff lint/format passed; all **327 backend tests passed** against newly created
+  isolated PostgreSQL `guardian_m4_20261026` (not the hosted application database).
+  Existing Starlette/httpx and AnyIO deprecation warnings remain visible.
+- Signed Debug simulator build succeeded for iPhone 18 Pro Max, iOS 27.0. Xcode
+  required explicit `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`;
+  the shell default selects Command Line Tools. Code signing remained enabled.
+  Xcode emitted the nonfatal no-AppIntents-dependency metadata warning.
+- The separate [frozen-source answer pass](m4_2026-10-26/rag_answers.json)
+  completed 28/28 calls with Codex CLI 0.163.0 and requested gpt-5.6-sol. No prior
+  timeout was reproduced; no root cause has been established. Both variants
+  refused both proposed unsupported questions. Power/hybrid and curve/dense
+  also refused after literal quote rejection. Human answer/citation judgments
+  remain pending in the [review packet](../milestone_4/human_review.md).
+- [Five live synthetic safety probes](m4_2026-10-26/redteam.json) covered source
+  injection, direct user injection, nonexistent secrets, supported control and
+  extraction injection. No fabricated budget or exfiltration task was returned;
+  the control cited Friday. This small pass complements existing auth/isolation,
+  approval/opt-out and outbox regression tests; it does not establish safety.
+- [Nine workload runs](m4_2026-10-26/workloads.json) completed. Median local
+  45-second audio-to-extraction time was 8.33 s (range 7.25-11.28); supported
+  frozen-source chat 4.43 s (3.76-4.54); unsupported chat 4.54 s (3.81-5.38).
+  These exclude mobile upload, auth, live retrieval, indexing and DB publication.
+  [Summary](m4_2026-10-26/summary.json) records usage and hypothetical standard
+  API-equivalent estimates, not actual CLI charges or total system cost.
+
+### Reproduce the direct evidence procedures
+
+From the repository root after locked audio/dev/server setup and Codex login:
+
+```sh
+uv run --no-sync python docs/evidence/m4_2026-10-26/runners/rag_answers.py \
+  --output artifacts/m4-reviewer/rag-new.json
+uv run --no-sync python docs/evidence/m4_2026-10-26/runners/redteam.py \
+  --output artifacts/m4-reviewer/redteam-new.json
+uv run --no-sync python docs/evidence/m4_2026-10-26/runners/workloads.py \
+  --output artifacts/m4-reviewer/workloads-new.json
+```
+
+These direct, dated procedures require new output files and send the frozen
+public AMI or synthetic excerpts to Codex. They do not query the app database or
+send personal meetings. The audio procedure additionally requires the supplied
+transcriber and Apple Silicon MLX. Original procedures ran from temporary source;
+committed copies add output-path arguments and formatting for reviewer reuse.
+The answer pass preceded the stricter mixed-citation mitigation; preserve its raw
+and final outputs. A rerun uses current validation and is a separate experiment.
+
+### Milestone 4 demo edit plan
+
+Target: 85 seconds, 1080p or higher, captions and clear voiceover. This is an edit
+plan, not an assertion that a public video exists. Preserve the uncut acceptance
+capture and identify any removed processing waits in the final narration/caption.
+
+| Time | Visual and narration purpose |
+| --- | --- |
+| 0-10 s | Fresh Cedar project: meeting decisions and commitments should not disappear after the call |
+| 10-25 s | Upload clearly labeled synthetic audio; show the completed transcript and exact task evidence; label waiting-time edits |
+| 25-42 s | Human assigns the test task, enters October 30 manually, and approves it |
+| 42-55 s | Show the same task/date in Tasks and Calendar; show captured follow-up with no real inbox delivery claim |
+| 55-73 s | Ask supported checklist question and unsupported budget question; show citation and abstention |
+| 73-85 s | Show persistence after relaunch and repository link; state human review, date/identity limits and capture mode |
+
+Do not present synthetic Casey audio as Bryan's actual voice or infer identity.
+The test assignee is explicitly selected by the tester. Publish only after
+reviewing for account/contact information; use unlisted YouTube/Vimeo and link it
+from the project page/README. Hosting/public URL remains a submission gate.
+
+
+### October 26 native acceptance
+
+Run project: `39a5351a-3b8f-4b90-8435-c13b0f8f50b2`; meeting:
+`a25880e9-8d79-453e-8391-df6bd4c6522e`, title `cedar`. Synthetic audio was
+generated with macOS Samantha voice, imported through Files from the app's shared
+Documents folder, then uploaded through the app after confirming test consent.
+It is not Bryan's voice or a natural meeting. The selected assignee is tester
+supplied and does not establish that Casey is Bryan.
+
+| Check | Observed result |
+| --- | --- |
+| Initial launch | Signed app launched; API unavailable until the local backend was started, then Try Again loaded projects |
+| Fresh project/policy | Created `M4 RC - 2026-10-26 - manual`; automatic approval off, task email/recipient on, Test inbox; saved policy verified after approval |
+| Upload/processing | Uploaded `cedar-synthetic.wav`; real MLX base and Codex processing completed; no diarization; first attempt completed |
+| Transcript/evidence | Commitment preserved October 30th, 2026 at 00:03; checklist scope at 00:08; no budget amount at 00:15 |
+| Manual review | Candidate stayed pending; tester selected Bryan and October 30, then clicked Approve once |
+| Tasks/Calendar | Accepted checklist visible in To-do and Calendar on October 30; completion moved it to Completed; Undo restored open state |
+| Follow-up | One Captured for testing entry; body contained correct task, cedar meeting, 2026-10-30 and exact commitment quote |
+| Supported chat | “What will the evaluation checklist cover?” answered task ownership, due dates and supporting evidence with [1]; citation opened the transcript at 00:08 |
+| Unsupported chat | “What is the project Wi-Fi password?” returned the fixed no-answer response |
+| Relaunch | Terminated/launched same signed app without clearing data; accepted task remained and Chat History reopened both answers |
+
+Raw video: `artifacts/m4/2026-10-26/native-acceptance.mov`, 12m35s,
+1320x2868; persisted-chat screenshot beside it. Video starts at the audio form,
+after project creation/policy setup; those earlier actions are evidenced by the
+observed UI/server log, not by this video. The document picker took time to load;
+no permanent picker failure was established. Native checks used the actual
+configured backend and embeddings; the separate workload timing experiment uses
+frozen chat sources and excludes the mobile path. No mobile latency percentile
+is claimed. No microphone recording, real mail, identity calibration or automatic
+date parsing was established.
+
+
+### October 26 demo review draft
+
+[85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4)
+is linked from the README. The committed copy is `docs/milestone_4/demo_draft.mp4`;
+[subtitle sidecar](../milestone_4/demo_draft.srt) and
+[edit manifest](m4_2026-10-26/demo_edit.json) preserve narration and source offsets.
+The source is the uncut native acceptance recording. The portrait output is
+1080x2600 with H.264 video/AAC audio, 85.00 seconds, burned-in captions and macOS
+Samantha synthetic narration. Processing waits/navigation were edited out, and
+the synthetic input, manual date/assignment, and capture-only delivery are labeled.
+All eight sampled sections were visually inspected; a complete decode found no
+errors. Human demo sign-off remains pending. Public raw-file access must be
+verified after push; this is a review draft rather than a final showcase claim.
+
+
+### October 26 extraction rerun
+
+Current production extraction (`meeting-extraction-v2`, gpt-5.6-sol, CLI 0.163.0)
+completed 24/24 frozen synthetic development cases, as did the rules baseline.
+[Combined run/scoring/output packet](m4_2026-10-26/extraction.json) preserves
+source/fixture hashes and per-case results. Codex task precision/recall/F1 proxies
+were .929/.867/.897 (13 matched, 14 predicted, 15 labeled); rules were
+.688/.733/.710 (11/16/15). No failures/missing cases. Codex literal citations
+28/28; negative cases 11/11; exact deadline text 5/13; mean extraction wall time
+4.402 s across all 24 attempts. These replicate earlier proxy scores, not a new
+quality improvement or independent semantic evaluation. Unknown-owner omission,
+merged actions, joint-owner duplication and deadline-span mismatches remain.
+
+```sh
+uv run --no-sync python -m labsync.evaluation run --method codex \
+  --model gpt-5.6-sol --directory artifacts/m4-reviewer/extraction-codex-new
+uv run --no-sync python -m labsync.evaluation score \
+  --directory artifacts/m4-reviewer/extraction-codex-new
+uv run --no-sync python -m labsync.evaluation run --method rules \
+  --directory artifacts/m4-reviewer/extraction-rules-new
+uv run --no-sync python -m labsync.evaluation score \
+  --directory artifacts/m4-reviewer/extraction-rules-new
+```
+
+The suite is synthetic; no personal data or application database writes. Human
+label adjudication and suggestion/state scoring remain outside these proxies.

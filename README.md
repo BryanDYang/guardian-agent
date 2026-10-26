@@ -2,6 +2,8 @@
 
 Turns meeting recordings into summaries, cited decisions, and action items.
 
+**Milestone 4 review demo:** [85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4). Synthetic audio/narration, manual assignment/date entry, captured follow-up, and edited processing waits.
+
 **Repository:** https://github.com/BryanDYang/guardian-agent
 
 **Pipeline:** iOS uploads audio through Cloudflare Tunnel → the Mac backend queues processing → local Whisper/diarization and Codex or Claude produce results → PostgreSQL stores meeting/task state → the app refreshes its cache. Optional immediate task email runs through a separate backend worker.
@@ -188,7 +190,7 @@ Logs: `artifacts/server/<meeting-id>/processing.log`
 | HTTP 530 | Start `cloudflared tunnel run` |
 | "Transcribing failed" | Add `contexts/meeting_transcriber-master` (README step 2) |
 | "Extracting failed" | Run `codex login` or fix `ANTHROPIC_API_KEY` |
-| First upload is slow | The medium Whisper weights (about 1.5 GB) download on first use |
+| First upload is slow | The selected Whisper weights download on first use |
 | Upload over 100 MB fails | Cloudflare plan limit |
 
 ## CLI without the server

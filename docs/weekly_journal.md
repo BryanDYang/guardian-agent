@@ -528,3 +528,44 @@ filled; adjudication and RAG human judgments remain open. No new application run
 AI inference, runtime measurement or acceptance pass was performed for this
 documentation assessment. Deadline, TA time and proposed task owners still need
 team confirmation.
+
+## October 26 Milestone 4 execution
+
+Bryan confirmed November 16, 2026 as the Canvas deadline; no TA check-in time is
+confirmed. Selected the manual-review/capture-mode release flow. Verified a clean
+tracked-source installation and real MLX base transcription with the audited,
+separately supplied CCB source. Reproduced and fixed disabled-diarization flag
+propagation and mixed invalid/valid chat citations through upload/chat API tests.
+Added content-free Codex request metadata logs; rejected citation logs omit quotes.
+
+The signed simulator build passed; full isolated-database suite passed 327 tests,
+with two existing dependency deprecation warnings. A separate frozen-source RAG
+pass completed 28/28 answers without reproducing prior timeouts, including four
+unsupported-question refusals. Human semantic judgments remain pending. Ran five
+live synthetic adversarial/control cases and nine representative component
+workloads. The [dated walkthrough](evidence/demo_walkthrough.md#october-26-milestone-4-release-checkpoint)
+links exact outputs, procedures, limitations and the demo edit plan. Prepared the
+[report/TA draft](milestone_4/submission_draft.md) and
+[28-answer human-review packet](milestone_4/human_review.md).
+
+Native acceptance uses a fresh `M4 RC - 2026-10-26 - manual` project and synthetic
+Casey audio, with automatic approval off and Test inbox delivery. Processing and
+initial transcript/task review succeeded; final native journey outcomes are
+recorded below when verified. Manual assignment/date entry is not an automatic
+identity/date-resolution claim. No human judgments, real inbox receipt, public
+video or completed TA check-in are claimed by these checks.
+
+
+**Native result:** the fresh synthetic upload journey passed manual review,
+Calendar, captured message, supported citation navigation, unsupported refusal,
+completion/Undo and relaunch persistence. The uncut 12m35s local video begins at
+the audio form; earlier project/policy creation was observed separately. This is
+synthetic upload acceptance, not microphone capture or natural-data accuracy.
+
+
+**Extraction/demo package:** current Codex and rules extraction reruns completed
+24/24 cases each with no failures. Task F1 proxies reproduced .897 and .710;
+known owner/atomicity/deadline limitations remain. Prepared the 85-second
+1080x2600 captioned review video with synthetic narration and explicit edit labels,
+linked from the README. Human demo sign-off and semantic answer review remain
+open; no TA time is confirmed.

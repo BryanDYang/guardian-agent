@@ -14,11 +14,12 @@ Each document below has one responsibility.
 | --- | --- |
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
-| Where do we review model outputs? | [Human-review worksheet](archive/milestone_3/human_review.md) |
+| Where do we review model outputs? | [M4 answer review](milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
 | What remains for Milestone 4? | [Release scope, gap assessment, and acceptance](milestone_4/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
 | What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |
+| What will we submit for Milestone 4? | [Report and TA packet draft](milestone_4/submission_draft.md) |
 | What did we prepare for Milestone 3? | [Milestone 3 report draft](archive/milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
 | How do I operate/recover the backend? | [Shared-backend guide](reference/shared_backend.md) |
 | How do I contribute/run checks? | [Contributing](../CONTRIBUTING.md) and [CI](../.github/workflows/ci.yml) |

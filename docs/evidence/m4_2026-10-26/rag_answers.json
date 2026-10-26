@@ -1,0 +1,1145 @@
+{
+  "experiment": "m4-frozen-source-rerun",
+  "source": "docs/evidence/rag_2026-10-21.json",
+  "source_sha256": "6335f8792282a379c07130e638241b267bc257363bca106383dbd940db187bb7",
+  "model": "gpt-5.6-sol",
+  "cli": "codex-cli 0.163.0",
+  "prompt_version": "project-chat-v2",
+  "retrieval_rerun": false,
+  "runs": [
+    {
+      "question_id": "price",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "5a3dc37cf7ff32265979445b50ebbd2b86b16884721f3ab2c8cb08776a76e937",
+      "raw": {
+        "answerable": true,
+        "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [T1]",
+        "citations": [
+          {
+            "ref": "T1",
+            "quote": "we are aiming for a selling price of 25 euros"
+          },
+          {
+            "ref": "T1",
+            "quote": "the production costs will be 12 euro 50 max"
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17552,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 85,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "transcript",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:59",
+          "speaker": "SPEAKER_4",
+          "start_time_ms": 766260,
+          "quote": "we are aiming for a selling price of 25 euros"
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 4.6003993328195065
+    },
+    {
+      "question_id": "price",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "d30029197d8c6d19dc0262f9fcc671faf407c1d7e76c7636862c9ee2060e244c",
+      "raw": {
+        "answerable": true,
+        "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17826,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 91,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:59",
+          "speaker": null,
+          "start_time_ms": 766260,
+          "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.613645875127986
+    },
+    {
+      "question_id": "phases",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "28e54e5572541795bc693419269cc8d8f10d76fce05043110b189b5e4f762274",
+      "raw": {
+        "answerable": true,
+        "answer": "The three stages are functional design, conceptual design, and detailed design. [D2]",
+        "citations": [
+          {
+            "ref": "D2",
+            "quote": "It consists of three phases, namely the functional design, conceptual design, and detailed design."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17676,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 68,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The three stages are functional design, conceptual design, and detailed design. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:17",
+          "speaker": null,
+          "start_time_ms": 207960,
+          "quote": "It consists of three phases, namely the functional design, conceptual design, and detailed design."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.407744790893048
+    },
+    {
+      "question_id": "phases",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "dc1b1f654f0412ab292ca7ffff38ebf38d4445aab2cd9d340642ac85cca4e30c",
+      "raw": {
+        "answerable": true,
+        "answer": "The three stages are functional design, conceptual design, and detailed design. [D2]",
+        "citations": [
+          {
+            "ref": "D2",
+            "quote": "It consists of three phases, namely the functional design, conceptual design, and detailed design."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17394,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 68,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The three stages are functional design, conceptual design, and detailed design. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:17",
+          "speaker": null,
+          "start_time_ms": 207960,
+          "quote": "It consists of three phases, namely the functional design, conceptual design, and detailed design."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.435622666962445
+    },
+    {
+      "question_id": "whiteboard",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "5be921754c49a492cf7eae9b564a491f1d213d9228835e03217062189ee07f4a",
+      "raw": {
+        "answerable": true,
+        "answer": "No. Users may erase individual mistakes, but when starting over they should create a new blank page rather than delete the entire smart-board page, so the results are preserved. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "But you can of course erase when you make a mistake but don't delete entire pages."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 18010,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 87,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "No. Users may erase individual mistakes, but when starting over they should create a new blank page rather than delete the entire smart-board page, so the results are preserved. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:18",
+          "speaker": null,
+          "start_time_ms": 293500,
+          "quote": "But you can of course erase when you make a mistake but don't delete entire pages."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.379499290836975
+    },
+    {
+      "question_id": "whiteboard",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "13622b1982c60b821335f8aa959836c353afdaf8663bf9c3a9caa404d2d819b5",
+      "raw": {
+        "answerable": true,
+        "answer": "No. Users may erase individual mistakes, but when starting over they should create a new blank page instead of deleting the entire smart-board page, so the results are preserved. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "But you can of course erase when you make a mistake but don't delete entire pages."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17911,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 87,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "No. Users may erase individual mistakes, but when starting over they should create a new blank page instead of deleting the entire smart-board page, so the results are preserved. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:18",
+          "speaker": null,
+          "start_time_ms": 293500,
+          "quote": "But you can of course erase when you make a mistake but don't delete entire pages."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.772194709163159
+    },
+    {
+      "question_id": "style",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "30560e7b66b17ba6a61d4b98c50d3c65bfb3b9dfd06c684c531aef37952a92e7",
+      "raw": {
+        "answerable": true,
+        "answer": "The new remote control should be original, trendy, and user-friendly. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "the aim for the project is to create to design a new remote control, which has to be original, trendy, and of course user-friendly."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17939,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 163,
+        "reasoning_output_tokens": 82
+      },
+      "answer": "The new remote control should be original, trendy, and user-friendly. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:17",
+          "speaker": null,
+          "start_time_ms": 207960,
+          "quote": "the aim for the project is to create to design a new remote control, which has to be original, trendy, and of course user-friendly."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 4.928217499982566
+    },
+    {
+      "question_id": "style",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "df34e237e21c89f651d842d847f5eb58192a7a61a3dce629fa65c688a68ed304",
+      "raw": {
+        "answerable": true,
+        "answer": "The agreed design goal is an original, trendy, and user-friendly remote. [D1] Suggested\u2014but still pending\u2014qualities include being fun to use [K2]; handheld, lightweight, available in various colors, and fitted with easy-to-use soft-touch or touchscreen controls [K1]; and large enough not to lose easily, with prominent channel and volume controls that remain recognizable if their labels wear away. [K3] Other pending suggestions call for low power usage [T1], all buttons needed for daily tasks [K4], and a simple, user-centered design limited to essential functions. [K6]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "the aim for the project is to create to design a new remote control, which has to be original, trendy, and of course user-friendly."
+          },
+          {
+            "ref": "K2",
+            "quote": "Oh, maybe we should try to make it fun."
+          },
+          {
+            "ref": "K1",
+            "quote": "Perhaps soft touch, touch screen buttons because the rubber buttons are always slightly they can be slightly damaged."
+          },
+          {
+            "ref": "K3",
+            "quote": "So we don't have to make very small, like a mobile phone or something, but somewhat bigger than small, so you don't lose it that much anymore."
+          },
+          {
+            "ref": "T1",
+            "quote": "Remote control has to have a low power usage, because 75% of the users only set one time an hour."
+          },
+          {
+            "ref": "K4",
+            "quote": "So you should make sure that you have every button they need on it."
+          },
+          {
+            "ref": "K6",
+            "quote": "Well, personal preference is a simple remote with the basic functions that you can need, you could use."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17217,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 433,
+        "reasoning_output_tokens": 77
+      },
+      "answer": "The agreed design goal is an original, trendy, and user-friendly remote. [1] Suggested\u2014but still pending\u2014qualities include being fun to use [2]; handheld, lightweight, available in various colors, and fitted with easy-to-use soft-touch or touchscreen controls [3]; and large enough not to lose easily, with prominent channel and volume controls that remain recognizable if their labels wear away. [4] Other pending suggestions call for low power usage [5], all buttons needed for daily tasks [6], and a simple, user-centered design limited to essential functions. [7]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:17",
+          "speaker": null,
+          "start_time_ms": 207960,
+          "quote": "the aim for the project is to create to design a new remote control, which has to be original, trendy, and of course user-friendly."
+        },
+        {
+          "number": 2,
+          "kind": "task",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:67",
+          "speaker": null,
+          "start_time_ms": 842380,
+          "quote": "Oh, maybe we should try to make it fun."
+        },
+        {
+          "number": 3,
+          "kind": "task",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:24",
+          "speaker": null,
+          "start_time_ms": 382960,
+          "quote": "Perhaps soft touch, touch screen buttons because the rubber buttons are always slightly they can be slightly damaged."
+        },
+        {
+          "number": 4,
+          "kind": "task",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:36",
+          "speaker": null,
+          "start_time_ms": 699120,
+          "quote": "So we don't have to make very small, like a mobile phone or something, but somewhat bigger than small, so you don't lose it that much anymore."
+        },
+        {
+          "number": 5,
+          "kind": "transcript",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:36",
+          "speaker": "SPEAKER_4",
+          "start_time_ms": 699120,
+          "quote": "Remote control has to have a low power usage, because 75% of the users only set one time an hour."
+        },
+        {
+          "number": 6,
+          "kind": "task",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:77",
+          "speaker": null,
+          "start_time_ms": 932860,
+          "quote": "So you should make sure that you have every button they need on it."
+        },
+        {
+          "number": 7,
+          "kind": "task",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:28",
+          "speaker": null,
+          "start_time_ms": 525940,
+          "quote": "Well, personal preference is a simple remote with the basic functions that you can need, you could use."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 8.529306249925867
+    },
+    {
+      "question_id": "lcd",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "469513bf85a1fc1f7dc0ab83503d010058f5ac5c3469f8f96a1263cc1870d502",
+      "raw": {
+        "answerable": true,
+        "answer": "The team chose an LCD screen for the remote for now, with rubber buttons as the fallback if the LCD proved too expensive. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "Okay, but for now, okay LCD."
+          },
+          {
+            "ref": "D1",
+            "quote": "Yeah, if it gets too much to expensive then we should be sticking to rubber buttons."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17825,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 96,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The team chose an LCD screen for the remote for now, with rubber buttons as the fallback if the LCD proved too expensive. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:86",
+          "speaker": null,
+          "start_time_ms": 1277600,
+          "quote": "Okay, but for now, okay LCD."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 6.7281217919662595
+    },
+    {
+      "question_id": "lcd",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "f87a7e2aca81ce8527d4922bb26dfa92fdd4eebaaf0fc472ba268b0f6a57019c",
+      "raw": {
+        "answerable": true,
+        "answer": "The team chose an LCD screen for the remote for now. [D1] If the LCD proved too expensive, the fallback was rubber buttons. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "Use an LCD screen for the remote for now, with rubber buttons as the fallback if the LCD is too expensive."
+          },
+          {
+            "ref": "D1",
+            "quote": "Yeah, if it gets too much to expensive then we should be sticking to rubber buttons."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 18106,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 114,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The team chose an LCD screen for the remote for now. [1] If the LCD proved too expensive, the fallback was rubber buttons. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:86",
+          "speaker": null,
+          "start_time_ms": 1277600,
+          "quote": "Use an LCD screen for the remote for now, with rubber buttons as the fallback if the LCD is too expensive."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.789291749941185
+    },
+    {
+      "question_id": "power",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "c5ee8208098847a39dc5dc88f93c7c80a78b72d4d806f7a2296f8ef4b5b8177c",
+      "raw": {
+        "answerable": true,
+        "answer": "Users would recharge the remote using a docking station and see a low-battery indicator on its screen. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "Decision: Use rechargeable power with a docking station and show a low-battery indicator on the screen."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 18150,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 76,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "human_correctness": "not reviewed",
+      "seconds": 3.5726025828626007
+    },
+    {
+      "question_id": "power",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "86844e07341bc9a0028db6ba7f9ce3454a022510b51aad7323ce5bd206234626",
+      "raw": {
+        "answerable": true,
+        "answer": "Users would recharge the remote using a docking station [D1]. A low-battery indicator would appear on the screen [D1].",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "we're going to use a docking station"
+          },
+          {
+            "ref": "D1",
+            "quote": "a battery indicator"
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 15861,
+        "cached_input_tokens": 11392,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 78,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "Users would recharge the remote using a docking station [1]. A low-battery indicator would appear on the screen [1].",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:113",
+          "speaker": null,
+          "start_time_ms": 1495700,
+          "quote": "we're going to use a docking station"
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 6.044427499873564
+    },
+    {
+      "question_id": "teletext-b",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "e6eda6c4580ccdc57b0b8daaecd6bd157e7c8c874914c5102a80509b3eb7163b",
+      "raw": {
+        "answerable": true,
+        "answer": "Teletext should be accessed through a separate menu, rather than directly from or prominently on the main screen. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "Keep teletext available but place it in a separate menu rather than emphasizing it on the main screen."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 18074,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 77,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "Teletext should be accessed through a separate menu, rather than directly from or prominently on the main screen. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:189",
+          "speaker": null,
+          "start_time_ms": 1931540,
+          "quote": "Keep teletext available but place it in a separate menu rather than emphasizing it on the main screen."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 4.515253291931003
+    },
+    {
+      "question_id": "teletext-b",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "839fa7d9b4c089a075b82098ae182eb0f62fa0c2fa446aa725ae7fe4bcec2f8e",
+      "raw": {
+        "answerable": true,
+        "answer": "Teletext should be available through a separate menu rather than directly emphasized on the main screen. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "Keep teletext available but place it in a separate menu rather than emphasizing it on the main screen."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 15655,
+        "cached_input_tokens": 11392,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 74,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "Teletext should be available through a separate menu rather than directly emphasized on the main screen. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0",
+          "meeting_name": "TS3005b",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "64e6e3a8-5ea9-4d16-b5eb-17e023e5c1e0:turn:189",
+          "speaker": null,
+          "start_time_ms": 1931540,
+          "quote": "Keep teletext available but place it in a separate menu rather than emphasizing it on the main screen."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.922125792130828
+    },
+    {
+      "question_id": "rubber",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "1cd0d20a60d17719d6c3a7f9ef95b628d7084b25e33179546869a318bf3ec6ba",
+      "raw": {
+        "answerable": true,
+        "answer": "The housing was chosen to be made from rubber. [S1]",
+        "citations": [
+          {
+            "ref": "S1",
+            "quote": "They reaffirmed a touchscreen-only interface and rubber casing"
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17984,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 56,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The housing was chosen to be made from rubber. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "summary",
+          "meeting_id": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39",
+          "meeting_name": "TS3005c",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": null,
+          "speaker": null,
+          "start_time_ms": null,
+          "quote": "They reaffirmed a touchscreen-only interface and rubber casing"
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 4.589295082958415
+    },
+    {
+      "question_id": "rubber",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "302075772e63c28f3f394c79bb79b14433cae41e8f9e905f243a7d9a685831ba",
+      "raw": {
+        "answerable": true,
+        "answer": "Rubber was chosen for the remote-control housing.[D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The remote-control case will be made from rubber."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17548,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 55,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "Rubber was chosen for the remote-control housing.[1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39",
+          "meeting_name": "TS3005c",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39:turn:128",
+          "speaker": null,
+          "start_time_ms": 1623940,
+          "quote": "The remote-control case will be made from rubber."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 5.227356125134975
+    },
+    {
+      "question_id": "curve",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "5b4ef55d86851c60e0ae4c3066841a47f8d884f14ed8849384a1405b93a62b55",
+      "raw": {
+        "answerable": true,
+        "answer": "The team selected a single-curved form for the remote design. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "Decision: The remote control will use a single-curved form as a distinctive design feature."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17553,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 67,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "human_correctness": "not reviewed",
+      "seconds": 3.7029079999774694
+    },
+    {
+      "question_id": "curve",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "ef394011b9320777d6074737603964fd2665de8a236adc3308839e952331c022",
+      "raw": {
+        "answerable": true,
+        "answer": "The team selected a single-curved form as the remote\u2019s distinctive design feature. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The remote control will use a single-curved form as a distinctive design feature."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17995,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 68,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The team selected a single-curved form as the remote\u2019s distinctive design feature. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39",
+          "meeting_name": "TS3005c",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ba0f7138-b8a5-4fdf-8e62-b605f9ce0b39:turn:140",
+          "speaker": null,
+          "start_time_ms": 1677620,
+          "quote": "The remote control will use a single-curved form as a distinctive design feature."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.4407437909394503
+    },
+    {
+      "question_id": "removed",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "92106d94906bf5aaf12cda06419e4e5466870b7fcb00cb2a6d4a06fc972d7e5e",
+      "raw": {
+        "answerable": true,
+        "answer": "The redesign removed the scroll wheel and microphone, which also dropped speech recognition; the rest of the design stayed the same. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The redesigned remote will omit the scroll wheel and microphone, thereby dropping speech recognition; the rest of the design remains the same."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 18224,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 85,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The redesign removed the scroll wheel and microphone, which also dropped speech recognition; the rest of the design stayed the same. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+          "meeting_name": "TS3005d",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba:turn:301",
+          "speaker": null,
+          "start_time_ms": 1784840,
+          "quote": "The redesigned remote will omit the scroll wheel and microphone, thereby dropping speech recognition; the rest of the design remains the same."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.872856624890119
+    },
+    {
+      "question_id": "removed",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "cf59ed134cc2b67021e0402a162c3f8eb6cc8dd01696cf2d793e7ca50c67fe0e",
+      "raw": {
+        "answerable": true,
+        "answer": "The redesign removed the scroll wheel and the microphone, thereby dropping speech recognition; the rest of the design stayed the same. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The redesigned remote will omit the scroll wheel and microphone, thereby dropping speech recognition; the rest of the design remains the same."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 18503,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 85,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The redesign removed the scroll wheel and the microphone, thereby dropping speech recognition; the rest of the design stayed the same. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+          "meeting_name": "TS3005d",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba:turn:301",
+          "speaker": null,
+          "start_time_ms": 1784840,
+          "quote": "The redesigned remote will omit the scroll wheel and microphone, thereby dropping speech recognition; the rest of the design remains the same."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 5.523918417049572
+    },
+    {
+      "question_id": "teletext-d",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "59e6fd493e2e15da4c779451da917787a383f885d650fbd7c88e65e52b0c1ea0",
+      "raw": {
+        "answerable": true,
+        "answer": "Teletext should be on a separate button, not under the options menu, and the button should use the teletext sign. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "A separate button using the teletext sign will be used for teletext rather than placing it under the options menu."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 16198,
+        "cached_input_tokens": 11392,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 84,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "Teletext should be on a separate button, not under the options menu, and the button should use the teletext sign. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+          "meeting_name": "TS3005d",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba:turn:15",
+          "speaker": null,
+          "start_time_ms": 233160,
+          "quote": "A separate button using the teletext sign will be used for teletext rather than placing it under the options menu."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.350471790879965
+    },
+    {
+      "question_id": "teletext-d",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "9af7255a7c1998cac08492d9658d39351bc87af0d7cab3ee8883cf4cf20dc7ad",
+      "raw": {
+        "answerable": true,
+        "answer": "Teletext should be on a separate button rather than under the options menu, and the button should use the teletext sign. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "A separate button using the teletext sign will be used for teletext rather than placing it under the options menu."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 16283,
+        "cached_input_tokens": 13440,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 84,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "Teletext should be on a separate button rather than under the options menu, and the button should use the teletext sign. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+          "meeting_name": "TS3005d",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba:turn:15",
+          "speaker": null,
+          "start_time_ms": 233160,
+          "quote": "A separate button using the teletext sign will be used for teletext rather than placing it under the options menu."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 5.495718625141308
+    },
+    {
+      "question_id": "score",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "aef35f92ee094f9b6fb224bf0ce276cbb31b6d31d77cd2616c5e56d81b9ecd8e",
+      "raw": {
+        "answerable": true,
+        "answer": "The product evaluation received an average score of two. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The average is a two."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17959,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 52,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The product evaluation received an average score of two. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+          "meeting_name": "TS3005d",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba:turn:179",
+          "speaker": null,
+          "start_time_ms": 1230060,
+          "quote": "The average is a two."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 4.466869374969974
+    },
+    {
+      "question_id": "score",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "15fb9255ed716fbf4e2d14b8d86eafeaca73dac5ecc5fe15419d76fc51c2a5b2",
+      "raw": {
+        "answerable": true,
+        "answer": "The product evaluation received an average score of two. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The average is a two."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17682,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 52,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The product evaluation received an average score of two. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba",
+          "meeting_name": "TS3005d",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "d3ca0950-3f0e-4f32-9bd2-be0c9d46bfba:turn:179",
+          "speaker": null,
+          "start_time_ms": 1230060,
+          "quote": "The average is a two."
+        }
+      ],
+      "refused": false,
+      "human_correctness": "not reviewed",
+      "seconds": 3.256798333954066
+    },
+    {
+      "question_id": "unicorn",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "4681b5ee049a46c7af54fdf2e800eee984d5948807a68258b7343c13b777f9e9",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 17351,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "human_correctness": "not reviewed",
+      "seconds": 5.070440458133817
+    },
+    {
+      "question_id": "unicorn",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "9d9b1ec12dc2fca3d73ca796fb758f6b2c3c95f0b22e72dd7e9fd78e90bba8dc",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 17577,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "human_correctness": "not reviewed",
+      "seconds": 2.8768829579930753
+    },
+    {
+      "question_id": "mars",
+      "mode": "hybrid",
+      "status": "completed",
+      "prompt_sha256": "17ffd217c129d6f4f3fd4b51ed0febdd7df4457fe899096f44247bf66c457998",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 17404,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "human_correctness": "not reviewed",
+      "seconds": 6.834274249849841
+    },
+    {
+      "question_id": "mars",
+      "mode": "dense",
+      "status": "completed",
+      "prompt_sha256": "cca96f327acbc97f54799cda3228cf6767a2959812fac7a55b3fc6f9edc97eff",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 17230,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "human_correctness": "not reviewed",
+      "seconds": 3.0745408749207854
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "workloads": [
+    {
+      "workload": "recording-to-results",
+      "completed": 3,
+      "median_seconds": 8.325865917140618,
+      "min_seconds": 7.249435666017234,
+      "max_seconds": 11.275952541036531,
+      "mean_input_tokens": 17127.333333333332,
+      "mean_output_tokens": 147.33333333333334,
+      "mean_cached_input_tokens": 0,
+      "mean_hypothetical_api_usd": 0.071456
+    },
+    {
+      "workload": "supported-chat",
+      "completed": 3,
+      "median_seconds": 4.430867958115414,
+      "min_seconds": 3.7564039169810712,
+      "max_seconds": 4.5362244171556085,
+      "mean_input_tokens": 17826.666666666668,
+      "mean_output_tokens": 91,
+      "mean_cached_input_tokens": 10154.666666666666,
+      "mean_hypothetical_api_usd": 0.036569866666666666
+    },
+    {
+      "workload": "unsupported-chat",
+      "completed": 3,
+      "median_seconds": 4.541306958068162,
+      "min_seconds": 3.8148979579564184,
+      "max_seconds": 5.3752947088796645,
+      "mean_input_tokens": 16817.333333333332,
+      "mean_output_tokens": 22,
+      "mean_cached_input_tokens": 14634.666666666666,
+      "mean_hypothetical_api_usd": 0.015024533333333333
+    }
+  ],
+  "pricing": {
+    "date_checked": "2026-10-26",
+    "url": "https://developers.openai.com/api/docs/pricing",
+    "model": "gpt-5.6-sol",
+    "input_per_million": 4,
+    "cached_per_million": 0.4,
+    "output_per_million": 20,
+    "actual_cli_charges": "not measured",
+    "exclusions": [
+      "cache writes",
+      "regional/fast tier uplifts",
+      "local hardware/electricity",
+      "embedding",
+      "database/storage",
+      "network",
+      "subscription allocation"
+    ]
+  }
+}

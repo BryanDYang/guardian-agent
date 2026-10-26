@@ -235,7 +235,9 @@ policy boundaries, account controls, retry behavior, and test steps.
    This helps answers reflect current task status instead of only old index text.
 6. Codex or Claude returns a structured answer and quote citations. The server
    verifies source handles and exact quotes, maps them to meetings/timestamps,
-   and returns a refusal when no verified citation remains.
+   and refuses the entire reply if any citation fails validation or answer markers
+   disagree with the verified citations. Literal quotes do not establish semantic
+   entailment; human answer review remains necessary.
 7. Messages/citations are persisted. Native citation navigation opens the related
    meeting and seeks audio. Generation is request/response, not token streaming.
 

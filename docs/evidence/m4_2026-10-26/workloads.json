@@ -1,0 +1,251 @@
+{
+  "environment": "macOS-27.0.1-arm64-arm-64bit",
+  "processor": "arm64",
+  "model": "gpt-5.6-sol",
+  "whisper": "mlx/base",
+  "diarize": false,
+  "cli": "codex-cli 0.163.0",
+  "scope": "local audio-to-extraction and frozen-source chat, excludes upload/auth/database/retrieval/mobile UI",
+  "runs": [
+    {
+      "workload": "recording-to-results",
+      "repeat": 1,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "transcription_seconds": 4.52831054199487,
+      "usage": {
+        "input_tokens": 17128,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 67,
+        "reasoning_output_tokens": 0
+      },
+      "extraction_seconds": 3.797,
+      "audio_seconds": 45,
+      "status": "completed",
+      "seconds": 8.325865917140618
+    },
+    {
+      "workload": "recording-to-results",
+      "repeat": 2,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "transcription_seconds": 3.4903914160095155,
+      "usage": {
+        "input_tokens": 17124,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 64,
+        "reasoning_output_tokens": 0
+      },
+      "extraction_seconds": 3.758,
+      "audio_seconds": 45,
+      "status": "completed",
+      "seconds": 7.249435666017234
+    },
+    {
+      "workload": "recording-to-results",
+      "repeat": 3,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "transcription_seconds": 3.606576125137508,
+      "usage": {
+        "input_tokens": 17130,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 311,
+        "reasoning_output_tokens": 88
+      },
+      "extraction_seconds": 7.667,
+      "audio_seconds": 45,
+      "status": "completed",
+      "seconds": 11.275952541036531
+    },
+    {
+      "workload": "supported-chat",
+      "repeat": 1,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "question_id": "price",
+      "raw": {
+        "answerable": true,
+        "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17828,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 91,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:59",
+          "speaker": null,
+          "start_time_ms": 766260,
+          "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+        }
+      ],
+      "refused": false,
+      "status": "completed",
+      "seconds": 3.7564039169810712
+    },
+    {
+      "workload": "supported-chat",
+      "repeat": 2,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "question_id": "price",
+      "raw": {
+        "answerable": true,
+        "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17826,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 91,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:59",
+          "speaker": null,
+          "start_time_ms": 766260,
+          "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+        }
+      ],
+      "refused": false,
+      "status": "completed",
+      "seconds": 4.5362244171556085
+    },
+    {
+      "workload": "supported-chat",
+      "repeat": 3,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "question_id": "price",
+      "raw": {
+        "answerable": true,
+        "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [D1]",
+        "citations": [
+          {
+            "ref": "D1",
+            "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+          }
+        ]
+      },
+      "usage": {
+        "input_tokens": 17826,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 91,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "The targeted selling price was \u20ac25, and the maximum manufacturing cost was \u20ac12.50. [1]",
+      "citations": [
+        {
+          "number": 1,
+          "kind": "decision",
+          "meeting_id": "ebb6257d-4be3-4e72-8138-bc3b30a938e3",
+          "meeting_name": "TS3005a",
+          "meeting_date": "2026-10-11T00:00:00+00:00",
+          "turn_key": "ebb6257d-4be3-4e72-8138-bc3b30a938e3:turn:59",
+          "speaker": null,
+          "start_time_ms": 766260,
+          "quote": "The commercial targets are a selling price of 25 euros, production costs of no more than 12 euro 50, revenue of 50 million euros, and an international market."
+        }
+      ],
+      "refused": false,
+      "status": "completed",
+      "seconds": 4.430867958115414
+    },
+    {
+      "workload": "unsupported-chat",
+      "repeat": 1,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "question_id": "unicorn",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 15296,
+        "cached_input_tokens": 13440,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "status": "completed",
+      "seconds": 4.541306958068162
+    },
+    {
+      "workload": "unsupported-chat",
+      "repeat": 2,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "question_id": "unicorn",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 17579,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "status": "completed",
+      "seconds": 3.8148979579564184
+    },
+    {
+      "workload": "unsupported-chat",
+      "repeat": 3,
+      "cache": "existing model weights; new process; provider cache uncontrolled",
+      "question_id": "unicorn",
+      "raw": {
+        "answerable": false,
+        "answer": "",
+        "citations": []
+      },
+      "usage": {
+        "input_tokens": 17577,
+        "cached_input_tokens": 15232,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 22,
+        "reasoning_output_tokens": 0
+      },
+      "answer": "I don't know. The meetings in this project don't cover that.",
+      "citations": [],
+      "refused": true,
+      "status": "completed",
+      "seconds": 5.3752947088796645
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "source_start_seconds": 205,
+    "duration_seconds": 10,
+    "narration": "Meetings should lead to reviewable work. This is a synthetic audio upload in a fresh test project. Processing waits are removed.",
+    "voice": "macOS Samantha synthetic",
+    "label": "SYNTHETIC UPLOAD - WAITS REMOVED"
+  },
+  {
+    "source_start_seconds": 564,
+    "duration_seconds": 10,
+    "narration": "The transcript preserves the checklist commitment, date, and source timestamps. Speaker identity remains unknown in this transcription-only run.",
+    "voice": "macOS Samantha synthetic",
+    "label": "TRANSCRIPT WITH SOURCE TIMESTAMPS"
+  },
+  {
+    "source_start_seconds": 292,
+    "duration_seconds": 12,
+    "narration": "The task starts pending. Here, the tester explicitly assigns the task and manually sets October thirtieth. Automatic date resolution is not claimed.",
+    "voice": "macOS Samantha synthetic",
+    "label": "MANUAL ASSIGNEE AND DATE ENTRY"
+  },
+  {
+    "source_start_seconds": 360,
+    "duration_seconds": 12,
+    "narration": "After checking the quoted evidence, the tester approves the task. Automatic approval stays off throughout this acceptance run.",
+    "voice": "macOS Samantha synthetic",
+    "label": "REVIEW EVIDENCE, THEN APPROVE"
+  },
+  {
+    "source_start_seconds": 415,
+    "duration_seconds": 10,
+    "narration": "The approved checklist appears on October thirtieth in Calendar. Task completion and Undo were also checked.",
+    "voice": "macOS Samantha synthetic",
+    "label": "APPROVED TASK IN CALENDAR"
+  },
+  {
+    "source_start_seconds": 480,
+    "duration_seconds": 10,
+    "narration": "One follow-up is captured for testing with the task, due date, and meeting evidence. Nothing is sent to a real inbox.",
+    "voice": "macOS Samantha synthetic",
+    "label": "CAPTURED FOR TESTING - NO EMAIL SENT"
+  },
+  {
+    "source_start_seconds": 595,
+    "duration_seconds": 12,
+    "narration": "Project chat answers what the checklist covers and links to the transcript at eight seconds. Citations remain subject to human review.",
+    "voice": "macOS Samantha synthetic",
+    "label": "SUPPORTED ANSWER WITH CITATION"
+  },
+  {
+    "source_start_seconds": 710,
+    "duration_seconds": 9,
+    "narration": "After relaunch, the conversation persists and the absent password question refuses. This is Meeting Memory. Repository: Bryan D Yang, guardian agent.",
+    "voice": "macOS Samantha synthetic",
+    "label": "PERSISTENCE AND GROUNDED REFUSAL"
+  }
+]

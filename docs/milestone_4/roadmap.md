@@ -11,7 +11,7 @@ Local assignment sources: `contexts/milestone_4/Milestone 4.pdf` and
 `contexts/milestone_4/CIS-5980_Phase 4.pptx`. These ignored references are not
 available in a fresh clone. The PDF requires a single submission PDF, repository
 link, weekly updates, and a mandatory TA check-in. Canvas owns the deadline;
-no exact Milestone 4 deadline has been verified. The rubric allocates 60 points
+Bryan confirmed November 16, 2026 as the Canvas deadline on October 26. The rubric allocates 60 points
 to release/evaluation readiness and 40 to documentation/demo readiness.
 
 | Requirement | Existing foundation | Completion evidence still needed |
@@ -56,7 +56,7 @@ application deployment is optional; a publicly accessible demo video is required
 See the [dated RAG evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
 and [review update](../weekly_journal.md#october-22-23-human-review-and-demo-preparation).
 
-## Proposed release flow
+## Release candidate flow
 
 A consented recording in a fresh project becomes a transcript, summary and
 reviewable task with source evidence. A human confirms identity, owner and any
@@ -64,7 +64,7 @@ unresolved date, approves the task, sees it in Tasks/Calendar and inspects one
 captured follow-up. Supported chat cites project evidence; unsupported chat
 abstains. Relaunch preserves the result.
 
-This is the initial acceptance scope, not a claim it has passed. Label capture
+This is the selected manual-review acceptance scope, not a claim it has passed. Label capture
 mode visibly; real inbox delivery requires observed receipt. Demonstrate
 experimental automatic approval separately and disclose its gates. Do not imply
 that manual date entry or task completion proves automatic continuity.
@@ -96,3 +96,14 @@ Prepare release run instructions; evaluation results and representative failures
 latency/cost summary; red-team results and mitigations; documentation outline;
 and demo plan. The journal records a request for the week of November 2, but no
 accepted time. Do not treat that request as a confirmed Milestone 4 check-in.
+
+
+## October 26 execution checkpoint
+
+The [execution evidence](../evidence/demo_walkthrough.md#october-26-milestone-4-release-checkpoint)
+records the fresh-install audio check, signed simulator build, full database tests,
+frozen-source answer rerun, workload measurements and bounded red-team pass.
+The backend now passes disabled diarization explicitly; citation verification
+refuses mixed invalid/valid replies. No completed human answer review, narrated
+public demo or TA check-in is implied. See the [report draft](submission_draft.md)
+for the reviewer checklist and remaining submission fields.

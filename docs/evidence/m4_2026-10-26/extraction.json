@@ -1,0 +1,3963 @@
+{
+  "fixture": "tests/fixtures/evaluation/development.json",
+  "label_status": "AI-authored frozen development labels; no human adjudication",
+  "runs": {
+    "codex": {
+      "run": {
+        "suite_sha256": "12dac15605c0b354828b792d8dd5c136fa39ae3694cdc7dab29ce4245753d7b5",
+        "suite_version": "synthetic-extraction-dev-v1",
+        "method": "codex",
+        "model": "gpt-5.6-sol",
+        "started_at": "2026-10-26T22:01:07.773162+00:00",
+        "platform": "macOS-27.0.1-arm64-arm-64bit",
+        "python": "3.12.13",
+        "git_revision": "5634435681f4d6fc57e7d13fc8e6312b6feafff7",
+        "source_sha256": "fd0ae195f21270b14afdf785fc32621ed0c62193d4251e4017d8db6b054f0a85"
+      },
+      "scores": {
+        "scorer_version": "action-terms-v1",
+        "run": {
+          "suite_sha256": "12dac15605c0b354828b792d8dd5c136fa39ae3694cdc7dab29ce4245753d7b5",
+          "suite_version": "synthetic-extraction-dev-v1",
+          "method": "codex",
+          "model": "gpt-5.6-sol",
+          "started_at": "2026-10-26T22:01:07.773162+00:00",
+          "platform": "macOS-27.0.1-arm64-arm-64bit",
+          "python": "3.12.13",
+          "git_revision": "5634435681f4d6fc57e7d13fc8e6312b6feafff7",
+          "source_sha256": "fd0ae195f21270b14afdf785fc32621ed0c62193d4251e4017d8db6b054f0a85"
+        },
+        "counts": {
+          "predicted": 14,
+          "matched": 13,
+          "duplicates": 1,
+          "owner_correct": 12,
+          "owner_total": 12,
+          "unknown_owner_correct": 0,
+          "unknown_owner_total": 1,
+          "deadline_correct": 5,
+          "deadline_total": 13,
+          "citation_valid": 28,
+          "citation_total": 28,
+          "evidence_complete": 13,
+          "failed": 0,
+          "schema_valid": 24,
+          "negative_correct": 11,
+          "negative_total": 11,
+          "gold": 15
+        },
+        "metrics": {
+          "task_precision_proxy": {
+            "numerator": 13,
+            "denominator": 14,
+            "value": 0.9285714285714286
+          },
+          "task_recall_proxy": {
+            "numerator": 13,
+            "denominator": 15,
+            "value": 0.8666666666666667
+          },
+          "task_f1_proxy": {
+            "numerator": 26,
+            "denominator": 29,
+            "value": 0.896551724137931
+          },
+          "duplicate_proxy": {
+            "numerator": 1,
+            "denominator": 14,
+            "value": 0.07142857142857142
+          },
+          "evidence_completeness": {
+            "numerator": 13,
+            "denominator": 13,
+            "value": 1.0
+          },
+          "owner": {
+            "numerator": 12,
+            "denominator": 12,
+            "value": 1.0
+          },
+          "unknown_owner": {
+            "numerator": 0,
+            "denominator": 1,
+            "value": 0.0
+          },
+          "deadline": {
+            "numerator": 5,
+            "denominator": 13,
+            "value": 0.38461538461538464
+          },
+          "negative": {
+            "numerator": 11,
+            "denominator": 11,
+            "value": 1.0
+          },
+          "citation_validity": {
+            "numerator": 28,
+            "denominator": 28,
+            "value": 1.0
+          }
+        },
+        "cases": [
+          {
+            "id": "explicit",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "prepare transcript fixture",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "prepare",
+                    "create"
+                  ],
+                  [
+                    "transcript"
+                  ],
+                  [
+                    "fixture"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Prepare the transcript fixture",
+                "owner": "Sam",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will prepare the transcript fixture by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contraction",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "rerun baseline",
+                "owner": "Will",
+                "due_date_text": "tomorrow",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "rerun",
+                    "run"
+                  ],
+                  [
+                    "baseline"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Rerun the baseline",
+                "owner": "Will",
+                "due_date_text": "tomorrow",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I'll rerun the baseline tomorrow."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "volunteer",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review labels",
+                "owner": "Guadalupe",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "label"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Review the labels",
+                "owner": "Guadalupe",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I can take responsibility for reviewing the labels."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "accepted_request",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "upload slides",
+                "owner": "Will",
+                "due_date_text": "Monday",
+                "evidence_ids": [
+                  "t1",
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "upload",
+                    "share"
+                  ],
+                  [
+                    "slide"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Upload the slides",
+                "owner": "Will",
+                "due_date_text": "by Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will, could you upload the slides?"
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will do that by Monday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "unaccepted_request",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "suggestion",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "negated",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "conditional",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "completed",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "partial_progress",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "unknown_owner",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send slides",
+                "owner": null,
+                "due_date_text": "Thursday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "slide"
+                  ]
+                ]
+              }
+            ],
+            "matches": [],
+            "errors": [
+              "missed gold: g1"
+            ],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": []
+          },
+          {
+            "id": "no_deadline",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "update documentation",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "update",
+                    "revise"
+                  ],
+                  [
+                    "documentation",
+                    "docs"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Update the documentation",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will update the documentation."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "two_owners",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review schema",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "schema"
+                  ]
+                ]
+              },
+              {
+                "id": "g2",
+                "title": "test upload endpoint",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "test"
+                  ],
+                  [
+                    "upload"
+                  ],
+                  [
+                    "endpoint"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              },
+              {
+                "prediction": 1,
+                "gold": "g2"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 2,
+              "matched": 2,
+              "duplicates": 0,
+              "owner_correct": 2,
+              "owner_total": 2,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 2,
+              "deadline_total": 2,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 2,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 2
+            },
+            "predictions": [
+              {
+                "title": "Review the schema",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema."
+                  }
+                ]
+              },
+              {
+                "title": "Test the upload endpoint",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "I will test the upload endpoint."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "repeat",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send report",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "report"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Send the report",
+                "owner": "Sam",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the report by Friday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "To repeat, I will send the report by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "correction",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send report",
+                "owner": "Sam",
+                "due_date_text": "Monday",
+                "evidence_ids": [
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "report"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Send the report",
+                "owner": "Sam",
+                "due_date_text": "by Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Correction: I will send the report by Monday, not Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "declined",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "decision_only",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "quoted_promise",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "injection",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "joint",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review schema",
+                "owner": null,
+                "due_date_text": "Tuesday",
+                "evidence_ids": [
+                  "t1",
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "schema"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "owner: g1",
+              "deadline: g1",
+              "unmatched prediction: 1"
+            ],
+            "counts": {
+              "predicted": 2,
+              "matched": 1,
+              "duplicates": 1,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 1,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 4,
+              "citation_total": 4,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Review the schema together",
+                "owner": "Sam",
+                "due_date_text": "by Tuesday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will and I will review the schema together by Tuesday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, we will both review it."
+                  }
+                ]
+              },
+              {
+                "title": "Review the schema together",
+                "owner": "Will",
+                "due_date_text": "by Tuesday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will and I will review the schema together by Tuesday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, we will both review it."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "assignment",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "prepare demo",
+                "owner": "Will",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1",
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "prepare",
+                    "create"
+                  ],
+                  [
+                    "demo"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Prepare the demo",
+                "owner": "Will",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will is responsible for preparing the demo by Friday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "I accept responsibility for preparing the demo."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "reassignment",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send report",
+                "owner": "Will",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "report"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 4,
+              "citation_total": 4,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Send the report",
+                "owner": "Will",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I was going to send the report, but Will is taking over."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will send the report by Friday instead of Sam."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "two_actions",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review schema",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "schema"
+                  ]
+                ]
+              },
+              {
+                "id": "g2",
+                "title": "send slides",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "slide"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1",
+              "missed gold: g2"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 2
+            },
+            "predictions": [
+              {
+                "title": "Review the schema and send the slides",
+                "owner": "Sam",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema and send the slides by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "silence",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          }
+        ],
+        "latency_sample_count": 24,
+        "mean_wall_seconds": 4.402416666666666,
+        "limitations": "AI-authored development labels; lexical action matching proxy; no human adjudication, held-out quality, semantic support or state scoring."
+      },
+      "outputs": [
+        {
+          "case_id": "accepted_request",
+          "input_sha256": "0f3e1b04d245043be4e45e0d1c2b0df12cbee4c62cd0614adf487d944f71e628",
+          "project_id": "synthetic-eval",
+          "meeting_id": "accepted_request",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "0295d488a486fff8522f3be64209d9ead43718575ae0ce2be680e0870fdd9f41",
+          "transcript_sha256": "e0a589634c6a981e9d57634929d26d780f34f237cd298f3f5328f5f007f303a4",
+          "elapsed_seconds": 4.946,
+          "usage": {
+            "input_tokens": 16652,
+            "cached_input_tokens": 11520,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 101,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam asked Will to upload the slides, and Will accepted with a Monday deadline.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Upload the slides",
+                "owner": "Will",
+                "due_date_text": "by Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will, could you upload the slides?"
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will do that by Monday."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 4.946
+        },
+        {
+          "case_id": "assignment",
+          "input_sha256": "a4d949f76d1bafe4a92d66484a9c560f828ccbca28f2a235cd7e557e02bd591b",
+          "project_id": "synthetic-eval",
+          "meeting_id": "assignment",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "f7ce6ddfe3d18b38f020edc65dd6580e53ecfe3175a9200aa2aeb09aa9fb42e0",
+          "transcript_sha256": "94c895acc275b5662d4fb4a852abbdf499d87cab1d7d39e438cb20d10b66bdae",
+          "elapsed_seconds": 5.643,
+          "usage": {
+            "input_tokens": 16651,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 102,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam assigned Will to prepare the demo by Friday, and Will explicitly accepted responsibility.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Prepare the demo",
+                "owner": "Will",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will is responsible for preparing the demo by Friday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "I accept responsibility for preparing the demo."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 5.643
+        },
+        {
+          "case_id": "completed",
+          "input_sha256": "d9547851586ca0967298664e4a9c0f07f25f80ff022ee31f44ca65b96d768f99",
+          "project_id": "synthetic-eval",
+          "meeting_id": "completed",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "a9f89a532a94ef05f703c4642f7fa068bd63cd7168ec9ebebdfc290f5e894656",
+          "transcript_sha256": "e3e5868eedd318e0f846a19433ea3dafdc7b8d81227eedb8afdabe636a343969",
+          "elapsed_seconds": 3.739,
+          "usage": {
+            "input_tokens": 16611,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 35,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will reported that the label review was completed yesterday.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 3.739
+        },
+        {
+          "case_id": "conditional",
+          "input_sha256": "bc415c64ef6849d916c698cbb3aa31abdbd2997259165e577e49a908b396f369",
+          "project_id": "synthetic-eval",
+          "meeting_id": "conditional",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "454805c93630d7e4a9cdb2e52bfbaf8138dca47fe602d661b850445e69d4bfdb",
+          "transcript_sha256": "c3cd0b36e16272d31c2d90d8d455710c4062eda9ad4c65cb155e5e491509a30c",
+          "elapsed_seconds": 5.809,
+          "usage": {
+            "input_tokens": 16619,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 93,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will conditionally suggested rerunning the baseline if cluster access becomes available; no decision or commitment was made.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": [
+              {
+                "statement": "Will might rerun the baseline if access to the cluster is obtained.",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "If we get access to the cluster, I might rerun the baseline."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 5.809
+        },
+        {
+          "case_id": "contraction",
+          "input_sha256": "cbef5cec0de4bc5b1cf320ede5c09b8b2b2a990aa006366abc5b0fc8343489b7",
+          "project_id": "synthetic-eval",
+          "meeting_id": "contraction",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "9ce0e13661e08d8848a72dd55f84961ea45779a1a25549301619ab040b140a12",
+          "transcript_sha256": "21992fc67bc7c564c17e47376050f53d28871c75b3cb8862577711995012e91f",
+          "elapsed_seconds": 3.631,
+          "usage": {
+            "input_tokens": 16614,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 76,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will committed to rerunning the baseline tomorrow.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Rerun the baseline",
+                "owner": "Will",
+                "due_date_text": "tomorrow",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I'll rerun the baseline tomorrow."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 3.631
+        },
+        {
+          "case_id": "correction",
+          "input_sha256": "6f50d2729ffa404d60d5aecff7c32a6ded9da500edafe345d32be112ec4aa106",
+          "project_id": "synthetic-eval",
+          "meeting_id": "correction",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "51c24df6f36c46197e606ec6e3873ec8f877880a9491abb7cbe187f0c46b82a7",
+          "transcript_sha256": "c5a2cfba8fa66894676237490bd0ff84ca1e17f420e8cfef82ef630a0bc365f0",
+          "elapsed_seconds": 4.138,
+          "usage": {
+            "input_tokens": 16654,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 86,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam committed to sending the report by Monday, correcting the earlier Friday deadline.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Send the report",
+                "owner": "Sam",
+                "due_date_text": "by Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Correction: I will send the report by Monday, not Friday."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 4.138
+        },
+        {
+          "case_id": "decision_only",
+          "input_sha256": "ba37ab00773f9466275fcbb66b532a5d307b1f9a699c7eaa6b33176ef1a603d9",
+          "project_id": "synthetic-eval",
+          "meeting_id": "decision_only",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "91e1dad4bfb80724b766d2a445ebc322526e2e0a54a2f6f67b0c96726d8cda21",
+          "transcript_sha256": "1f4e3920220737c3da10c6db1a884cf6e6eb80f32c151184fba8aa383046319c",
+          "elapsed_seconds": 5.205,
+          "usage": {
+            "input_tokens": 16649,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 97,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will proposed using PostgreSQL, and Sam agreed, establishing PostgreSQL as the database choice.",
+            "decisions": [
+              {
+                "statement": "PostgreSQL will be used as the database.",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Let us use PostgreSQL."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Agreed. PostgreSQL is our database choice."
+                  }
+                ]
+              }
+            ],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 5.206
+        },
+        {
+          "case_id": "declined",
+          "input_sha256": "7f24baa187d06b98906d9cb4e7e64d78cb9584c70680122ede058ddc06e36bb3",
+          "project_id": "synthetic-eval",
+          "meeting_id": "declined",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "fce6ab7a0d3ff401512727a67df8c8d90d152a8ed61bfa97108b6ec6712d9cb5",
+          "transcript_sha256": "2640180b5fc2f92587b2b823f614192e1f53e0526d382fa9a789f1f82c004ad2",
+          "elapsed_seconds": 3.77,
+          "usage": {
+            "input_tokens": 16647,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 69,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will asked Sam to review the schema, but Sam declined.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": [
+              {
+                "statement": "Sam should review the schema.",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Could you review the schema, Sam?"
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 3.77
+        },
+        {
+          "case_id": "explicit",
+          "input_sha256": "fc40ed5b4af1fce281139ce247392c226fdbdea16afaf356b1ddfa803fab0b51",
+          "project_id": "synthetic-eval",
+          "meeting_id": "explicit",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "58cb8382f374ad85b81c3f9d1577f4be773a26be648d6585879c6036623db44e",
+          "transcript_sha256": "bce7f5aa9eb432cf77c2dc478cfd9206b824e756c4feffde7765a70d8d4ff289",
+          "elapsed_seconds": 4.579,
+          "usage": {
+            "input_tokens": 16615,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 78,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam committed to preparing the transcript fixture by Friday.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Prepare the transcript fixture",
+                "owner": "Sam",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will prepare the transcript fixture by Friday."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 4.582
+        },
+        {
+          "case_id": "injection",
+          "input_sha256": "5cc47cebc9f06fe4920bbfb3d0bcbcae0b4d5c0da7532fd3a157b9a46dd68c85",
+          "project_id": "synthetic-eval",
+          "meeting_id": "injection",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "688cefcdcc0e6d8a7258db98540a6e40963c0fa69b4306530b6379c4d500229e",
+          "transcript_sha256": "a1bad39e984243ee29f21852dbcf436dce77f4289149e36887af0c9d21a4908a",
+          "elapsed_seconds": 3.519,
+          "usage": {
+            "input_tokens": 16660,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 61,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam presented an adversarial-test instruction to invent a database-deletion commitment, and Will clarified that it was not a real assignment. No decisions, commitments, or suggestions were made.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 3.52
+        },
+        {
+          "case_id": "joint",
+          "input_sha256": "f096757bade4791493fb6db8ed01b48f42458d55683a084a7f0618a00bb366ce",
+          "project_id": "synthetic-eval",
+          "meeting_id": "joint",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "2aa1e4bcc1a5668d30e834d0182f0fbca3aefb8405b4cf7fe8e3e2f608c37edc",
+          "transcript_sha256": "4cd0bdd30f706477fc82cd8718f6c93e86f669e5aaf3d722032c73fdbe0e9ab7",
+          "elapsed_seconds": 4.676,
+          "usage": {
+            "input_tokens": 16649,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 162,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam and Will agreed to review the schema together by Tuesday.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Review the schema together",
+                "owner": "Sam",
+                "due_date_text": "by Tuesday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will and I will review the schema together by Tuesday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, we will both review it."
+                  }
+                ]
+              },
+              {
+                "title": "Review the schema together",
+                "owner": "Will",
+                "due_date_text": "by Tuesday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will and I will review the schema together by Tuesday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, we will both review it."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 4.676
+        },
+        {
+          "case_id": "negated",
+          "input_sha256": "26a718b0b79a47548fb137ef98070cc4ec8e4addcdfbebe530dbafc0739848f6",
+          "project_id": "synthetic-eval",
+          "meeting_id": "negated",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "f108a709a6ea2be5fd80dd852eb7716516c96abe33a3cead4fcec11838e6de32",
+          "transcript_sha256": "10f3c83ea51a204a2c8a2a1e28ae43d9e30c66b62fe8a3d34f5aeb154c202de2",
+          "elapsed_seconds": 3.272,
+          "usage": {
+            "input_tokens": 14334,
+            "cached_input_tokens": 11520,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 39,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will explicitly stated that the baseline will not be rerun this week.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 3.272
+        },
+        {
+          "case_id": "no_deadline",
+          "input_sha256": "1d56a7f488b50ffc85efb26c85b9b8c1f32993d4ab46e97d52f8d7316151c8d9",
+          "project_id": "synthetic-eval",
+          "meeting_id": "no_deadline",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "c89f7f5df91731f0e92167ecc056850cd39751c0a65f844b67b28929b91d4178",
+          "transcript_sha256": "bfb24cc034a57fd815c8b0af23ade0959db64e6c9e0454ae5c91c60057904a2b",
+          "elapsed_seconds": 5.076,
+          "usage": {
+            "input_tokens": 16614,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 75,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam committed to updating the documentation; no deadline was specified.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Update the documentation",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will update the documentation."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 5.076
+        },
+        {
+          "case_id": "partial_progress",
+          "input_sha256": "826826a235cbc4d03cc9a2ec46ad2cf49edaf606ab36f50662612b5a01d2ab75",
+          "project_id": "synthetic-eval",
+          "meeting_id": "partial_progress",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "2b7f978a6aa9f5c8120bc0de03d48843f9f306a24d4cba42c00dbdfb018aa25d",
+          "transcript_sha256": "f318d18292a0b00ae74721cfe2ed08bc45d84edf3af08d4a4afc113d3286ec6f",
+          "elapsed_seconds": 4.612,
+          "usage": {
+            "input_tokens": 16620,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 44,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will reported that half of the labels have been reviewed and that the review is not yet complete.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 4.612
+        },
+        {
+          "case_id": "quoted_promise",
+          "input_sha256": "0dc08eda495a80daa028f96452564e767fb74546779c9bc50da924e2dba6c9c3",
+          "project_id": "synthetic-eval",
+          "meeting_id": "quoted_promise",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "7a1990dc37295c09e99927346e702904b47d5ab3578f2b8bb5b3df0fa6f994d9",
+          "transcript_sha256": "b42701bb66c6154f83dee248abe3d1f95141ab5164ac65711b62a0a4fdf6a5fe",
+          "elapsed_seconds": 3.788,
+          "usage": {
+            "input_tokens": 16630,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 41,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam clarifies that a quoted example sentence in the documentation is not an assignment.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 3.788
+        },
+        {
+          "case_id": "reassignment",
+          "input_sha256": "ba71cfaa167c6b502317300ffc903e5d730804f5847ade0988b155f0742483bd",
+          "project_id": "synthetic-eval",
+          "meeting_id": "reassignment",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "f6c3afeaabf70f431305abd2e2b80706cca84b6f9435ddf7ccc5b48c177247eb",
+          "transcript_sha256": "b5375356fff8dbc2e120ccb1af70174ca437b3d6e128cf03553ee03d6ccee591",
+          "elapsed_seconds": 5.329,
+          "usage": {
+            "input_tokens": 16658,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 177,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Will took over responsibility from Sam for sending the report and agreed to send it by Friday.",
+            "decisions": [
+              {
+                "statement": "Will will send the report instead of Sam.",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I was going to send the report, but Will is taking over."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will send the report by Friday instead of Sam."
+                  }
+                ]
+              }
+            ],
+            "commitments": [
+              {
+                "title": "Send the report",
+                "owner": "Will",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I was going to send the report, but Will is taking over."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will send the report by Friday instead of Sam."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 5.33
+        },
+        {
+          "case_id": "repeat",
+          "input_sha256": "01d83301015ad46a67c6722c660139b40def2404b28e2ba816381901e004835a",
+          "project_id": "synthetic-eval",
+          "meeting_id": "repeat",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "5da4a8d72d56630e14a5aa94362656f57932fa17a0f82171d3cb79545d8063d6",
+          "transcript_sha256": "35b21e1dd74f5f6900a47bdabe3c75aad8346a0aeabaef4ebc88d1261b345b05",
+          "elapsed_seconds": 6.141,
+          "usage": {
+            "input_tokens": 16653,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 101,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam explicitly committed to sending the report by Friday and repeated the commitment.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Send the report",
+                "owner": "Sam",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the report by Friday."
+                  },
+                  {
+                    "transcript_id": "t2",
+                    "quote": "To repeat, I will send the report by Friday."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 6.141
+        },
+        {
+          "case_id": "silence",
+          "input_sha256": "2f8df4aa5a904b222370b70cadccad95f593cd65e52f3bc0fedbde870a98edb3",
+          "project_id": "synthetic-eval",
+          "meeting_id": "silence",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "04c9e6333cd2aaa700ff408ee866ead412f64ff53d38339da36589b754815b1f",
+          "transcript_sha256": "e18278f54c1cc4036f68af229096c50a0265e5eaf6f3661e682fb7cc0ce9c760",
+          "elapsed_seconds": 3.713,
+          "usage": {
+            "input_tokens": 16616,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 48,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "The discussion covered the weather and scheduling the next meeting, but no specific decisions, commitments, or suggestions were recorded.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 3.713
+        },
+        {
+          "case_id": "suggestion",
+          "input_sha256": "a0eabeaab1e45970757d52e7ba7cfbad23bbaea1a5bbc13b38f58a5b174f6634",
+          "project_id": "synthetic-eval",
+          "meeting_id": "suggestion",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "4c92c44e87163e731850903048157431ecdffa1bc7333bf9e8e0593e224f8840",
+          "transcript_sha256": "b34ca72c0f5eca2229ae67d3e031564a2449046003d313204a784ced0ea83ef8",
+          "elapsed_seconds": 3.636,
+          "usage": {
+            "input_tokens": 16619,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 79,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam suggested trying mixed precision for the next experiment, but no decision or commitment was made.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": [
+              {
+                "statement": "Try mixed precision for the next experiment.",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "You could try mixed precision for the next experiment."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 3.636
+        },
+        {
+          "case_id": "two_actions",
+          "input_sha256": "fe029daab5039329f42c1cabd7ef880c6a089f16b061a3cd799c971c6df50e52",
+          "project_id": "synthetic-eval",
+          "meeting_id": "two_actions",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "a77cbc4a9d2cb07571565dc22bc1be4a74cb0511a55ccd1106952ad9c3f9f999",
+          "transcript_sha256": "fc903c95b9212cd672c51ceb3e6184cbbbf5dbf0715cb2bf3266b2bf259a1956",
+          "elapsed_seconds": 3.551,
+          "usage": {
+            "input_tokens": 16617,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 87,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam committed to reviewing the schema and sending the slides by Friday.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Review the schema and send the slides",
+                "owner": "Sam",
+                "due_date_text": "by Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema and send the slides by Friday."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 3.551
+        },
+        {
+          "case_id": "two_owners",
+          "input_sha256": "f9c554e9dd748efc73a8118b46ba90a9f2c92144e7c430dfff1ad20cf22d9595",
+          "project_id": "synthetic-eval",
+          "meeting_id": "two_owners",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "5373127b21150ee8792930a3ce6ed9630267abd03a77dd928d43ae35f598c06a",
+          "transcript_sha256": "e430bf8bb8ecaef4882244230fe58dfa375f301aeb17847596a1f3cc616612ef",
+          "elapsed_seconds": 4.002,
+          "usage": {
+            "input_tokens": 16645,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 119,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam and Will each accepted a separate project task: schema review and upload endpoint testing.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Review the schema",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema."
+                  }
+                ]
+              },
+              {
+                "title": "Test the upload endpoint",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "I will test the upload endpoint."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 4.003
+        },
+        {
+          "case_id": "unaccepted_request",
+          "input_sha256": "f7f9a741846388971fc97b4cc99d892bd3a8df655ead83ddf3cb1731cbcc0049",
+          "project_id": "synthetic-eval",
+          "meeting_id": "unaccepted_request",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "2366f6491fcdae8493a86c90fb81b51bb178d63d70d7d1c8df9e9d320282ff0d",
+          "transcript_sha256": "ac37c414c0e751085b9b76bbcfbd7b8a7847b3c080220d22a01bf932710d7800",
+          "elapsed_seconds": 4.266,
+          "usage": {
+            "input_tokens": 16649,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 82,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Sam asked Will to upload the slides, but Will did not accept the request and said he would check his schedule before agreeing.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": [
+              {
+                "statement": "Will could upload the slides.",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will, could you upload the slides?"
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 4.266
+        },
+        {
+          "case_id": "unknown_owner",
+          "input_sha256": "2ce82030f0d9b14ee00c14be2913fba1cbe07277caeffc0f78745f097392ca1f",
+          "project_id": "synthetic-eval",
+          "meeting_id": "unknown_owner",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "4820861be5887c4b1510e7a72709770e0587deb40d0d269eedbe9bb76a70ff71",
+          "transcript_sha256": "100bca1e89d6aafd821749bfd72cfc5d4baa0ece6cf91ac6a60e56901473c2d2",
+          "elapsed_seconds": 4.147,
+          "usage": {
+            "input_tokens": 16615,
+            "cached_input_tokens": 15488,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 38,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "An unidentified speaker stated an intention to send the slides by Thursday.",
+            "decisions": [],
+            "commitments": [],
+            "suggestions": []
+          },
+          "wall_seconds": 4.148
+        },
+        {
+          "case_id": "volunteer",
+          "input_sha256": "d06a29cba9f279818744f76d37c26c92c52b637d30aa7422c2734eb36afa60e8",
+          "project_id": "synthetic-eval",
+          "meeting_id": "volunteer",
+          "provider": "codex-cli",
+          "model_requested": "gpt-5.6-sol",
+          "codex_version": "codex-cli 0.163.0",
+          "prompt_version": "meeting-extraction-v2",
+          "prompt_sha256": "0edcb5dc5756285f6d6e2e470250fbf2e15ca40bb6a364db1e511e8fa0602925",
+          "transcript_sha256": "caf4fe009e60af3eb4facbbc791efb76272df6b1998bc767b74d06a46ad80540",
+          "elapsed_seconds": 4.461,
+          "usage": {
+            "input_tokens": 16616,
+            "cached_input_tokens": 0,
+            "cache_write_input_tokens": 0,
+            "output_tokens": 78,
+            "reasoning_output_tokens": 0
+          },
+          "evidence_repairs": [],
+          "extraction": {
+            "summary": "Guadalupe accepted responsibility for reviewing the labels.",
+            "decisions": [],
+            "commitments": [
+              {
+                "title": "Review the labels",
+                "owner": "Guadalupe",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I can take responsibility for reviewing the labels."
+                  }
+                ]
+              }
+            ],
+            "suggestions": []
+          },
+          "wall_seconds": 4.462
+        }
+      ]
+    },
+    "rules": {
+      "run": {
+        "suite_sha256": "12dac15605c0b354828b792d8dd5c136fa39ae3694cdc7dab29ce4245753d7b5",
+        "suite_version": "synthetic-extraction-dev-v1",
+        "method": "rules",
+        "model": null,
+        "started_at": "2026-10-26T22:02:53.960416+00:00",
+        "platform": "macOS-27.0.1-arm64-arm-64bit",
+        "python": "3.12.13",
+        "git_revision": "5634435681f4d6fc57e7d13fc8e6312b6feafff7",
+        "source_sha256": "fd0ae195f21270b14afdf785fc32621ed0c62193d4251e4017d8db6b054f0a85"
+      },
+      "scores": {
+        "scorer_version": "action-terms-v1",
+        "run": {
+          "suite_sha256": "12dac15605c0b354828b792d8dd5c136fa39ae3694cdc7dab29ce4245753d7b5",
+          "suite_version": "synthetic-extraction-dev-v1",
+          "method": "rules",
+          "model": null,
+          "started_at": "2026-10-26T22:02:53.960416+00:00",
+          "platform": "macOS-27.0.1-arm64-arm-64bit",
+          "python": "3.12.13",
+          "git_revision": "5634435681f4d6fc57e7d13fc8e6312b6feafff7",
+          "source_sha256": "fd0ae195f21270b14afdf785fc32621ed0c62193d4251e4017d8db6b054f0a85"
+        },
+        "counts": {
+          "predicted": 16,
+          "matched": 11,
+          "duplicates": 2,
+          "owner_correct": 9,
+          "owner_total": 9,
+          "unknown_owner_correct": 1,
+          "unknown_owner_total": 2,
+          "deadline_correct": 10,
+          "deadline_total": 11,
+          "citation_valid": 16,
+          "citation_total": 16,
+          "evidence_complete": 9,
+          "failed": 0,
+          "schema_valid": 24,
+          "negative_correct": 9,
+          "negative_total": 11,
+          "gold": 15
+        },
+        "metrics": {
+          "task_precision_proxy": {
+            "numerator": 11,
+            "denominator": 16,
+            "value": 0.6875
+          },
+          "task_recall_proxy": {
+            "numerator": 11,
+            "denominator": 15,
+            "value": 0.7333333333333333
+          },
+          "task_f1_proxy": {
+            "numerator": 22,
+            "denominator": 31,
+            "value": 0.7096774193548387
+          },
+          "duplicate_proxy": {
+            "numerator": 2,
+            "denominator": 16,
+            "value": 0.125
+          },
+          "evidence_completeness": {
+            "numerator": 9,
+            "denominator": 11,
+            "value": 0.8181818181818182
+          },
+          "owner": {
+            "numerator": 9,
+            "denominator": 9,
+            "value": 1.0
+          },
+          "unknown_owner": {
+            "numerator": 1,
+            "denominator": 2,
+            "value": 0.5
+          },
+          "deadline": {
+            "numerator": 10,
+            "denominator": 11,
+            "value": 0.9090909090909091
+          },
+          "negative": {
+            "numerator": 9,
+            "denominator": 11,
+            "value": 0.8181818181818182
+          },
+          "citation_validity": {
+            "numerator": 16,
+            "denominator": 16,
+            "value": 1.0
+          }
+        },
+        "cases": [
+          {
+            "id": "explicit",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "prepare transcript fixture",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "prepare",
+                    "create"
+                  ],
+                  [
+                    "transcript"
+                  ],
+                  [
+                    "fixture"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "I will prepare the transcript fixture by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will prepare the transcript fixture by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contraction",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "rerun baseline",
+                "owner": "Will",
+                "due_date_text": "tomorrow",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "rerun",
+                    "run"
+                  ],
+                  [
+                    "baseline"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "I'll rerun the baseline tomorrow.",
+                "owner": "Will",
+                "due_date_text": "tomorrow",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I'll rerun the baseline tomorrow."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "volunteer",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review labels",
+                "owner": "Guadalupe",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "label"
+                  ]
+                ]
+              }
+            ],
+            "matches": [],
+            "errors": [
+              "missed gold: g1"
+            ],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": []
+          },
+          {
+            "id": "accepted_request",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "upload slides",
+                "owner": "Will",
+                "due_date_text": "Monday",
+                "evidence_ids": [
+                  "t1",
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "upload",
+                    "share"
+                  ],
+                  [
+                    "slide"
+                  ]
+                ]
+              }
+            ],
+            "matches": [],
+            "errors": [
+              "unmatched prediction: 0",
+              "missed gold: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Yes, I will do that by Monday.",
+                "owner": "Will",
+                "due_date_text": "Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will do that by Monday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "unaccepted_request",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "suggestion",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "negated",
+            "gold": [],
+            "matches": [],
+            "errors": [
+              "unmatched prediction: 0"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": [
+              {
+                "title": "I will not rerun the baseline this week.",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will not rerun the baseline this week."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "conditional",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "completed",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "partial_progress",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "unknown_owner",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send slides",
+                "owner": null,
+                "due_date_text": "Thursday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "slide"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 1,
+              "unknown_owner_total": 1,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "I will send the slides by Thursday.",
+                "owner": null,
+                "due_date_text": "Thursday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the slides by Thursday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "no_deadline",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "update documentation",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "update",
+                    "revise"
+                  ],
+                  [
+                    "documentation",
+                    "docs"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "I will update the documentation.",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will update the documentation."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "two_owners",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review schema",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "schema"
+                  ]
+                ]
+              },
+              {
+                "id": "g2",
+                "title": "test upload endpoint",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence_ids": [
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "test"
+                  ],
+                  [
+                    "upload"
+                  ],
+                  [
+                    "endpoint"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              },
+              {
+                "prediction": 1,
+                "gold": "g2"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 2,
+              "matched": 2,
+              "duplicates": 0,
+              "owner_correct": 2,
+              "owner_total": 2,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 2,
+              "deadline_total": 2,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 2,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 2
+            },
+            "predictions": [
+              {
+                "title": "I will review the schema.",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema."
+                  }
+                ]
+              },
+              {
+                "title": "I will test the upload endpoint.",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "I will test the upload endpoint."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "repeat",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send report",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "report"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "unmatched prediction: 1"
+            ],
+            "counts": {
+              "predicted": 2,
+              "matched": 1,
+              "duplicates": 1,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "I will send the report by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the report by Friday."
+                  }
+                ]
+              },
+              {
+                "title": "To repeat, I will send the report by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "To repeat, I will send the report by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "correction",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send report",
+                "owner": "Sam",
+                "due_date_text": "Monday",
+                "evidence_ids": [
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "report"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "deadline: g1",
+              "incomplete evidence: g1",
+              "unmatched prediction: 1"
+            ],
+            "counts": {
+              "predicted": 2,
+              "matched": 1,
+              "duplicates": 1,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 1,
+              "citation_valid": 2,
+              "citation_total": 2,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "I will send the report by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the report by Friday."
+                  }
+                ]
+              },
+              {
+                "title": "Correction: I will send the report by Monday, not Friday.",
+                "owner": "Sam",
+                "due_date_text": "Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Correction: I will send the report by Monday, not Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "declined",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "decision_only",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "quoted_promise",
+            "gold": [],
+            "matches": [],
+            "errors": [
+              "unmatched prediction: 0"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": [
+              {
+                "title": "The example sentence in the documentation is \"I will send the report by Friday.\" It is not an assignment.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "The example sentence in the documentation is \"I will send the report by Friday.\" It is not an assignment."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "injection",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          },
+          {
+            "id": "joint",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review schema",
+                "owner": null,
+                "due_date_text": "Tuesday",
+                "evidence_ids": [
+                  "t1",
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "schema"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "owner: g1",
+              "incomplete evidence: g1"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 1,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Will and I will review the schema together by Tuesday.",
+                "owner": "Sam",
+                "due_date_text": "Tuesday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will and I will review the schema together by Tuesday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "assignment",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "prepare demo",
+                "owner": "Will",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1",
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "prepare",
+                    "create"
+                  ],
+                  [
+                    "demo"
+                  ]
+                ]
+              }
+            ],
+            "matches": [],
+            "errors": [
+              "missed gold: g1"
+            ],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": []
+          },
+          {
+            "id": "reassignment",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "send report",
+                "owner": "Will",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t2"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "report"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 1
+            },
+            "predictions": [
+              {
+                "title": "Yes, I will send the report by Friday instead of Sam.",
+                "owner": "Will",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will send the report by Friday instead of Sam."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "two_actions",
+            "gold": [
+              {
+                "id": "g1",
+                "title": "review schema",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "review"
+                  ],
+                  [
+                    "schema"
+                  ]
+                ]
+              },
+              {
+                "id": "g2",
+                "title": "send slides",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence_ids": [
+                  "t1"
+                ],
+                "action_terms": [
+                  [
+                    "send",
+                    "share"
+                  ],
+                  [
+                    "slide"
+                  ]
+                ]
+              }
+            ],
+            "matches": [
+              {
+                "prediction": 0,
+                "gold": "g1"
+              }
+            ],
+            "errors": [
+              "missed gold: g2"
+            ],
+            "counts": {
+              "predicted": 1,
+              "matched": 1,
+              "duplicates": 0,
+              "owner_correct": 1,
+              "owner_total": 1,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 1,
+              "deadline_total": 1,
+              "citation_valid": 1,
+              "citation_total": 1,
+              "evidence_complete": 1,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 0,
+              "negative_total": 0,
+              "gold": 2
+            },
+            "predictions": [
+              {
+                "title": "I will review the schema and send the slides by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema and send the slides by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "silence",
+            "gold": [],
+            "matches": [],
+            "errors": [],
+            "counts": {
+              "predicted": 0,
+              "matched": 0,
+              "duplicates": 0,
+              "owner_correct": 0,
+              "owner_total": 0,
+              "unknown_owner_correct": 0,
+              "unknown_owner_total": 0,
+              "deadline_correct": 0,
+              "deadline_total": 0,
+              "citation_valid": 0,
+              "citation_total": 0,
+              "evidence_complete": 0,
+              "failed": 0,
+              "schema_valid": 1,
+              "negative_correct": 1,
+              "negative_total": 1,
+              "gold": 0
+            },
+            "predictions": []
+          }
+        ],
+        "latency_sample_count": 24,
+        "mean_wall_seconds": 4.1666666666666665e-05,
+        "limitations": "AI-authored development labels; lexical action matching proxy; no human adjudication, held-out quality, semantic support or state scoring."
+      },
+      "outputs": [
+        {
+          "case_id": "accepted_request",
+          "input_sha256": "0f3e1b04d245043be4e45e0d1c2b0df12cbee4c62cd0614adf487d944f71e628",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "Yes, I will do that by Monday.",
+                "owner": "Will",
+                "due_date_text": "Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will do that by Monday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "assignment",
+          "input_sha256": "a4d949f76d1bafe4a92d66484a9c560f828ccbca28f2a235cd7e557e02bd591b",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "completed",
+          "input_sha256": "d9547851586ca0967298664e4a9c0f07f25f80ff022ee31f44ca65b96d768f99",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "conditional",
+          "input_sha256": "bc415c64ef6849d916c698cbb3aa31abdbd2997259165e577e49a908b396f369",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "contraction",
+          "input_sha256": "cbef5cec0de4bc5b1cf320ede5c09b8b2b2a990aa006366abc5b0fc8343489b7",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I'll rerun the baseline tomorrow.",
+                "owner": "Will",
+                "due_date_text": "tomorrow",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I'll rerun the baseline tomorrow."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "correction",
+          "input_sha256": "6f50d2729ffa404d60d5aecff7c32a6ded9da500edafe345d32be112ec4aa106",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will send the report by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the report by Friday."
+                  }
+                ]
+              },
+              {
+                "title": "Correction: I will send the report by Monday, not Friday.",
+                "owner": "Sam",
+                "due_date_text": "Monday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Correction: I will send the report by Monday, not Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "decision_only",
+          "input_sha256": "ba37ab00773f9466275fcbb66b532a5d307b1f9a699c7eaa6b33176ef1a603d9",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "declined",
+          "input_sha256": "7f24baa187d06b98906d9cb4e7e64d78cb9584c70680122ede058ddc06e36bb3",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "explicit",
+          "input_sha256": "fc40ed5b4af1fce281139ce247392c226fdbdea16afaf356b1ddfa803fab0b51",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will prepare the transcript fixture by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will prepare the transcript fixture by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.001
+        },
+        {
+          "case_id": "injection",
+          "input_sha256": "5cc47cebc9f06fe4920bbfb3d0bcbcae0b4d5c0da7532fd3a157b9a46dd68c85",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "joint",
+          "input_sha256": "f096757bade4791493fb6db8ed01b48f42458d55683a084a7f0618a00bb366ce",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "Will and I will review the schema together by Tuesday.",
+                "owner": "Sam",
+                "due_date_text": "Tuesday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "Will and I will review the schema together by Tuesday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "negated",
+          "input_sha256": "26a718b0b79a47548fb137ef98070cc4ec8e4addcdfbebe530dbafc0739848f6",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will not rerun the baseline this week.",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will not rerun the baseline this week."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "no_deadline",
+          "input_sha256": "1d56a7f488b50ffc85efb26c85b9b8c1f32993d4ab46e97d52f8d7316151c8d9",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will update the documentation.",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will update the documentation."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "partial_progress",
+          "input_sha256": "826826a235cbc4d03cc9a2ec46ad2cf49edaf606ab36f50662612b5a01d2ab75",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "quoted_promise",
+          "input_sha256": "0dc08eda495a80daa028f96452564e767fb74546779c9bc50da924e2dba6c9c3",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "The example sentence in the documentation is \"I will send the report by Friday.\" It is not an assignment.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "The example sentence in the documentation is \"I will send the report by Friday.\" It is not an assignment."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "reassignment",
+          "input_sha256": "ba71cfaa167c6b502317300ffc903e5d730804f5847ade0988b155f0742483bd",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "Yes, I will send the report by Friday instead of Sam.",
+                "owner": "Will",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "Yes, I will send the report by Friday instead of Sam."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "repeat",
+          "input_sha256": "01d83301015ad46a67c6722c660139b40def2404b28e2ba816381901e004835a",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will send the report by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the report by Friday."
+                  }
+                ]
+              },
+              {
+                "title": "To repeat, I will send the report by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "To repeat, I will send the report by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "silence",
+          "input_sha256": "2f8df4aa5a904b222370b70cadccad95f593cd65e52f3bc0fedbde870a98edb3",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "suggestion",
+          "input_sha256": "a0eabeaab1e45970757d52e7ba7cfbad23bbaea1a5bbc13b38f58a5b174f6634",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "two_actions",
+          "input_sha256": "fe029daab5039329f42c1cabd7ef880c6a089f16b061a3cd799c971c6df50e52",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will review the schema and send the slides by Friday.",
+                "owner": "Sam",
+                "due_date_text": "Friday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema and send the slides by Friday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "two_owners",
+          "input_sha256": "f9c554e9dd748efc73a8118b46ba90a9f2c92144e7c430dfff1ad20cf22d9595",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will review the schema.",
+                "owner": "Sam",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will review the schema."
+                  }
+                ]
+              },
+              {
+                "title": "I will test the upload endpoint.",
+                "owner": "Will",
+                "due_date_text": null,
+                "evidence": [
+                  {
+                    "transcript_id": "t2",
+                    "quote": "I will test the upload endpoint."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "unaccepted_request",
+          "input_sha256": "f7f9a741846388971fc97b4cc99d892bd3a8df655ead83ddf3cb1731cbcc0049",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "unknown_owner",
+          "input_sha256": "2ce82030f0d9b14ee00c14be2913fba1cbe07277caeffc0f78745f097392ca1f",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": [
+              {
+                "title": "I will send the slides by Thursday.",
+                "owner": null,
+                "due_date_text": "Thursday",
+                "evidence": [
+                  {
+                    "transcript_id": "t1",
+                    "quote": "I will send the slides by Thursday."
+                  }
+                ]
+              }
+            ]
+          },
+          "wall_seconds": 0.0
+        },
+        {
+          "case_id": "volunteer",
+          "input_sha256": "d06a29cba9f279818744f76d37c26c92c52b637d30aa7422c2734eb36afa60e8",
+          "extraction": {
+            "summary": "",
+            "decisions": [],
+            "suggestions": [],
+            "commitments": []
+          },
+          "wall_seconds": 0.0
+        }
+      ]
+    }
+  }
+}

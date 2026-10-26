@@ -1,0 +1,31 @@
+1
+00:00:00,000 --> 00:00:10,000
+Meetings should lead to reviewable work. This is a synthetic audio upload in a fresh test project. Processing waits are removed.
+
+2
+00:00:10,000 --> 00:00:20,000
+The transcript preserves the checklist commitment, date, and source timestamps. Speaker identity remains unknown in this transcription-only run.
+
+3
+00:00:20,000 --> 00:00:32,000
+The task starts pending. Here, the tester explicitly assigns the task and manually sets October thirtieth. Automatic date resolution is not claimed.
+
+4
+00:00:32,000 --> 00:00:44,000
+After checking the quoted evidence, the tester approves the task. Automatic approval stays off throughout this acceptance run.
+
+5
+00:00:44,000 --> 00:00:54,000
+The approved checklist appears on October thirtieth in Calendar. Task completion and Undo were also checked.
+
+6
+00:00:54,000 --> 00:01:04,000
+One follow-up is captured for testing with the task, due date, and meeting evidence. Nothing is sent to a real inbox.
+
+7
+00:01:04,000 --> 00:01:16,000
+Project chat answers what the checklist covers and links to the transcript at eight seconds. Citations remain subject to human review.
+
+8
+00:01:16,000 --> 00:01:25,000
+After relaunch, the conversation persists and the absent password question refuses. This is Meeting Memory. Repository: Bryan D Yang, guardian agent.
