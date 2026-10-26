@@ -206,23 +206,31 @@ def answer(
 
 
 def finalize(answer: ChatAnswer, sources: list[Source]) -> tuple[str, list[dict]]:
-    """Keep only verified citations, renumber them, or refuse."""
+    """Reject partially supported replies; renumber fully verified citations."""
     by_ref = {s.ref: s for s in sources}
     verified: dict[str, str] = {}
     for citation in answer.citations:
         source = by_ref.get(citation.ref)
         if source is None:
-            log.warning("Dropped citation %s: ref was not shown", citation.ref)
-        elif _squash(citation.quote) not in _squash(source.text):
+            log.warning("Refused answer: citation %s was not shown", citation.ref)
+            return NO_ANSWER, []
+        elif not _squash(citation.quote) or _squash(citation.quote) not in _squash(
+            source.text
+        ):
             log.warning(
-                "Dropped citation %s: quote not in source: %r",
+                "Refused answer: citation %s quote not in source",
                 citation.ref,
-                citation.quote,
             )
+            return NO_ANSWER, []
         elif citation.ref not in verified:
             verified[citation.ref] = citation.quote
     text = answer.answer.strip()
     if not answer.answerable or not text or not verified:
+        return NO_ANSWER, []
+
+    markers = set(MARKER.findall(text))
+    if not markers or markers != set(verified):
+        log.warning("Refused answer: markers and verified citations disagree")
         return NO_ANSWER, []
 
     # Number citations in the order the answer uses them; unused ones go last.

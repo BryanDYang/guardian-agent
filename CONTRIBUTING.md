@@ -59,7 +59,7 @@ git checkout -b feature/my-feature
 - Keep commits small and focused, with one logical change per commit.
 - Write clear commit messages in the imperative mood.
 - Never commit `.env`, `LabSyncConfig.plist`, or any file containing secrets or API keys.
-- Use [current architecture](docs/architecture.md) for implementation structure and [Milestone 3 scope](docs/milestone_3/roadmap.md) for acceptance goals. Earlier proposals are historical context.
+- Use [current architecture](docs/architecture.md) for implementation structure and [Milestone 4 scope](docs/milestone_4/roadmap.md) for acceptance goals. Earlier proposals are historical context.
 - Do not reintroduce archived requirements without first updating the active proposal.
 
 ---

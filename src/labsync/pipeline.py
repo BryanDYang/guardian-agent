@@ -29,8 +29,7 @@ def run_pipeline(record, directory, work, source, settings, identify, stage, run
             "--output-dir",
             str(work),
         ]
-        if settings["diarize"]:
-            command.append("--diarize")
+        command.append("--diarize" if settings["diarize"] else "--no-diarize")
         run(command, check=True, stdout=log, stderr=log, timeout=7200)
         transcript = Transcript.model_validate_json(
             (work / "transcript.json").read_text()

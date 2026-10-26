@@ -129,10 +129,10 @@ Automatic hostname failover requires separate routing configuration.
 ### 6. Start the backend (Terminal 1)
 
 ```bash
-uv run --locked --env-file .env --extra audio --extra server --extra diarize labsync serve --whisper-backend mlx --whisper-model medium --diarize
+uv run --locked --env-file .env --extra audio --extra server --extra diarize labsync serve --whisper-backend mlx --whisper-model base --diarize
 ```
 
-The first upload downloads the medium Whisper weights (about 1.5 GB), so it is slow once.
+The first upload downloads the selected Whisper weights, so it can be slow once.
 
 ### 7. Start the tunnel (Terminal 2)
 
@@ -167,10 +167,10 @@ Then repeat steps 6 to 8. Rebuild the app in Xcode if iOS code changed. You do n
 
 ### Run without speaker labels
 
-To run without diarization, omit `--extra diarize` and `--diarize`:
+To run without diarization, omit `--extra diarize` and pass `--no-diarize`:
 
 ```bash
-uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model medium
+uv run --locked --env-file .env --extra audio --extra server labsync serve --whisper-backend mlx --whisper-model base --no-diarize
 ```
 
 ## Troubleshooting
@@ -196,7 +196,7 @@ Logs: `artifacts/server/<meeting-id>/processing.log`
 ```bash
 uv run --locked --extra audio labsync transcribe tests/fixtures/ami/TS3005a-90s-135s.wav \
   --project-id ami-TS3005 --meeting-id TS3005a-90s-135s \
-  --whisper-model tiny --whisper-backend mlx --output-dir artifacts/backend-test
+  --whisper-model tiny --whisper-backend mlx --no-diarize --output-dir artifacts/backend-test
 uv run --locked --env-file .env labsync extract artifacts/backend-test/transcript.json \
   --output artifacts/backend-test/extraction.json
 ```

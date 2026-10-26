@@ -19,7 +19,7 @@ uv sync --locked --extra dev --extra audio
 uv run --locked --extra audio labsync transcribe /path/to/meeting.mp3 \
   --source contexts/meeting_transcriber-master \
   --project-id demo --meeting-id meeting-001 \
-  --whisper-model base --whisper-backend mlx --output-dir artifacts/meeting-001
+  --whisper-model base --whisper-backend mlx --no-diarize --output-dir artifacts/meeting-001
 uv run labsync extract artifacts/meeting-001/transcript.json \
   --model gpt-5.6-sol --output artifacts/meeting-001/extraction.json
 ```

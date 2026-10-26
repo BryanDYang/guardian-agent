@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import logging
 import os
 from importlib.metadata import version
 from pathlib import Path
@@ -123,6 +124,10 @@ def main(argv: list[str] | None = None) -> int:
         parser.error(
             f"unknown provider {args.provider!r}; choose from "
             + ", ".join(DEFAULT_MODELS)
+        )
+    if args.command in {"serve", "extract"}:
+        logging.basicConfig(
+            level=logging.INFO, format="%(asctime)s %(name)s %(message)s"
         )
     if args.command == "serve":
         if not os.environ.get("SUPABASE_URL"):

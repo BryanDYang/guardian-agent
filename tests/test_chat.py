@@ -66,7 +66,7 @@ def test_citations_are_verified_mapped_and_renumbered():
     assert citations[1]["speaker"] == "SPEAKER_02"
 
 
-def test_unverified_citations_and_their_markers_are_dropped():
+def test_unverified_citations_refuse_the_entire_answer():
     text, citations = chat.finalize(
         reply(
             "Rate goes down [T1], and Bob approved it [T9] [T2].",
@@ -76,8 +76,7 @@ def test_unverified_citations_and_their_markers_are_dropped():
         ),
         SOURCES,
     )
-    assert text == "Rate goes down [1], and Bob approved it."
-    assert len(citations) == 1
+    assert (text, citations) == (NO_ANSWER, [])
 
 
 @pytest.mark.parametrize(
@@ -133,3 +132,18 @@ def test_follow_up_retrieval_includes_the_previous_question():
 def test_clock():
     assert chat.clock(754_000) == "12:34"
     assert chat.clock(3_723_000) == "1:02:03"
+
+
+@pytest.mark.parametrize("text", ["Use AdamW.", "Use AdamW [D1]. Approved [T99]."])
+def test_refuses_missing_or_unverified_answer_markers(text):
+    assert chat.finalize(reply(text, ("D1", "Use AdamW")), SOURCES) == (
+        NO_ANSWER,
+        [],
+    )
+
+
+def test_whitespace_quote_cannot_verify_a_claim():
+    assert chat.finalize(reply("Use AdamW [D1].", ("D1", "   ")), SOURCES) == (
+        NO_ANSWER,
+        [],
+    )

@@ -1,11 +1,13 @@
 """Small structured-output client using the supported Codex CLI login path."""
 
 import json
+import logging
 import subprocess
 import tempfile
 import time
 from hashlib import sha256
 from pathlib import Path
+from uuid import uuid4
 
 from .extraction import (
     PROMPT_VERSION,
@@ -15,6 +17,8 @@ from .extraction import (
     save_rejected,
 )
 from .providers import codex_executable
+
+logger = logging.getLogger(__name__)
 
 
 def extract(
@@ -82,8 +86,36 @@ def structured(prompt: str, schema: dict, *, model: str, timeout: int) -> dict:
 def run(
     prompt: str, schema: dict, *, model: str, timeout: int, task: str
 ) -> tuple[str, dict | None]:
-    """Run one text-only Codex turn constrained to `schema`. Returns the raw
-    final message and the turn's token usage."""
+    """Log metadata for one text-only model request, excluding private content."""
+    request_id = str(uuid4())
+    started = time.monotonic()
+    status = "failed"
+    usage = None
+    try:
+        raw, usage = _run(prompt, schema, model=model, timeout=timeout, task=task)
+        status = "completed"
+        return raw, usage
+    except (KeyboardInterrupt, SystemExit):
+        status = "interrupted"
+        raise
+    finally:
+        logger.info(
+            "model_call request_id=%s task=%s provider=codex-cli model=%s "
+            "status=%s elapsed_seconds=%.3f timeout_seconds=%s usage=%s",
+            request_id,
+            task,
+            model,
+            status,
+            time.monotonic() - started,
+            timeout,
+            json.dumps(usage, sort_keys=True),
+        )
+
+
+def _run(
+    prompt: str, schema: dict, *, model: str, timeout: int, task: str
+) -> tuple[str, dict | None]:
+    """Execute the isolated CLI request without logging prompts or responses."""
     with tempfile.TemporaryDirectory(prefix="labsync-codex-") as directory:
         root = Path(directory)
         schema_path = root / "schema.json"

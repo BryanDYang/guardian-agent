@@ -423,3 +423,25 @@ def test_delete_project_preserves_recordings_when_database_rejects(
         app.state.pool = None
         assert response.status_code == (409 if busy else 404)
         assert directory.exists()
+
+
+@needs_db
+@pytest.mark.parametrize("diarize", [False, True])
+def test_upload_preserves_explicit_diarization_mode(
+    tmp_path, fake_process, embedder, member, monkeypatch, diarize
+):
+    commands = []
+
+    def run(command, **kwargs):
+        commands.append(command)
+        fake_process(command, **kwargs)
+
+    monkeypatch.setattr("labsync.server.subprocess.run", run)
+    project_id, headers = member
+    with TestClient(
+        make_app(tmp_path, embedder, diarize=diarize), headers=headers
+    ) as client:
+        assert client.get("/api/health").json()["diarization"] is diarize
+        wait_for(client, upload(client, project_id).json()["id"], "completed")
+    # Omission enables the CLI default, so false must be passed explicitly.
+    assert ("--diarize" if diarize else "--no-diarize") in commands[0]

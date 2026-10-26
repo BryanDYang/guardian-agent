@@ -419,3 +419,33 @@ def test_leaving_the_project_closes_your_conversations(client, seeded, model):
         )
     assert client.get(f"/api/v1/conversations/{conversation}").status_code == 404
     assert ask(client, conversation, "Still there?").status_code == 404
+
+
+def test_mixed_valid_and_fabricated_citations_refuse_entire_answer(
+    client, seeded, monkeypatch
+):
+    """An invalid claim must not survive beside one legitimate citation."""
+
+    def attacked_reply(prompt, schema, **settings):
+        ref, _ = next(
+            (ref, line)
+            for ref, line in re.findall(r"^\[([TDKS]\d+)\] (.*)$", prompt, re.M)
+            if "Let's go with 3e-4" in line
+        )
+        return {
+            "answerable": True,
+            "answer": f"Use 3e-4 [{ref}]. The budget is approved [T999].",
+            "citations": [
+                {"ref": ref, "quote": "Let's go with 3e-4"},
+                {"ref": "T999", "quote": "The budget is approved"},
+            ],
+        }
+
+    monkeypatch.setattr(chat.providers, "structured", attacked_reply)
+    conversation = start(client, seeded["project"])
+    response = ask(client, conversation, "What learning rate and budget were agreed?")
+    assert response.status_code == 200, response.text
+    answer = response.json()["assistant_message"]
+    assert (answer["content"], answer["citations"]) == (chat.NO_ANSWER, [])
+    saved = client.get(f"/api/v1/conversations/{conversation}").json()["messages"]
+    assert saved[-1]["content"] == chat.NO_ANSWER
