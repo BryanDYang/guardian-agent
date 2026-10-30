@@ -1,8 +1,9 @@
 # Milestone 4 frozen-source answer review
 
-All judgments below are pending human review. Read each answer against its
-source text before consulting aggregate outcomes. Preserve initial judgments
-and reviewer exposure; do not label assistant execution as human review.
+Bryan confirmed the price/dense review on October 30, 2026; the other 27
+entries remain pending. Read each answer against its source text before
+consulting aggregate outcomes. Preserve initial judgments and reviewer
+exposure; do not label assistant execution as human review.
 
 For every row record correctness (supported / partly supported / unsupported /
 uncertain), citation entailment, refusal appropriateness, reviewer and rationale.
@@ -21,9 +22,14 @@ Source T1 (TS3005a):
 
 > Well nice animals, nice words. Sounds good. Back to business, back to the money part. From the finance department I have learned that we are aiming for a selling price of 25 euros and we are hoping for a aim of 50 million euros and we are hoping to achieve that by aiming for an international market. And the production costs will be 12 euro 50 max.
 
-Human correctness: Pending. Citation entailment: Pending. Refusal appropriateness: Pending.
+Human correctness: Supported. Citation entailment: Supported. Refusal appropriateness: Not applicable - answered.
 
-Reviewer/exposure/rationale: Pending.
+Reviewer/exposure/rationale: Bryan; reviewed the provided answer and source.
+Both €25 and the €12.50 maximum appear explicitly in the source. Confirmed
+in chat on October 30, 2026 after seeing the assistant-proposed labels and
+rationale; this was not a blinded or independent review. The assistant
+transcribed the confirmed review. Bryan's initial correctness entry was
+“Passed”; normalized to “Supported” using the agreed review categories.
 
 ## price / hybrid
 

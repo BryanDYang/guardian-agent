@@ -571,3 +571,15 @@ records the actual source quotes, answers and persistence checks.
 - Known product/operational limits include automatic date/completion handling,
   identity ambiguity, real delivery/reminders, full mobile timing, comprehensive
   red-teaming, quota/load controls, log retention and recovery acceptance.
+
+
+## October 30 first Milestone 4 answer review
+
+Bryan confirmed the price/dense correctness and citation judgments as Supported,
+with refusal marked Not applicable - answered. Both €25 and the €12.50 maximum
+appear explicitly in the provided source. The assistant transcribed the confirmed
+review into the [answer worksheet](milestone_4/human_review.md#price--dense),
+preserving Bryan's initial “Passed” entry in the provenance note. Bryan saw the
+assistant-proposed labels/rationale before confirmation, so this is not a blinded
+or independent review. The remaining 27 entries and adjudication remain pending;
+this does not complete the human quality evaluation.
