@@ -1,8 +1,9 @@
 # Milestone 4: Meeting Follow-Through Assistant
 
-AI Engineering track. Draft prepared October 26, 2026. Deadline: November 16,
-2026, confirmed by Bryan. **Not final submission:** human answer review,
-demo sign-off and TA check-in remain open. Native acceptance below uses
+AI Engineering track. Draft prepared October 26; review results updated October
+30, 2026. Deadline: November 16, 2026, confirmed by Bryan. **Not final submission:**
+demo sign-off, team contribution confirmation and TA check-in remain open.
+Native acceptance below uses
 synthetic uploaded audio and manual assignment/date entry.
 
 Repository: https://github.com/BryanDYang/guardian-agent
@@ -61,7 +62,8 @@ tests use an isolated Docker database; that is not application containerization.
   statuses, usage and exact outputs; model outputs can vary between runs.
 - [ ] Execute the [native acceptance procedure](../archive/milestone_3/follow_through.md#clean-app-journey-screen-recording)
   in a fresh M4 project with automatic approval off and Test inbox delivery.
-- [ ] Complete human answer/citation review, confirm the demo URL and TA session.
+- [x] Bryan completed all 28 answer/citation/refusal judgments on October 30.
+- [ ] Confirm demo sign-off and TA session.
 
 ```sh
 uv sync --locked --extra dev --extra server --extra audio
@@ -94,8 +96,8 @@ This is assistant-run synthetic upload acceptance. It does not test microphone
 capture, real speaker recognition, natural-meeting quality or actual inbox
 receipt. The initially blank file picker eventually loaded; early API-unavailable
 state was resolved by starting the backend. Waiting and navigation are preserved
-in the uncut evidence. Another reviewer's fresh setup and human quality review
-remain open.
+in the uncut evidence. Another reviewer's fresh setup remains open; Bryan
+completed the frozen-source answer review on October 30.
 
 ## Evaluation and failure analysis
 
@@ -103,9 +105,9 @@ The October 26 frozen-source answer rerun completed **28/28 calls**, with zero
 180-second timeouts. It uses the October 21 retrieved sources for the same
 14 questions and two variants; no embeddings, retrieval or app database writes
 were rerun. This measures answer generation from a fixed development snapshot.
-All four unsupported-question calls refused. Human validation of the negative
-labels and semantic correctness/entailment remains pending. Two supported
-question/variant pairs also refused after quote validation: power/hybrid and
+All four unsupported-question calls refused. Bryan completed and accepted all
+28 correctness, citation and refusal judgments on October 30 after AI-assisted
+preparation. Two supported question/variant pairs also refused after quote validation: power/hybrid and
 curve/dense. Do not equate completion or literal quote validity with accuracy.
 
 | Metric | Dense | Hybrid |
@@ -115,7 +117,15 @@ curve/dense. Do not equate completion or literal quote validity with accuracy.
 | Median model + validation time | 4.56 s | 3.83 s |
 | Refusals on proposed unsupported questions | 2/2 | 2/2 |
 | Refusals on designated supported questions | 1/12 | 1/12 |
-| Human semantic correctness / citation entailment | Pending | Pending |
+| Reviewed final outputs: Supported / Partly supported / Unsupported | 12 / 1 / 1 | 13 / 0 / 1 |
+
+The review classified 25/28 final outputs as Supported, 1/28 as Partly supported
+and 2/28 as Unsupported. This includes four appropriate negative-question
+refusals. Power/hybrid and curve/dense were inappropriate refusals; style/dense
+had an unsupported pending-status qualifier. Citation judgments consider the
+full source, with incomplete quote previews recorded separately. This was an
+informed single-reviewer assessment after AI-assisted preparation, not blinded
+validation or independent gold. Personal-case adjudication remains separate.
 
 The prior run's three timeouts, interruption and unrun pairs remain preserved.
 The current CLI is 0.163.0, whereas the old run used 0.163.0-alpha.10.2. Timeouts
@@ -127,7 +137,7 @@ justify changing it. Historical ASR/extraction baselines remain separate results
 Raw outputs, source snapshot hash, prompt hashes, usage and timings are in
 [the answer evidence](../evidence/m4_2026-10-26/rag_answers.json). Reviewers can
 compare every output with the sources in the linked October 21 packet using
-[the answer review worksheet](human_review.md). Personal-case review and
+[the completed answer review](human_review.md). Personal-case review and
 adjudication remain separate from RAG quality.
 
 ### Current extraction development pass
@@ -213,7 +223,9 @@ calls rejecting unexpected tools, schema and quote validation, explicit human
 identity/approval gates, and a durable email outbox with cancellation/deduplication.
 Citation validation now fails closed on any invalid quote/ref or mismatched
 answer marker. It still cannot prove that a valid quote semantically supports a
-claim, or detect every uncited clause. Human entailment review remains necessary.
+claim, or detect every uncited clause. The completed review checks entailment
+for this frozen packet; future outputs still require review when their claims
+matter.
 
 Residual risk: prompt injection, truthful-looking but irrelevant quotes, ASR date
 errors, ambiguous identity, lack of automatic date/completion resolution, and
@@ -264,8 +276,8 @@ contributions and selected extension progress before submission; do not infer
 ownership from this assistant-run checkpoint. Weekly progress and blockers are in
 the [journal](../weekly_journal.md#october-26-milestone-4-execution).
 
-Outstanding: human answer/citation judgments and adjudication; another reviewer's
-fresh setup; full mobile timing;
+Outstanding: personal-case adjudication; another reviewer's fresh setup; full
+mobile timing;
 human demo sign-off; TA check-in confirmation/completion; verified
 member contributions and extension updates. This draft must be updated with those
 outcomes before exporting the final single PDF.

@@ -104,6 +104,17 @@ The [execution evidence](../evidence/demo_walkthrough.md#october-26-milestone-4-
 records the fresh-install audio check, signed simulator build, full database tests,
 frozen-source answer rerun, workload measurements and bounded red-team pass.
 The backend now passes disabled diarization explicitly; citation verification
-refuses mixed invalid/valid replies. No completed human answer review, narrated
-public demo or TA check-in is implied. See the [report draft](submission_draft.md)
+refuses mixed invalid/valid replies. The captioned public demo is available, and Bryan confirmed all 28 answer
+reviews on October 30. TA check-in and final demo sign-off remain open. See the [report draft](submission_draft.md)
 for the reviewer checklist and remaining submission fields.
+
+
+## October 30 human review completion
+
+Bryan reviewed and accepted all 28 correctness, citation-entailment and refusal
+judgments in the [completed review](human_review.md). Final-output categories:
+25 Supported, 1 Partly supported, 2 Unsupported. The two false refusals and the
+style/dense qualifier remain recorded as failures, not changed to passes. This
+was an informed review following AI-assisted preparation. Personal-case
+adjudication, independent setup, team contribution updates, demo sign-off and
+the mandatory TA check-in remain separate gates.

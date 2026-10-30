@@ -5,9 +5,10 @@ to define and validate the release candidate. Milestone 3 documents are archived
 their unfinished acceptance and evaluation work carries forward explicitly.
 
 Bryan and Guadalupe completed the eight personal-case review tables on October
-22-23. Adjudication, review provenance, AMI sequence labels, and RAG answer/citation
-judgments remain open. The [journal](weekly_journal.md) records the latest review
-status; the [walkthrough](evidence/demo_walkthrough.md) records runtime evidence.
+22-23. Bryan completed all 28 M4 RAG answer/citation/refusal judgments on October
+30 after AI-assisted preparation. Personal-case adjudication, review provenance
+and AMI sequence labels remain open. The [journal](weekly_journal.md) records
+the latest review status; the [walkthrough](evidence/demo_walkthrough.md) records runtime evidence.
 Each document below has one responsibility.
 
 | Question | Authoritative document |

@@ -532,10 +532,10 @@ records the actual source quotes, answers and persistence checks.
 
 ## Planned next steps
 
-1. **Bryan and reviewers:** Complete the 28-answer semantic correctness,
-   citation-entailment and refusal judgments. Review the proposed AMI labels and
-   preserve disagreements. Keep the October 21 partial run and October 26 rerun
-   separate; completion and retrieval target recovery are not answer accuracy.
+1. **Completed October 30:** Bryan reviewed and accepted all 28 frozen-source
+   answer/citation/refusal judgments. Keep the October 21 partial run and October
+   26 rerun separate. Broader AMI label/sequence review remains open; these
+   informed judgments do not establish independent gold or held-out accuracy.
 2. **Bryan and Guadalupe:** Record review exposure and adjudicate the eight
    personal cases without overwriting initial judgments. Preserve F1's
    audio/transcript date discrepancy and the transcript-only review limits.
@@ -558,8 +558,8 @@ records the actual source quotes, answers and persistence checks.
 
 ## Blockers and evidence still needed
 
-- Human RAG quality judgments, personal-case adjudication, AMI sequence labels
-  and review provenance remain incomplete. Assistant testing does not fill them.
+- M4 RAG judgments are complete as of October 30. Personal-case adjudication,
+  AMI sequence labels and earlier review provenance remain incomplete.
 - The transcriber archive has no verified upstream revision/license and is not
   redistributed. The fresh setup still requires team-supplied source; no runnable
   application container or independent fresh-machine reproduction is established.
@@ -599,3 +599,20 @@ answer-bearing sources, and style/dense for a pending-status qualifier not
 established by its transcript citation. Notes distinguish full-source support
 from incomplete quote previews. These proposals are not completed human reviews
 or new accuracy results; Bryan will validate or revise them before aggregation.
+
+
+### October 30 completed Milestone 4 answer review
+
+Bryan confirmed that he completed human review and accepted all 28 proposed
+judgments and rationales. Consolidated the worksheet into completed results,
+removed proposal labels and repeated reviewer notices, and linked the original
+source/output packets instead of repeating every transcript extract. Recorded
+AI-assisted preparation and Bryan's validation once at the document level.
+
+Final-output classifications are 25 Supported, 1 Partly supported and 2
+Unsupported. Power/hybrid and curve/dense remain inappropriate refusals despite
+available answers; style/dense retains the pending-status caveat. The four
+negative-question refusals are appropriate. Updated current review status in the
+documentation index, roadmap and report. These are accepted review outcomes, not
+a blanket assertion that every model answer passed. Personal-case adjudication
+and the other release/submission gates remain open.
