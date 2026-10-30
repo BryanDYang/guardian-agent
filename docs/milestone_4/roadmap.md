@@ -118,3 +118,15 @@ style/dense qualifier remain recorded as failures, not changed to passes. This
 was an informed review following AI-assisted preparation. Personal-case
 adjudication, independent setup, team contribution updates, demo sign-off and
 the mandatory TA check-in remain separate gates.
+
+
+## October 30 submission readiness and team handoff
+
+The [report readiness table](submission_draft.md#submission-readiness-as-of-october-30)
+separates assembled technical sections from missing submission inputs. Bryan sent
+Will and Guadalupe requests for setup/report feedback and contribution/extension
+summaries, followed up with Derrick, and offered to record a non-synthetic final
+demo. Replies, task owners and the TA time remain unconfirmed. The current public
+video is a reference for that recording. TestFlight remains optional exploration.
+See the [dated journal entry](../weekly_journal.md#october-30-team-update-and-submission-readiness)
+for this user-reported coordination; no messages were sent by the assistant.

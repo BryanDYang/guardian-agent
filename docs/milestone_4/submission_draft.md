@@ -8,6 +8,36 @@ synthetic uploaded audio and manual assignment/date entry.
 
 Repository: https://github.com/BryanDYang/guardian-agent
 
+## Submission readiness as of October 30
+
+The technical report draft is assembled and Bryan's 28-output human review is
+complete. It is not yet the final submission. Bryan sent the team a progress
+update requesting independent setup, report feedback, contributions/extension
+summaries and TA coordination. Replies and ownership confirmations have not yet
+been recorded.
+
+| Submission area | Status | Remaining work |
+| --- | --- | --- |
+| Track, release scope and repository | Documented | Keep final claims aligned with the manual-review/capture-mode flow |
+| Run instructions and reproducibility | Partial | Resolve how reviewers obtain the external transcriber; incorporate a teammate's setup findings and confirm the Mac/script packaging approach |
+| Logging and failure diagnosis | Documented | Existing metadata/log coverage and limits are stated |
+| Evaluation, human review and error analysis | Recorded | Preserve the reviewed failures and development-data limits; do not present proxies as held-out accuracy |
+| Representative latency and cost | Recorded | Report the measured component workloads and estimates with their exclusions |
+| Red-teaming and mitigations | Recorded | Keep the bounded scope and residual risks explicit |
+| Architecture, deployment and reviewer checklist | Drafted | Incorporate teammate feedback and verify final run instructions |
+| Demo script and public video | Reference video available | Bryan offered to record a final version with non-synthetic audio, using the current video as a reference; review and replace the public link when ready |
+| Weekly progress and blockers | Recorded | Add teammate outcomes and subsequent check-in results |
+| Team roles and selected extensions | Incomplete | Obtain each member's contribution summary, selected-extension progress and agreed next-task ownership |
+| Mandatory TA check-in | Pending | Bryan followed up with Derrick again on October 30; confirm a time, attend and record feedback |
+| Single submission PDF | Working export available | Refresh after the remaining inputs, visually review and submit by November 16 |
+
+Independent teammate setup is the team's requested reproducibility check; the
+assignment does not prescribe a specific reviewer count. Further personal-case
+adjudication and full mobile latency measurements strengthen the evidence but
+are not extra submission requirements when their limits are disclosed and no
+corresponding claims are made. TestFlight is an optional distribution idea under
+team discussion, not a dependency for submitting this milestone.
+
 ## Problem, release scope and architecture
 
 Research teams need to turn meeting discussion into reviewable assigned work and
@@ -261,23 +291,41 @@ bounded demo. A full production monitoring/rollback drill remains pending.
 Use [the 85-second demo plan](../evidence/demo_walkthrough.md#milestone-4-demo-edit-plan)
 with the full native acceptance recording as source evidence. The [85-second review video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4)
 has burned-in captions, macOS Samantha synthetic narration, and a 1080x2600
-portrait frame, linked from the README. Human demo sign-off remains open. Public application hosting is optional. A recording
-or script alone is not a published final demo.
+portrait frame, linked from the README. Bryan now plans a final recording with
+non-synthetic audio, using this video as a reference. That recording is not yet
+complete. It will retain explicit manual assignment/date entry and captured-email
+labels unless new evidence establishes different behavior. Review and update the
+public link after recording. Public application hosting is optional.
 
 TA packet: this draft supplies run instructions, evaluation table/failures,
 latency/cost table, red-team summary, architecture/doc links and demo plan. Ask the
 TA to confirm the Mac-specific reproducibility boundary and intended evaluation
-claims. **TA time remains unconfirmed; no check-in has been claimed or message sent.**
+claims. **TA time remains unconfirmed. Bryan reports following up with Derrick again
+on October 30; no completed check-in is recorded.**
 
 ## Team, extensions and remaining submission fields
 
-Team: Bryan Yang, Will Liu, Guadalupe Cantera. Confirm per-member implementation
-contributions and selected extension progress before submission; do not infer
-ownership from this assistant-run checkpoint. Weekly progress and blockers are in
-the [journal](../weekly_journal.md#october-26-milestone-4-execution).
+Team: Bryan Yang, Will Liu, Guadalupe Cantera. Bryan has requested contribution,
+selected-extension and remaining-task summaries from both teammates. The table
+below distinguishes confirmed activity from work awaiting confirmation; it is
+not a complete allocation of credit.
 
-Outstanding: personal-case adjudication; another reviewer's fresh setup; full
-mobile timing;
-human demo sign-off; TA check-in confirmation/completion; verified
-member contributions and extension updates. This draft must be updated with those
-outcomes before exporting the final single PDF.
+| Member | Confirmed in this checkpoint | Next work / confirmation needed |
+| --- | --- | --- |
+| Bryan Yang | Completed the 28-output human review, sent the team update and followed up with Derrick | Offered to record the non-synthetic final demo; confirm schedule and final report/demo approval |
+| Will Liu | Contribution summary requested; not yet recorded for this submission | Confirm implementation work, selected-extension progress and which requested task he can take |
+| Guadalupe Cantera | October 23 transcript-only personal-case review is recorded in the journal | Confirm complete Milestone 4 contributions, selected-extension progress and which requested task she can take |
+
+Independent setup and report-feedback owners remain unassigned until a teammate
+responds. Selected-extension names, completed work, remaining work and final-stage
+plans must be supplied or confirmed by the team before filling that report
+section. TestFlight is proposed for discussion; no distribution work or decision
+is claimed here. Weekly progress and the sent update are recorded in the
+[journal](../weekly_journal.md#october-30-team-update-and-submission-readiness).
+
+Before submission: incorporate teammate contributions/extension progress and
+setup/report feedback; confirm and complete the TA check-in; record/review the
+final demo and update its public link; refresh and visually check the single PDF.
+Retain the known product limitations rather than treating unimplemented automatic
+behavior or real inbox delivery as completed. Personal-case adjudication and
+broader performance testing remain separate evidence improvements.

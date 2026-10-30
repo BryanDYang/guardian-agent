@@ -616,3 +616,26 @@ negative-question refusals are appropriate. Updated current review status in the
 documentation index, roadmap and report. These are accepted review outcomes, not
 a blanket assertion that every model answer passed. Personal-case adjudication
 and the other release/submission gates remain open.
+
+
+### October 30 team update and submission readiness
+
+Bryan reports sending Will and Guadalupe the Milestone 4 progress update. It
+requests a fresh-Mac README check, report feedback, contribution/selected-extension
+summaries and confirmation of who can take each task and when. No teammate reply
+or assignment is recorded yet. Bryan also reports following up with Derrick again
+today; the TA check-in time remains unconfirmed.
+
+Bryan offered to record the final demo with non-synthetic audio, using the current
+85-second video as a reference. Manual assignment/date entry and captured email
+remain the demonstrated scope; real inbox delivery and automatic date/completion
+handling are still disclosed limitations. TestFlight was proposed to the team
+for discussion, not approved or added as a Milestone 4 requirement.
+
+Reviewed the existing submission draft against the assignment and added a
+readiness table. The main technical sections and completed human review are
+present. Remaining submission work is teammate contribution/extension information,
+reproducibility handoff/feedback, the required TA check-in, final demo review and
+updated public link, followed by the final PDF export and submission. Independent
+reviewer count, full mobile timing and additional personal-case adjudication are
+not silently promoted into new course requirements. The report remains a draft.
