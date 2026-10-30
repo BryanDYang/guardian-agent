@@ -583,3 +583,19 @@ preserving Bryan's initial “Passed” entry in the provenance note. Bryan saw 
 assistant-proposed labels/rationale before confirmation, so this is not a blinded
 or independent review. The remaining 27 entries and adjudication remain pending;
 this does not complete the human quality evaluation.
+
+### October 30 assistant review drafts
+
+At Bryan's request, prepared proposed correctness, citation-entailment and refusal
+judgments with case-specific rationales for all 28 entries in the
+[Milestone 4 review worksheet](milestone_4/human_review.md). Each proposal is
+explicitly assistant-authored and awaits human validation. Preserved Bryan's
+confirmed price/dense review and existing price/hybrid edits. Added the actual raw
+citation quotes and the retrieved source sets for the four negative-question
+entries so reviewers can inspect the evidence directly.
+
+Drafts flag power/hybrid and curve/dense as inappropriate final refusals despite
+answer-bearing sources, and style/dense for a pending-status qualifier not
+established by its transcript citation. Notes distinguish full-source support
+from incomplete quote previews. These proposals are not completed human reviews
+or new accuracy results; Bryan will validate or revise them before aggregation.
