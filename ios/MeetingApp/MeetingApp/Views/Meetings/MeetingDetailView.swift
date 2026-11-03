@@ -189,6 +189,7 @@ struct MeetingDetailView: View {
         }
         RemoteMeetingApplier.applyStoredTranscript(detail.transcript, to: meeting, context: context)
         RemoteMeetingApplier.applyStoredDecisions(detail.decisions, to: meeting)
+        RemoteMeetingApplier.applyStorylines(detail.storylines ?? [], to: meeting)
         try RemoteMeetingApplier.replacePendingTasks(detail.tasks, on: meeting, context: context)
             taskLoadError = nil
         } catch is CancellationError {

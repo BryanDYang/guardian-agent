@@ -731,6 +731,21 @@ struct RemoteExtraction: Decodable {
     let decisions: [RemoteDecision]
     let commitments: [RemoteCommitment]
     let suggestions: [RemoteDecision]
+    let storylines: [RemoteStoryline]?
+}
+
+struct RemoteStoryline: Decodable {
+    let speaker: String?
+    let whatTheyWant: String?
+    let whatTheySee: String?
+    let whatTheyDiscuss: String?
+
+    enum CodingKeys: String, CodingKey {
+        case speaker
+        case whatTheyWant = "what_they_want"
+        case whatTheySee = "what_they_see"
+        case whatTheyDiscuss = "what_they_discuss"
+    }
 }
 
 struct RemoteDecision: Decodable {
@@ -905,6 +920,7 @@ struct RemoteStoredMeeting: Decodable {
     let tasks: [RemoteStoredTask]
     let transcript: [RemoteStoredTurn]
     let decisions: [RemoteStoredDecision]
+    let storylines: [RemoteStoryline]?
     let source: RemoteMeetingSource?
 }
 

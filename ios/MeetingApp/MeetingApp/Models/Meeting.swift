@@ -13,6 +13,7 @@ final class Meeting {
     var summary: [String]
     var suggestions: [Suggestion]
     var decisions: [Decision]
+    var storylines: [Storyline] = []
     /// Codable array (not a relationship) so turn order is preserved.
     var transcript: [TranscriptTurn]
     /// Name of the audio file picked in Add Meeting. The TS UI had the picker but discarded the file.
@@ -81,6 +82,14 @@ struct Decision: Codable, Hashable, Identifiable {
     var id: String
     var text: String
     var timestamp: String
+}
+
+struct Storyline: Codable, Hashable {
+    /// Matches Attendee.id ("<meetingID>:<speaker>").
+    var speakerID: String
+    var want: String
+    var see: String
+    var discuss: String
 }
 
 // types.ts → TranscriptTurn

@@ -57,6 +57,7 @@ enum RemoteMeetingApplier {
         meeting.suggestions = extraction.suggestions.enumerated().map { index, suggestion in
             Suggestion(id: "\(meeting.id)-suggestion-\(index)", text: suggestion.statement)
         }
+        applyStorylines(extraction.storylines ?? [], to: meeting)
 
         if updateCandidates {
             replaceCommitments(extraction.commitments, on: meeting, context: context)
@@ -107,6 +108,19 @@ enum RemoteMeetingApplier {
             )
         }
         meeting.duration = timestamp(turns.map(\.endTimeMilliseconds).max() ?? 0)
+    }
+
+    /// Storylines attach to attendees by the same "<meetingID>:<speaker>" id.
+    static func applyStorylines(_ storylines: [RemoteStoryline], to meeting: Meeting) {
+        meeting.storylines = storylines.compactMap { story in
+            guard let speaker = story.speaker else { return nil }
+            return Storyline(
+                speakerID: "\(meeting.id):\(speaker)",
+                want: story.whatTheyWant ?? "",
+                see: story.whatTheySee ?? "",
+                discuss: story.whatTheyDiscuss ?? ""
+            )
+        }
     }
 
     /// Replaces a meeting's decisions with the ones stored in the database.

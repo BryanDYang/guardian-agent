@@ -16,6 +16,7 @@ RESULT_TABLES = (
     "tasks",
     "meeting_decisions",
     "meeting_summaries",
+    "meeting_attendee_storylines",
     "meeting_transcripts",
     "meeting_attendees",
 )
@@ -112,10 +113,16 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
         )
     storylines = conn.execute(
         """
-        SELECT id, attendee_id, what_they_want, what_they_see, what_they_discuss
-        FROM meeting_attendee_storylines
-        WHERE meeting_id = %s
-        ORDER BY created_at, id
+        SELECT s.id, s.attendee_id, s.speaker_label,
+               (SELECT coalesce(t.speaker_name, t.speaker_label)
+                FROM meeting_transcripts t
+                WHERE t.meeting_id = s.meeting_id
+                  AND t.speaker_label = s.speaker_label
+                LIMIT 1) AS speaker,
+               s.what_they_want, s.what_they_see, s.what_they_discuss
+        FROM meeting_attendee_storylines s
+        WHERE s.meeting_id = %s
+        ORDER BY s.created_at, s.id
         """,
         (meeting_id,),
     ).fetchall()
@@ -264,6 +271,28 @@ def save_results(
         "INSERT INTO meeting_summaries (meeting_id, overview) VALUES (%s, %s)",
         (meeting_id, extraction.summary),
     )
+    # Keyed by diarizer tag so the speaker's current name is looked up on read.
+    tags = {speaker["display"]: tag for tag, speaker in speakers.items()}
+    known = {turn.speaker for turn in transcript.turns}
+    for story in extraction.storylines:
+        tag = tags.get(story.speaker, story.speaker)
+        if tag not in known:
+            continue
+        conn.execute(
+            """
+            INSERT INTO meeting_attendee_storylines (meeting_id, attendee_id,
+                speaker_label, what_they_want, what_they_see, what_they_discuss)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (
+                meeting_id,
+                attendees.get(tag),
+                tag,
+                story.what_they_want,
+                story.what_they_see,
+                story.what_they_discuss,
+            ),
+        )
     for decision in extraction.decisions:
         decision_id = conn.execute(
             """

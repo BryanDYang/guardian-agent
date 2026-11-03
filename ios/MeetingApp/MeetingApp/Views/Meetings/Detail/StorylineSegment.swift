@@ -80,14 +80,23 @@ struct StorylineSegment: View {
 
             Divider()
 
-            ContentUnavailableView(
-                "Storyline not available",
-                systemImage: "text.bubble",
-                description: Text("A speaker-specific summary has not been generated. Read their contributions in the Transcript tab.")
-            )
+            if let story = meeting.storylines.first(where: { $0.speakerID == attendee.id }) {
+                Text([story.discuss, story.see, story.want].filter { !$0.isEmpty }.joined(separator: " "))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(RoundedRectangle(cornerRadius: 16).fill(Color(.systemBackground)))
+                Text("AI-generated from this speaker's turns. Not quote-checked.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                ContentUnavailableView(
+                    "Storyline not available",
+                    systemImage: "text.bubble",
+                    description: Text("A speaker-specific summary has not been generated. Read their contributions in the Transcript tab.")
+                )
+            }
         }
     }
-
 
 }
 

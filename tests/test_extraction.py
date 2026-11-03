@@ -527,3 +527,24 @@ def test_cli_invalid_archive_is_actionable(tmp_path):
     assert "zip" in result.stderr
     assert "Traceback" not in result.stderr
     assert not output.exists()
+
+
+def test_storylines_are_required_in_schema_but_optional_in_old_results(prediction):
+    schema = Extraction.model_json_schema()
+    assert "storylines" in schema["required"]
+    assert "default" not in schema["properties"]["storylines"]
+    assert Extraction.model_validate(prediction).storylines == []
+
+
+def test_repair_keeps_one_storyline_per_known_speaker(prediction, transcript):
+    story = {"what_they_want": "a", "what_they_see": "b", "what_they_discuss": "c"}
+    prediction["storylines"] = [
+        {"speaker": "Sam", **story},
+        {"speaker": "Sam", **story},
+        {"speaker": "Nobody", **story},
+    ]
+    extraction, repairs = Extraction.model_validate(prediction).repair_evidence(
+        transcript
+    )
+    assert [s.speaker for s in extraction.storylines] == ["Sam"]
+    assert len(repairs) == 2
