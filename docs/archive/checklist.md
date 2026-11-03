@@ -12,7 +12,7 @@ Execution order, milestone priorities, and next-phase boundaries: [Milestone 3 r
 
 This is the remaining work to make Meetings, Tasks, and Chat run against PostgreSQL from iOS, not local JSON files or seeded SwiftData.
 
-**Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. Diarization is enabled by default for new processing runs; enrolled project members can be named on the transcript and unmatched speakers stay `SPEAKER_N` until a member confirms a suggested or manually entered name. Account mapping requires explicit confirmation. Match thresholds are provisional and not calibrated. Playback and timestamp seeking are implemented and partially verified in the simulator; physical-device audibility remains unverified. Storylines, summary editing, redaction, and the JSON status file are still incomplete. This is an implementation inventory, not a claim that a user journey works end to end.
+**Current state:** Sign-in, profiles, project membership, invitations, voice enrollment, upload, speaker identification, review, tasks, and cited project chat are implemented. The signed-in app loads projects from `GET /api/v1/projects` and does not seed sample projects on launch. Enrollment records three clips and stores a voiceprint only after consent and quality checks; skipping is still allowed, and revoke deletes the voiceprint. Diarization is enabled by default for new processing runs; enrolled project members can be named on the transcript and unmatched speakers stay `SPEAKER_N` until a member confirms a suggested or manually entered name. Account mapping requires explicit confirmation. Match thresholds are provisional and not calibrated. Playback and timestamp seeking are implemented and partially verified in the simulator; physical-device audibility remains unverified. Summary editing, redaction, and the JSON status file are still incomplete. Per-speaker storylines are generated and stored as of November 2 (uncited; see the journal). This is an implementation inventory, not a claim that a user journey works end to end.
 
 **Optional shared backend:** `serve --shared --worker-id <unique-name>` implements private Supabase audio, DB-backed polling/jobs, renewable worker claims, fenced result publication, and deferred object cleanup. Local mode still uses JSON status. See [shared backend rollout](../reference/shared_backend.md); live two-device acceptance, migration of existing local recordings, and automatic endpoint routing are not established yet.
 
@@ -30,7 +30,7 @@ Legend: `[x]` implementation exists in the repo · `[ ]` implementation still re
 - [x] Pydantic models for transcript turns, summary, decisions, commitments, suggestions, evidence (`src/labsync/extraction.py`)
 - [x] Multi-citation evidence in `item_evidence` (quote, `turn_key`, transcript UUID, timestamp), not a single `transcript_id` column on tasks or decisions
 - [x] Pydantic models for task review and lifecycle (`Review`, `StateChange` in `src/labsync/api/tasks.py`)
-- [ ] Pydantic models for attendee storylines (`what_they_want`, `what_they_see`, `what_they_discuss`)
+- [x] Pydantic model for speaker storylines (Storyline: speaker, what_they_want, what_they_see, what_they_discuss) in `src/labsync/extraction.py`
 - [x] Pydantic models for RAG query/response (answer, citations, grounded refusal)
 - [ ] Golden fixture pack in `tests/fixtures/`: ~60s `.wav`, human-verified transcript, mock attendee calendar records
 
@@ -47,7 +47,7 @@ Postgres is used for projects, meeting rows, pipeline results, and hybrid search
 - [x] `psycopg_pool.ConnectionPool` and FastAPI `get_conn` (`src/labsync/db/connection.py`, `src/labsync/api/deps.py`)
 - [x] Repositories in use: `projects`, `meetings`, `meeting_transcripts`, `meeting_summaries`, `meeting_decisions`, `item_evidence`, `tasks`, `task_audit_log`, `chat_conversations`, `chat_messages`, `rag_chunks`, `profiles`, `invitations`, `voice_consents`, `voice_profiles`
 - [x] A voice match writes the member's `attendees` row and a `meeting_attendees` row (`display_label`, `match_score`, `match_method`, `embedding_model_id`). Unmatched speakers get no attendee row
-- [ ] `meeting_attendee_storylines` is still unused for writes (detail reads return an empty list)
+- [x] `meeting_attendee_storylines` is written per diarizer tag (`speaker_label`; `attendee_id` only for voice-matched members). Detail reads return the speaker's current name
 - [x] Lifecycle changes (`open` / `done` / `dropped` and revert) append `task_audit_log` with a unique `revert_token`
 - [x] Review edits (title, assignee, due date, approve, dismiss) and accepted-task detail edits append actor/old/new snapshots to `task_audit_log`. Undo cannot discard later edits.
 - [x] Hybrid search CTE: pgvector cosine + `tsvector` RRF at `k=60`, scoped by `WHERE project_id = :project_id`
@@ -59,7 +59,7 @@ Postgres is used for projects, meeting rows, pipeline results, and hybrid search
 
 ## Phase 3 — Headless Audio & Extraction Pipeline (Systems 6 & 7)
 
-Whisper, optional diarization, and Codex/Claude extraction run, and completed v1 uploads persist summary, decisions, transcript turns, and pending tasks. Passage embeddings, shortened task-title embeddings, and voiceprints are written. Storylines are not. Speaker naming runs only when diarization wrote `speakers.json`.
+Whisper, optional diarization, and Codex/Claude extraction run, and completed v1 uploads persist summary, decisions, transcript turns, and pending tasks. Passage embeddings, shortened task-title embeddings, and voiceprints are written. Per-speaker storylines are written to `meeting_attendee_storylines`. Speaker naming runs only when diarization wrote `speakers.json`.
 
 - [x] Audio ingest + Whisper transcription with timestamps (`labsync transcribe`)
 - [x] Optional `pyannote.audio` diarization (`--diarize`)
@@ -77,7 +77,7 @@ Whisper, optional diarization, and Codex/Claude extraction run, and completed v1
 - [x] A match snapshots `profiles.display_name` into `speaker_name` and `meeting_attendees.display_label`. Extraction runs on that labeled transcript. A commitment owned by a matched member sets `assignee_user_id`
 - [x] Diarization is enabled by default; `--no-diarize` opts out. Missing or failed diarization leaves speakers unmatched
 - [ ] Calendar attendees are not used for speaker identity
-- [ ] Extract and persist attendee storylines into `meeting_attendee_storylines`
+- [x] Extract and persist speaker storylines into `meeting_attendee_storylines` (same extraction call; uncited)
 - [x] Task similarity flag: a pending task whose title embedding (first 384 dimensions of `text-embedding-3-small`, stored on `tasks.embedding`) has cosine similarity of at least 0.80 with an earlier approved open task in the same project returns `matches_task`. The candidate is still inserted. There is no LLM arbiter, and `sentence-transformers/all-MiniLM-L6-v2` is not used
 - [ ] `meetings.duration_seconds` is never written
 
@@ -190,7 +190,7 @@ The client signs in, lists projects from the API, enrolls or skips a voiceprint,
 
 ## Phase 7 — Native Presentation (System 1)
 
-Meetings, task review, the calendar, project chat, and voice enrollment have connected code paths that require UI acceptance testing. The signed-in project list comes from Postgres. A transcript speaker string can be a member's display name when the server matched a voiceprint. Storylines and audio playback remain placeholders.
+Meetings, task review, the calendar, project chat, and voice enrollment have connected code paths that require UI acceptance testing. The signed-in project list comes from Postgres. A transcript speaker string can be a member's display name when the server matched a voiceprint. Audio playback remains a placeholder.
 
 ### Meetings
 
@@ -211,7 +211,7 @@ Meetings, task review, the calendar, project chat, and voice enrollment have con
 - [ ] Named attendees from a calendar event. Voice names arrive as the transcript speaker string, not from EventKit
 - [ ] Playhead highlight on the active transcript turn
 - [ ] Timestamp chip seeks audio (it only switches to the transcript tab)
-- [ ] Storylines from `meeting_attendee_storylines` (the three perspective cards are hardcoded)
+- [x] Storylines from `meeting_attendee_storylines` (one paragraph per speaker on Storyline detail)
 - [ ] Manual summary notes edit + save
 - [ ] Share formatted notes + action items (ShareLink payload is title + summary only)
 - [ ] Redaction tool (button is a no-op)
@@ -267,7 +267,7 @@ From the Story Writeup: transcript encryption, push/SMS notification infrastruct
 2. Complete the narrow cross-meeting reconciliation and follow-through path, then run identical-input sequence comparisons. Voiceprints and task-similarity flags already exist, but their presence does not establish reliable state tracking
 3. Run the dense-only/hybrid RAG comparison and human error review; collect latency/cost and evaluate speaker identity if claimed as an extension
 4. Perform the native walkthrough with real server projects. Fix the earliest blocking failure, add AVPlayer/citation seek for evidence inspection, and replace JSON status polling with Postgres-backed status. Start the worker with `--diarize` for the speaker demo
-5. Complete promised remaining scope or identify deferrals explicitly; freeze the verified configuration and package results, cards, individual contributions, and the final PDF. Storylines, summary editing, redaction, calendar integration, and duration persistence remain tracked above
+5. Complete promised remaining scope or identify deferrals explicitly; freeze the verified configuration and package results, cards, individual contributions, and the final PDF. Summary editing, redaction, calendar integration, and duration persistence remain tracked above
 
 The transcript-only extraction subset in Phase 5 can keep running without Postgres.
 

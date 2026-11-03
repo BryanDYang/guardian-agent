@@ -160,7 +160,7 @@ Detailed code trail:
    `speaker_names.py` suggests names from limited introduction patterns.
    `api/meetings.py` records explicit speaker/account reviews. These are three
    different mechanisms, with different evidence and limitations.
-7. `db/meetings.save_results` writes pending commitments/suggestions and evidence;
+7. `db/meetings.save_results` writes pending commitments/suggestions and evidence, plus one uncited storyline per speaker;
    `db/rag.index_meeting` builds the search index. Publication is fenced by the
    current worker token. A stale worker cannot replace a recovered result.
 8. `MeetingDetailView` polls active processing about every two seconds. Project

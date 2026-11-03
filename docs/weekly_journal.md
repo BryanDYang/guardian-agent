@@ -639,3 +639,45 @@ reproducibility handoff/feedback, the required TA check-in, final demo review an
 updated public link, followed by the final PDF export and submission. Independent
 reviewer count, full mobile timing and additional personal-case adjudication are
 not silently promoted into new course requirements. The report remains a draft.
+
+
+# Week 11 (November 2-8, 2026)
+
+## November 1-2 speaker storylines
+
+Will implemented per-speaker storylines. The initial schema, the meeting detail
+API and the Storyline tab had scaffolded them, but nothing generated or stored
+content, and Storyline detail showed an unavailable state.
+
+- Extraction (`src/labsync/extraction.py`) returns one storyline per speaker label
+  from the same model call: what the speaker discusses, how they see the current
+  situation, and what they want. Storylines are uncited, like the summary.
+  `repair_evidence` drops storylines for unknown or repeated speakers. The field
+  defaults to empty so earlier results, saved evaluation runs and fixtures still
+  validate; the output schema still requires it for new calls. Prompt version
+  `meeting-extraction-v3`.
+- `db/meetings.save_results` writes `meeting_attendee_storylines` keyed by
+  diarizer tag. The meeting detail read returns the speaker's current name, so
+  speaker-name review keeps storylines attached. Retry clears old rows.
+- Migration `20261101000000_speaker_storylines.sql` makes `attendee_id` nullable,
+  because unmatched speakers have no attendee row, and adds `speaker_label`. On
+  the team project it was applied in the SQL editor and recorded with
+  `supabase migration repair --status applied 20261101000000`. `supabase db push`
+  was not used because it would also apply
+  `20261010000000_shared_processing.sql`, which stays unapplied until the
+  shared-backend rollout is coordinated.
+- The app decodes storylines from processing results and from the stored meeting
+  detail, and shows each speaker's storyline on Storyline detail as one
+  paragraph labeled AI-generated and not quote-checked. Prompt
+  `meeting-extraction-v4` asks the model to write the three parts as one
+  continuous third-person story.
+- Two extraction tests cover the required schema field and storyline repair.
+
+Observed results are in the [walkthrough](evidence/demo_walkthrough.md#november-2-speaker-storyline-check).
+The full test suite and simulator build were not recorded for this change.
+Storyline quality has not been reviewed. Changing the extraction prompt means
+earlier extraction proxy scores were produced with v2.
+
+Local backend setup also needed an updated `DATABASE_URL` after Bryan's database
+password reset, and a replacement for an invalid `ANTHROPIC_API_KEY` that had
+failed extraction with HTTP 401.

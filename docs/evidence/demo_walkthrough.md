@@ -875,3 +875,20 @@ video rather than a dedicated streaming/player page. A YouTube/Vimeo showcase
 link can replace it after human demo sign-off. Main revision and clean working
 tree were verified. Runtime fixes are in `5634435`; the evidence/report/video
 package is in `60880fb`.
+
+## November 2 speaker storyline check
+
+Backend: local `labsync serve` (MLX Whisper base, diarization, Claude provider)
+against the team Supabase project, with the uncommitted storyline changes in the
+[journal](../weekly_journal.md#november-1-2-speaker-storylines). App: simulator
+build after the Swift changes.
+
+| Step | Expected | Observed |
+| --- | --- | --- |
+| Upload a 47:19 personal recording ("New Sync 1", `f288936a`) | Completes with storylines | Completed. `meeting-extraction-v3` returned storylines for SPEAKER_1-4, Will Liu and UNKNOWN, with no storyline repairs |
+| Open Storyline and tap Will Liu | That speaker's storyline | Shown after rebuilding the app |
+| Open the same recording processed before the change ("New Sync", `70c17d0d`, v2) | Unavailable state until retried | Unavailable state |
+
+Not verified: the v4 paragraph prompt on a retried meeting, storyline accuracy,
+storylines after speaker renaming, and a direct query of the stored rows.
+UNKNOWN groups unassigned turns, so its storyline can mix several people.
