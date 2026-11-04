@@ -142,6 +142,38 @@ def test_refuses_missing_or_unverified_answer_markers(text):
     )
 
 
+def test_bracketed_citation_refs_are_accepted():
+    # The model sometimes writes a ref as the answer marks it: "[T1]", not "T1".
+    text, citations = chat.finalize(
+        reply(
+            "They chose AdamW [D1] and lowering the rate [T1].",
+            ("[D1]", "go with AdamW"),
+            ("[T1]", "lower the learning rate"),
+        ),
+        SOURCES,
+    )
+    assert text == "They chose AdamW [1] and lowering the rate [2]."
+    assert [(c["number"], c["kind"]) for c in citations] == [
+        (1, "decision"),
+        (2, "transcript"),
+    ]
+
+
+@pytest.mark.parametrize(
+    "citation",
+    [
+        ("[T9]", "lower the learning rate"),  # bracketed, but not a shown source
+        ("[T1]", "invented words"),  # bracketed, but the quote is not in T1
+        ("[T1", "lower the learning rate"),  # malformed ref is not repaired
+    ],
+)
+def test_bracketed_refs_still_need_a_shown_source_and_quote(citation):
+    assert chat.finalize(reply("Lower it [T1].", citation), SOURCES) == (
+        NO_ANSWER,
+        [],
+    )
+
+
 def test_whitespace_quote_cannot_verify_a_claim():
     assert chat.finalize(reply("Use AdamW [D1].", ("D1", "   ")), SOURCES) == (
         NO_ANSWER,
