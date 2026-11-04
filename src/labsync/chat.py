@@ -210,7 +210,8 @@ def finalize(answer: ChatAnswer, sources: list[Source]) -> tuple[str, list[dict]
     by_ref = {s.ref: s for s in sources}
     verified: dict[str, str] = {}
     for citation in answer.citations:
-        source = by_ref.get(citation.ref)
+        ref = _bare_ref(citation.ref)
+        source = by_ref.get(ref)
         if source is None:
             log.warning("Refused answer: citation %s was not shown", citation.ref)
             return NO_ANSWER, []
@@ -222,8 +223,8 @@ def finalize(answer: ChatAnswer, sources: list[Source]) -> tuple[str, list[dict]
                 citation.ref,
             )
             return NO_ANSWER, []
-        elif citation.ref not in verified:
-            verified[citation.ref] = citation.quote
+        elif ref not in verified:
+            verified[ref] = citation.quote
     text = answer.answer.strip()
     if not answer.answerable or not text or not verified:
         return NO_ANSWER, []
@@ -302,3 +303,9 @@ def _task_status(row: dict) -> str:
 
 def _squash(text: str) -> str:
     return " ".join(text.split())
+
+
+def _bare_ref(ref: str) -> str:
+    """Models sometimes write a citation ref the way the answer marks it, "[T4]"."""
+    match = MARKER.fullmatch(ref.strip())
+    return match.group(1) if match else ref
