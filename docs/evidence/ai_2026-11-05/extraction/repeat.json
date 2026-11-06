@@ -1,0 +1,52 @@
+{
+  "case_id": "repeat",
+  "input_sha256": "01d83301015ad46a67c6722c660139b40def2404b28e2ba816381901e004835a",
+  "project_id": "synthetic-eval",
+  "meeting_id": "repeat",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "52c2b9bbe6550eb72a2f1da1801b8cfb396649f89db40bb5a58cc6d7bd4a9008",
+  "transcript_sha256": "35b21e1dd74f5f6900a47bdabe3c75aad8346a0aeabaef4ebc88d1261b345b05",
+  "elapsed_seconds": 5.029,
+  "usage": {
+    "input_tokens": 16958,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 148,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam states twice that they will send the report by Friday.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Send the report",
+        "owner": "Sam",
+        "due_date_text": "by Friday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I will send the report by Friday."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "To repeat, I will send the report by Friday."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they intend to send the report by Friday.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam discusses sending the report, repeating the commitment for emphasis."
+      }
+    ]
+  },
+  "wall_seconds": 5.03
+}

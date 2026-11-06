@@ -1,0 +1,48 @@
+{
+  "case_id": "explicit",
+  "input_sha256": "fc40ed5b4af1fce281139ce247392c226fdbdea16afaf356b1ddfa803fab0b51",
+  "project_id": "synthetic-eval",
+  "meeting_id": "explicit",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "bfe74a1dd5a1df481f956c6d8f5ab3c2e30d6744c8892dbcb78912fb8168b689",
+  "transcript_sha256": "bce7f5aa9eb432cf77c2dc478cfd9206b824e756c4feffde7765a70d8d4ff289",
+  "elapsed_seconds": 5.331,
+  "usage": {
+    "input_tokens": 16922,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 122,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam committed to preparing the transcript fixture by Friday.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Prepare the transcript fixture",
+        "owner": "Sam",
+        "due_date_text": "by Friday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I will prepare the transcript fixture by Friday."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they intend to have it prepared by Friday.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam discusses preparing the transcript fixture,"
+      }
+    ]
+  },
+  "wall_seconds": 5.334
+}

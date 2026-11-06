@@ -1,0 +1,36 @@
+{
+  "case_id": "completed",
+  "input_sha256": "d9547851586ca0967298664e4a9c0f07f25f80ff022ee31f44ca65b96d768f99",
+  "project_id": "synthetic-eval",
+  "meeting_id": "completed",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "0db9b1f24a0f488162c5f503accc20d8ac29afd982b046234c30eefd1aff582b",
+  "transcript_sha256": "e3e5868eedd318e0f846a19433ea3dafdc7b8d81227eedb8afdabe636a343969",
+  "elapsed_seconds": 6.232,
+  "usage": {
+    "input_tokens": 16918,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 89,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will reported that the label review was completed yesterday.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "",
+        "what_they_see": "they have finished reviewing the labels, with the work completed yesterday.",
+        "what_they_discuss": "Will discusses the status of the label review, reporting completed progress."
+      }
+    ]
+  },
+  "wall_seconds": 6.232
+}

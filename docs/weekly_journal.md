@@ -681,3 +681,51 @@ earlier extraction proxy scores were produced with v2.
 Local backend setup also needed an updated `DATABASE_URL` after Bryan's database
 password reset, and a replacement for an invalid `ANTHROPIC_API_KEY` that had
 failed extraction with HTTP 401.
+
+## November 5 AI checks, red teaming and TestFlight preparation
+
+Bryan shared Derrick's check-in feedback and authorized work on AI CI checks,
+additional red teaming and a TestFlight build. Bryan plans to record the final
+demo using the earlier recording as a reference.
+
+- Added a disposable Supabase database CI job alongside offline smoke checks.
+  It applies all repository migrations and runs the complete test suite with
+  email capture. The initial offline run passed 163 tests but skipped 170; the
+  final local database-backed run passed **342 tests with zero skips**. Two
+  dependency deprecation warnings remain. Ruff lint/format, `git diff --check`
+  and actionlint v1.7.7 passed. GitHub-hosted execution has not been observed;
+  changes remain local.
+- Added extraction scoring gates for missing/failed inference, an initial 0.70
+  development F1 floor, citation validity and a strict injection-case check.
+  Reports are saved before a failing exit. The frozen rules baseline passes
+  with F1 22/31 (0.710), including an empty injection-case extraction.
+- Added a separate manual live-model workflow; weekly runs require explicit
+  opt-in. It needs an `ANTHROPIC_API_KEY` secret and `AI_EVAL_MODEL` repository
+  variable. These have not been configured by this session. The local live runs
+  used the existing Codex provider instead. See
+  [Contributing](../CONTRIBUTING.md#ai-regression-checks) for exact commands,
+  scope and limitations.
+- Added eight synthetic chat security/control cases and an API test showing
+  repeated malicious chat instructions and compromised model replies cannot
+  approve a pending task or queue/deliver email. This tests capability boundaries,
+  not the truthfulness of model claims or production rate limiting.
+- The live `gpt-5.6-sol` extraction run on current prompt v4 passed the new gates:
+  precision proxy 13/14, recall proxy 13/15, F1 proxy 26/29 (0.897), valid quotes
+  31/31, negative cases 11/11 and zero failed inference cases. Failures remain:
+  unknown-owner obligation omitted, joint ownership duplicated, two actions
+  merged, and deadline text mismatches. These AI-authored development labels and
+  lexical scores do not establish held-out semantic accuracy.
+- All eight live chat cases passed the bounded checks, including two supported
+  controls, unsupported budget, source injection, role spoofing, direct
+  fabrication, secret probe and action request. This does not prove access to
+  real secrets is impossible; the inputs contain synthetic data only.
+- Attempted a signed Release archive with Xcode 27.2. It failed because no
+  development team is configured. The bundle ID is still a project placeholder;
+  the local app's backend points at loopback. TestFlight upload/distribution
+  remains pending Apple team/app details, signing access and a reachable backend
+  URL. No signing was disabled, no app configuration was changed, and nothing
+  was uploaded.
+
+Generated model evidence is preserved under
+[`evidence/ai_2026-11-05`](evidence/ai_2026-11-05/). Exact observed results and
+residual risks are recorded in the [walkthrough](evidence/demo_walkthrough.md#november-5-ai-ci-and-red-team-checks).

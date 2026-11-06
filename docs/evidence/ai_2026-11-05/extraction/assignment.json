@@ -1,0 +1,58 @@
+{
+  "case_id": "assignment",
+  "input_sha256": "a4d949f76d1bafe4a92d66484a9c560f828ccbca28f2a235cd7e557e02bd591b",
+  "project_id": "synthetic-eval",
+  "meeting_id": "assignment",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "ef116132c00fdd7025def3e0e534e1189d9e55f1afafd5a4604cd0b06fdacf83",
+  "transcript_sha256": "94c895acc275b5662d4fb4a852abbdf499d87cab1d7d39e438cb20d10b66bdae",
+  "elapsed_seconds": 6.41,
+  "usage": {
+    "input_tokens": 16964,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 200,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam assigned Will responsibility for preparing the demo by Friday, and Will explicitly accepted.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Prepare the demo",
+        "owner": "Will",
+        "due_date_text": "by Friday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Will is responsible for preparing the demo by Friday."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "I accept responsibility for preparing the demo."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they want Will to prepare the demo by Friday.",
+        "what_they_see": "they identify Will as responsible for the work.",
+        "what_they_discuss": "Sam discusses responsibility for preparing the demo,"
+      },
+      {
+        "speaker": "Will",
+        "what_they_want": "they accept responsibility for preparing the demo.",
+        "what_they_see": "they understand the assignment.",
+        "what_they_discuss": "Will responds to the demo assignment,"
+      }
+    ]
+  },
+  "wall_seconds": 6.41
+}

@@ -1,0 +1,65 @@
+{
+  "case_id": "two_owners",
+  "input_sha256": "f9c554e9dd748efc73a8118b46ba90a9f2c92144e7c430dfff1ad20cf22d9595",
+  "project_id": "synthetic-eval",
+  "meeting_id": "two_owners",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "127b4a27b339b4a75626ec74175b451f2713248bcdfc831e3fe49bfcc466f2ca",
+  "transcript_sha256": "e430bf8bb8ecaef4882244230fe58dfa375f301aeb17847596a1f3cc616612ef",
+  "elapsed_seconds": 6.627,
+  "usage": {
+    "input_tokens": 16956,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 207,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam and Will each accepted a separate task: Sam will review the schema, and Will will test the upload endpoint.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Review the schema",
+        "owner": "Sam",
+        "due_date_text": null,
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I will review the schema."
+          }
+        ]
+      },
+      {
+        "title": "Test the upload endpoint",
+        "owner": "Will",
+        "due_date_text": null,
+        "evidence": [
+          {
+            "transcript_id": "t2",
+            "quote": "I will test the upload endpoint."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they intend to review the schema.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam discusses the schema, stating that "
+      },
+      {
+        "speaker": "Will",
+        "what_they_want": "they intend to test the upload endpoint.",
+        "what_they_see": "",
+        "what_they_discuss": "Will discusses the upload endpoint, stating that "
+      }
+    ]
+  },
+  "wall_seconds": 6.628
+}

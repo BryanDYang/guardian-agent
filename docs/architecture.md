@@ -421,12 +421,11 @@ change does not alter task approval semantics.
 Group tests by subsystem when navigation becomes difficult, keeping fixture and
 cross-project isolation checks easy to find. Document which tests require a real
 local PostgreSQL database, which replace inference, and which call real providers.
-The current CI's plain `pytest` skips database-dependent tests unless
-`TEST_DATABASE_URL` is configured; a green smoke run is not full integration proof.
-
-Consider adding a disposable PostgreSQL/pgvector CI job with the minimum Auth and
-Storage test schemas and all migrations. This would make new persistence and
-outbox failures visible on every PR instead of relying on a developer's local run.
+The smoke CI job runs offline. The separate `ai-regression` job starts disposable
+Supabase PostgreSQL with every migration and sets `TEST_DATABASE_URL`, so database
+and API safety tests also run on every PR. Neither job calls live models. The
+separate live evaluation workflow and development scoring floors are documented
+in [Contributing](../CONTRIBUTING.md#ai-regression-checks).
 
 Version the small fixtures/configuration/expectations that make results
 reproducible. Keep private audio and bulky outputs out of Git. Link representative

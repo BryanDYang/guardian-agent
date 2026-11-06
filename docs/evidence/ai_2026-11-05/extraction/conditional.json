@@ -1,0 +1,46 @@
+{
+  "case_id": "conditional",
+  "input_sha256": "bc415c64ef6849d916c698cbb3aa31abdbd2997259165e577e49a908b396f369",
+  "project_id": "synthetic-eval",
+  "meeting_id": "conditional",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "04c15004f564660cf57d9d5d5886ab84a8dbbe578863731cc5d32587b6c7f0f5",
+  "transcript_sha256": "c3cd0b36e16272d31c2d90d8d455710c4062eda9ad4c65cb155e5e491509a30c",
+  "elapsed_seconds": 7.569,
+  "usage": {
+    "input_tokens": 16930,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 171,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will conditionally considered rerunning the baseline if cluster access becomes available; no decision, commitment, or accepted assignment was made.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [
+      {
+        "statement": "Will suggested that they might rerun the baseline if access to the cluster is obtained.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "If we get access to the cluster, I might rerun the baseline."
+          }
+        ]
+      }
+    ],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "they may want to rerun the baseline if cluster access becomes available.",
+        "what_they_see": "they see cluster access as a prerequisite for potentially rerunning the baseline.",
+        "what_they_discuss": "Will discusses a possible baseline rerun conditioned on gaining access to the cluster;"
+      }
+    ]
+  },
+  "wall_seconds": 7.569
+}

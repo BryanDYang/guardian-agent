@@ -1,0 +1,48 @@
+{
+  "case_id": "contraction",
+  "input_sha256": "cbef5cec0de4bc5b1cf320ede5c09b8b2b2a990aa006366abc5b0fc8343489b7",
+  "project_id": "synthetic-eval",
+  "meeting_id": "contraction",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "166717733f567d69cb042b7e6f708dbf7923a81761d8e94a976dc1bcebd123e5",
+  "transcript_sha256": "21992fc67bc7c564c17e47376050f53d28871c75b3cb8862577711995012e91f",
+  "elapsed_seconds": 5.361,
+  "usage": {
+    "input_tokens": 16925,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 121,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will said they will rerun the baseline tomorrow.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Rerun the baseline",
+        "owner": "Will",
+        "due_date_text": "tomorrow",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I'll rerun the baseline tomorrow."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "they intend to rerun the baseline tomorrow.",
+        "what_they_see": "",
+        "what_they_discuss": "Will discusses rerunning the baseline,"
+      }
+    ]
+  },
+  "wall_seconds": 5.361
+}

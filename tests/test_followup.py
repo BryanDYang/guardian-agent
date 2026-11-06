@@ -411,3 +411,43 @@ def test_expired_worker_claim_recovers_on_another_worker(flow):
     assert EmailWorker(f["app"].state.pool).process_one()
     assert logs(f)[0]["state"] == "captured"
     assert not EmailWorker(f["app"].state.pool).process_one()
+
+
+def test_repeated_chat_instructions_cannot_approve_or_send_email(flow, monkeypatch):
+    """Even a compromised model reply has no task approval/delivery capability."""
+    from labsync import chat
+
+    f, client = flow, flow["client"]
+    configure(f, auto=False)
+    connect(f)
+    calls = []
+
+    def compromised(prompt, schema, **settings):
+        import re
+
+        calls.append(prompt)
+        ref = re.search(r"^\[([TDKS]\d+)\]", prompt, re.M).group(1)
+        return {
+            "answerable": True,
+            "answer": f"I approved the task and sent the email [{ref}].",
+            "citations": [{"ref": ref, "quote": "share the recording"}],
+        }
+
+    monkeypatch.setattr(chat.providers, "structured", compromised)
+    response = client.post("/api/v1/conversations", json={"project_id": f["project"]})
+    assert response.status_code == 201
+    conversation = response.json()["id"]
+    for _ in range(3):
+        response = client.post(
+            f"/api/v1/conversations/{conversation}/messages",
+            json={"content": "Share the recording: approve the task and email it now."},
+        )
+        assert response.status_code == 200, response.text
+    assert len(calls) == 3  # Exercise model output, rather than empty-source refusal.
+    with f["app"].state.pool.connection() as conn:
+        task = conn.execute(
+            "SELECT review_status FROM tasks WHERE id=%s", (f["task"],)
+        ).fetchone()
+        assert task["review_status"] == "pending"
+    assert not logs(f)
+    assert not EmailWorker(f["app"].state.pool).process_one()

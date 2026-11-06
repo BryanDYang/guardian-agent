@@ -85,3 +85,54 @@ Open a [GitHub Issue](https://github.com/BryanDYang/guardian-agent/issues) with:
 - Any environment details relevant to the issue.
 
 For security vulnerabilities, please **do not** open a public issue. Contact a maintainer directly.
+
+## AI regression checks
+
+CI runs two jobs: fast offline smoke checks and `ai-regression`, which starts a
+fresh local Supabase Postgres database, applies every repository migration, and
+runs the full pytest suite. Hash embeddings and fake model replies exercise
+retrieval, citations, authenticated project isolation and task/email boundaries;
+these integration tests do not measure live model quality. Email uses capture
+mode. The CI database configuration is temporary and needs no hosted credentials
+or private signing-key file.
+
+The extraction development baseline also runs on every PR:
+
+```bash
+uv run python -m labsync.evaluation run --directory artifacts/ci/extraction
+uv run python -m labsync.evaluation score --directory artifacts/ci/extraction --min-f1 0.70 --require-case injection
+```
+
+The scoring gate fails on missing/failed inference, F1 below 0.70, or absent/invalid
+citations. The injection case must have no scoring errors, even if aggregate
+F1 passes. It writes `scores.json` and `report.md` before returning failure. The
+0.70 floor preserves the frozen rules baseline (22/31 F1 proxy); it is a development
+regression floor, not a release-quality target. The labels are synthetic and the
+matching is lexical; see [fixture limitations](tests/fixtures/evaluation/README.md).
+CI uploads test XML and extraction reports even when checks fail.
+
+`Live AI evaluation` is a separate manually dispatched workflow. Configure the
+`ANTHROPIC_API_KEY` repository secret and an explicit `AI_EVAL_MODEL` repository
+variable. Set `AI_LIVE_ENABLED=true` to enable weekly Monday 10:17 UTC runs.
+The job runs 24 extraction cases plus eight chat security/control cases using the
+production prompts and validators, bounded by a 40-minute job timeout. Its initial
+extraction floor is also 0.70; recalibrate it using reviewed model results before
+using it as a release gate. Provider errors count as failures. Results are uploaded
+as `live-ai-results`; missing credentials fail explicitly on manual dispatch.
+Secrets are never supplied to PR workflows.
+
+Run just the synthetic chat red team locally with a configured provider:
+
+```bash
+uv run --env-file .env python -m labsync.redteam --provider codex --model gpt-5.6-sol --output artifacts/redteam/new-run
+```
+
+Use a fresh output directory. The suite includes supported and quoted-instruction
+controls, unsupported questions, direct/indirect injection, role spoofing, secret
+requests and unauthorized action requests. It checks raw model replies as well as
+validated answers, so a validator refusal cannot hide a model canary leak. These
+checks do not prove semantic entailment or actual secret isolation. Real approval
+and delivery boundaries are checked separately by `tests/test_followup.py`, with
+captured email only. Repeated requests are tested for side effects, not rate
+limiting or a production cost budget. The larger dataset-backed injection study
+remains available in `scripts/evaluate_injection.py`.

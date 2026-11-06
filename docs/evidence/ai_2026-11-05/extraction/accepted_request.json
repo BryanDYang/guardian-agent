@@ -1,0 +1,58 @@
+{
+  "case_id": "accepted_request",
+  "input_sha256": "0f3e1b04d245043be4e45e0d1c2b0df12cbee4c62cd0614adf487d944f71e628",
+  "project_id": "synthetic-eval",
+  "meeting_id": "accepted_request",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "73b8aa9ea501de49de3344a6943d2f8cd4ca4118df7016d2d3f01560f9785ee5",
+  "transcript_sha256": "e0a589634c6a981e9d57634929d26d780f34f237cd298f3f5328f5f007f303a4",
+  "elapsed_seconds": 6.959,
+  "usage": {
+    "input_tokens": 16959,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 198,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam asked Will to upload the slides, and Will agreed to do so by Monday.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Upload the slides",
+        "owner": "Will",
+        "due_date_text": "by Monday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Will, could you upload the slides?"
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Yes, I will do that by Monday."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they want Will to upload the slides.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam raises uploading the slides and asks Will to handle it, so "
+      },
+      {
+        "speaker": "Will",
+        "what_they_want": "they intend to upload the slides by Monday.",
+        "what_they_see": "",
+        "what_they_discuss": "Will responds to Sam\u2019s request and agrees to upload the slides, and "
+      }
+    ]
+  },
+  "wall_seconds": 6.959
+}

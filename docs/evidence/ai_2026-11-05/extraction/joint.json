@@ -1,0 +1,87 @@
+{
+  "case_id": "joint",
+  "input_sha256": "f096757bade4791493fb6db8ed01b48f42458d55683a084a7f0618a00bb366ce",
+  "project_id": "synthetic-eval",
+  "meeting_id": "joint",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "a2fea7982b1554c6727c4a4fc47f9f9f6e35997f0cc68aa799176d880f2f2c39",
+  "transcript_sha256": "4cd0bdd30f706477fc82cd8718f6c93e86f669e5aaf3d722032c73fdbe0e9ab7",
+  "elapsed_seconds": 8.753,
+  "usage": {
+    "input_tokens": 16958,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 335,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam and Will agreed to review the schema together by Tuesday.",
+    "decisions": [
+      {
+        "statement": "Sam and Will agreed to jointly review the schema.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Will and I will review the schema together by Tuesday."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Yes, we will both review it."
+          }
+        ]
+      }
+    ],
+    "commitments": [
+      {
+        "title": "Review the schema together with Will",
+        "owner": "Sam",
+        "due_date_text": "by Tuesday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Will and I will review the schema together by Tuesday."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Yes, we will both review it."
+          }
+        ]
+      },
+      {
+        "title": "Review the schema together with Sam",
+        "owner": "Will",
+        "due_date_text": "by Tuesday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Will and I will review the schema together by Tuesday."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Yes, we will both review it."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they want to review the schema with Will by Tuesday.",
+        "what_they_see": "they describe the review as a joint responsibility shared with Will.",
+        "what_they_discuss": "Sam discusses reviewing the schema together with Will,"
+      },
+      {
+        "speaker": "Will",
+        "what_they_want": "they agree to participate in the review.",
+        "what_they_see": "they confirm that both speakers will review the schema.",
+        "what_they_discuss": "Will responds to Sam\u2019s plan for the schema review,"
+      }
+    ]
+  },
+  "wall_seconds": 8.753
+}

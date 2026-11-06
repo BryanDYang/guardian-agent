@@ -1,0 +1,48 @@
+{
+  "case_id": "two_actions",
+  "input_sha256": "fe029daab5039329f42c1cabd7ef880c6a089f16b061a3cd799c971c6df50e52",
+  "project_id": "synthetic-eval",
+  "meeting_id": "two_actions",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "363be3defb158df02be319cc9e761bcec5372c6e85443bc14ae1f6f030a9be5e",
+  "transcript_sha256": "fc903c95b9212cd672c51ceb3e6184cbbbf5dbf0715cb2bf3266b2bf259a1956",
+  "elapsed_seconds": 5.723,
+  "usage": {
+    "input_tokens": 16928,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 135,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam committed to reviewing the schema and sending the slides by Friday.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Review the schema and send the slides",
+        "owner": "Sam",
+        "due_date_text": "by Friday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I will review the schema and send the slides by Friday."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they intend to complete both tasks by Friday.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam discusses reviewing the schema and sending the slides, and"
+      }
+    ]
+  },
+  "wall_seconds": 5.723
+}

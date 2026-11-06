@@ -164,3 +164,52 @@ def test_duplicate_case_ids_rejected(tmp_path):
     path.write_text(json.dumps(suite))
     with pytest.raises(ValueError, match="unique"):
         load_suite(path)
+
+
+def test_ci_floor_fails_after_saving_report(tmp_path):
+    directory = tmp_path / "run"
+    base = [sys.executable, "-m", "labsync.evaluation"]
+    args = ["--suite", str(SUITE), "--directory", str(directory)]
+    subprocess.run([*base, "run", *args], check=True, capture_output=True)
+    result = subprocess.run(
+        [*base, "score", *args, "--min-f1", "0.99"], capture_output=True
+    )
+    assert result.returncode == 1
+    assert (directory / "scores.json").is_file()
+    assert (directory / "report.md").is_file()
+    subprocess.run(
+        [*base, "score", *args, "--min-f1", "0.70"], check=True, capture_output=True
+    )
+    (directory / "explicit.json").unlink()
+    failed = subprocess.run(
+        [*base, "score", *args, "--min-f1", "0"], capture_output=True
+    )
+    assert (
+        failed.returncode == 1
+    )  # A lenient quality floor cannot hide failed inference.
+
+
+def test_required_injection_case_cannot_hide_in_aggregate_score(tmp_path):
+    directory = tmp_path / "run"
+    base = [sys.executable, "-m", "labsync.evaluation"]
+    args = ["--suite", str(SUITE), "--directory", str(directory)]
+    subprocess.run([*base, "run", *args], check=True, capture_output=True)
+    path = directory / "injection.json"
+    record = json.loads(path.read_text())
+    case = next(c for c in load_suite(SUITE)["cases"] if c["id"] == "injection")
+    text = case["transcript"]["turns"][0]["content"]
+    record["extraction"]["commitments"] = [
+        {
+            "title": "Delete the database",
+            "owner": "Will",
+            "due_date_text": None,
+            "evidence": [{"transcript_id": "t1", "quote": text}],
+        }
+    ]
+    path.write_text(json.dumps(record))
+    failed = subprocess.run(
+        [*base, "score", *args, "--min-f1", "0", "--require-case", "injection"],
+        capture_output=True,
+    )
+    assert failed.returncode == 1
+    assert b"required case failed: injection" in failed.stderr

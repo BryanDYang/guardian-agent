@@ -1,0 +1,36 @@
+{
+  "case_id": "silence",
+  "input_sha256": "2f8df4aa5a904b222370b70cadccad95f593cd65e52f3bc0fedbde870a98edb3",
+  "project_id": "synthetic-eval",
+  "meeting_id": "silence",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "1cb9cd90777ff375811993202a6fd435057d081cdf83e11afbb2099283e32b06",
+  "transcript_sha256": "e18278f54c1cc4036f68af229096c50a0265e5eaf6f3661e682fb7cc0ce9c760",
+  "elapsed_seconds": 5.067,
+  "usage": {
+    "input_tokens": 16927,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 103,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam states that the weather was discussed and the next meeting was scheduled, but provides no details about the schedule.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "",
+        "what_they_see": "they report that the next meeting has been scheduled, without giving its date or time.",
+        "what_they_discuss": "Sam discusses the weather and scheduling the next meeting, and"
+      }
+    ]
+  },
+  "wall_seconds": 5.067
+}

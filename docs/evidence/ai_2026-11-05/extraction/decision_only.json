@@ -1,0 +1,56 @@
+{
+  "case_id": "decision_only",
+  "input_sha256": "ba37ab00773f9466275fcbb66b532a5d307b1f9a699c7eaa6b33176ef1a603d9",
+  "project_id": "synthetic-eval",
+  "meeting_id": "decision_only",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "1bb89faca79350e1d0f07af80d6fb7cbb65deae2c1235a53b34cfb783f530133",
+  "transcript_sha256": "1f4e3920220737c3da10c6db1a884cf6e6eb80f32c151184fba8aa383046319c",
+  "elapsed_seconds": 6.788,
+  "usage": {
+    "input_tokens": 16954,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 180,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will proposed using PostgreSQL, and Sam agreed, establishing PostgreSQL as the database choice.",
+    "decisions": [
+      {
+        "statement": "PostgreSQL will be used as the database.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Let us use PostgreSQL."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Agreed. PostgreSQL is our database choice."
+          }
+        ]
+      }
+    ],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "they want the project to use PostgreSQL.",
+        "what_they_see": "",
+        "what_they_discuss": "Will raises the choice of database,"
+      },
+      {
+        "speaker": "Sam",
+        "what_they_want": "",
+        "what_they_see": "they see PostgreSQL as the agreed database choice.",
+        "what_they_discuss": "Sam discusses the database selection,"
+      }
+    ]
+  },
+  "wall_seconds": 6.789
+}

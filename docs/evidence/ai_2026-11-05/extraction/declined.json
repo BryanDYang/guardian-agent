@@ -1,0 +1,56 @@
+{
+  "case_id": "declined",
+  "input_sha256": "7f24baa187d06b98906d9cb4e7e64d78cb9584c70680122ede058ddc06e36bb3",
+  "project_id": "synthetic-eval",
+  "meeting_id": "declined",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "a759854e8d0d27db74667b6fcf264f24fc85aefe7c06fe3d8e9c363f49b881f9",
+  "transcript_sha256": "2640180b5fc2f92587b2b823f614192e1f53e0526d382fa9a789f1f82c004ad2",
+  "elapsed_seconds": 7.23,
+  "usage": {
+    "input_tokens": 16958,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 192,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will asked Sam to review the schema, but Sam declined.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [
+      {
+        "statement": "Sam should review the schema.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Could you review the schema, Sam?"
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "No, I cannot take that on."
+          }
+        ]
+      }
+    ],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "they want Sam to review the schema.",
+        "what_they_see": "",
+        "what_they_discuss": "Will raises a review of the schema and asks Sam to handle it."
+      },
+      {
+        "speaker": "Sam",
+        "what_they_want": "they do not want to take on the requested review.",
+        "what_they_see": "they are unable to take on the schema review.",
+        "what_they_discuss": "Sam responds to Will\u2019s request to review the schema."
+      }
+    ]
+  },
+  "wall_seconds": 7.231
+}

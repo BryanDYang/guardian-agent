@@ -1,0 +1,48 @@
+{
+  "case_id": "no_deadline",
+  "input_sha256": "1d56a7f488b50ffc85efb26c85b9b8c1f32993d4ab46e97d52f8d7316151c8d9",
+  "project_id": "synthetic-eval",
+  "meeting_id": "no_deadline",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "1942284577c766b42149df13dfdece95d90a25d27926bb2394506a46374ed464",
+  "transcript_sha256": "bfb24cc034a57fd815c8b0af23ade0959db64e6c9e0454ae5c91c60057904a2b",
+  "elapsed_seconds": 6.688,
+  "usage": {
+    "input_tokens": 16923,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 117,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam commits to updating the documentation. No deadline is specified.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Update the documentation",
+        "owner": "Sam",
+        "due_date_text": null,
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I will update the documentation."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they intend to update the documentation.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam discusses updating the documentation, and"
+      }
+    ]
+  },
+  "wall_seconds": 6.688
+}

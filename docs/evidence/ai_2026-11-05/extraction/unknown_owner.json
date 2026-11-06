@@ -1,0 +1,36 @@
+{
+  "case_id": "unknown_owner",
+  "input_sha256": "2ce82030f0d9b14ee00c14be2913fba1cbe07277caeffc0f78745f097392ca1f",
+  "project_id": "synthetic-eval",
+  "meeting_id": "unknown_owner",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "a0f31937e87e0aaa45d051e850c6e11576ab8fc8e76a4f4c3a6a1f63c39cc1d1",
+  "transcript_sha256": "100bca1e89d6aafd821749bfd72cfc5d4baa0ece6cf91ac6a60e56901473c2d2",
+  "elapsed_seconds": 4.747,
+  "usage": {
+    "input_tokens": 16928,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 91,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "A speaker labeled UNKNOWN stated that the slides would be sent by Thursday, but no valid commitment owner can be assigned.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "UNKNOWN",
+        "what_they_want": "they intend to send the slides by Thursday.",
+        "what_they_see": "",
+        "what_they_discuss": "UNKNOWN discusses sending the slides,"
+      }
+    ]
+  },
+  "wall_seconds": 4.747
+}

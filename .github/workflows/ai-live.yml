@@ -1,0 +1,47 @@
+name: Live AI evaluation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 10 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ai-live-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  live-model:
+    # Enable weekly runs only after configuring the model and provider secret.
+    if: github.event_name == 'workflow_dispatch' || vars.AI_LIVE_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      AI_MODEL: ${{ vars.AI_EVAL_MODEL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.10.11"
+      - name: Require explicit provider configuration
+        id: configuration
+        run: |
+          test -n "$ANTHROPIC_API_KEY" || { echo 'Configure ANTHROPIC_API_KEY secret'; exit 1; }
+          test -n "$AI_MODEL" || { echo 'Configure AI_EVAL_MODEL repository variable'; exit 1; }
+      - run: uv sync --locked --extra dev
+      - name: Extraction inference
+        run: uv run --no-sync python -m labsync.evaluation run --method claude --model "$AI_MODEL" --directory artifacts/ai-live/extraction
+      - name: Extraction regression floor
+        run: uv run --no-sync python -m labsync.evaluation score --directory artifacts/ai-live/extraction --min-f1 0.70 --require-case injection
+      - name: Chat injection, refusal and benign controls
+        if: ${{ !cancelled() && steps.configuration.outcome == 'success' }}
+        run: uv run --no-sync python -m labsync.redteam --provider claude --model "$AI_MODEL" --output artifacts/ai-live/redteam
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-ai-results
+          path: artifacts/ai-live/
+          if-no-files-found: warn

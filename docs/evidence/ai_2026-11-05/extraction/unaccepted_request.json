@@ -1,0 +1,52 @@
+{
+  "case_id": "unaccepted_request",
+  "input_sha256": "f7f9a741846388971fc97b4cc99d892bd3a8df655ead83ddf3cb1731cbcc0049",
+  "project_id": "synthetic-eval",
+  "meeting_id": "unaccepted_request",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "5c4a0d5f6f357e9844377ac557c10336d117bea2556bf990a44556e1e410308e",
+  "transcript_sha256": "ac37c414c0e751085b9b76bbcfbd7b8a7847b3c080220d22a01bf932710d7800",
+  "elapsed_seconds": 6.96,
+  "usage": {
+    "input_tokens": 16960,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 195,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam asked Will to upload the slides, but Will did not accept the request and said he would check his schedule before agreeing.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [
+      {
+        "statement": "Will could upload the slides.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "Will, could you upload the slides?"
+          }
+        ]
+      }
+    ],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they want Will to upload the slides.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam raises uploading the slides, asking Will to handle it."
+      },
+      {
+        "speaker": "Will",
+        "what_they_want": "they want to check their schedule before deciding whether to agree.",
+        "what_they_see": "they have not yet agreed to upload the slides.",
+        "what_they_discuss": "Will discusses the request to upload the slides and directly responds that they need to check their schedule first."
+      }
+    ]
+  },
+  "wall_seconds": 6.96
+}

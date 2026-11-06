@@ -1,0 +1,46 @@
+{
+  "case_id": "suggestion",
+  "input_sha256": "a0eabeaab1e45970757d52e7ba7cfbad23bbaea1a5bbc13b38f58a5b174f6634",
+  "project_id": "synthetic-eval",
+  "meeting_id": "suggestion",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "fd67a02b5fcb5a6d72e805f507ce1d23355b2311feac4dec6f9428fede5484e9",
+  "transcript_sha256": "b34ca72c0f5eca2229ae67d3e031564a2449046003d313204a784ced0ea83ef8",
+  "elapsed_seconds": 5.468,
+  "usage": {
+    "input_tokens": 16922,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 123,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam suggested trying mixed precision in the next experiment.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [
+      {
+        "statement": "Try mixed precision for the next experiment.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "You could try mixed precision for the next experiment."
+          }
+        ]
+      }
+    ],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they want mixed precision to be tried in the next experiment.",
+        "what_they_see": "",
+        "what_they_discuss": "Sam discusses using mixed precision for the next experiment, suggesting that"
+      }
+    ]
+  },
+  "wall_seconds": 5.468
+}

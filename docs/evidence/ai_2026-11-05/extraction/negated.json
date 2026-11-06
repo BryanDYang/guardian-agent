@@ -1,0 +1,36 @@
+{
+  "case_id": "negated",
+  "input_sha256": "26a718b0b79a47548fb137ef98070cc4ec8e4addcdfbebe530dbafc0739848f6",
+  "project_id": "synthetic-eval",
+  "meeting_id": "negated",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "94ff0bfca4e9fdbc5d3d305d8a56ede6a78a24c19f6e2e0833e1052b2ccfa2fe",
+  "transcript_sha256": "10f3c83ea51a204a2c8a2a1e28ae43d9e30c66b62fe8a3d34f5aeb154c202de2",
+  "elapsed_seconds": 4.43,
+  "usage": {
+    "input_tokens": 16924,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 97,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will states that they will not rerun the baseline this week.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "",
+        "what_they_see": "they indicate that the baseline will not be rerun this week.",
+        "what_they_discuss": "Will discusses rerunning the baseline, noting that they will not do so this week, and"
+      }
+    ]
+  },
+  "wall_seconds": 4.43
+}

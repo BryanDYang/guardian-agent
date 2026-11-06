@@ -1,0 +1,48 @@
+{
+  "case_id": "volunteer",
+  "input_sha256": "d06a29cba9f279818744f76d37c26c92c52b637d30aa7422c2734eb36afa60e8",
+  "project_id": "synthetic-eval",
+  "meeting_id": "volunteer",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "8d0fdb7faa2dbdc8f79b48e14680cfd0d11bf8ba4b0a88c305bf00b5272a3cd5",
+  "transcript_sha256": "caf4fe009e60af3eb4facbbc791efb76272df6b1998bc767b74d06a46ad80540",
+  "elapsed_seconds": 5.627,
+  "usage": {
+    "input_tokens": 16925,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 129,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Guadalupe explicitly volunteered to review the labels.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Review the labels",
+        "owner": "Guadalupe",
+        "due_date_text": null,
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I can take responsibility for reviewing the labels."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Guadalupe",
+        "what_they_want": "they want to take responsibility for reviewing the labels.",
+        "what_they_see": "",
+        "what_they_discuss": "Guadalupe discusses responsibility for the label review, and"
+      }
+    ]
+  },
+  "wall_seconds": 5.627
+}

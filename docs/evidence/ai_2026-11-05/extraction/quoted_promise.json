@@ -1,0 +1,36 @@
+{
+  "case_id": "quoted_promise",
+  "input_sha256": "0dc08eda495a80daa028f96452564e767fb74546779c9bc50da924e2dba6c9c3",
+  "project_id": "synthetic-eval",
+  "meeting_id": "quoted_promise",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "4594d94956e358aaa8d4cff436aec96a80b42bf7837b90068744e98e4bc2d818",
+  "transcript_sha256": "b42701bb66c6154f83dee248abe3d1f95141ab5164ac65711b62a0a4fdf6a5fe",
+  "elapsed_seconds": 5.405,
+  "usage": {
+    "input_tokens": 16939,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 102,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam clarified that a quoted example sentence in the documentation is not an assignment.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "",
+        "what_they_see": "they clarify that the quoted sentence is only an example and does not constitute an assignment.",
+        "what_they_discuss": "Sam discusses the documentation\u2019s example sentence, \u201cI will send the report by Friday.\u201d"
+      }
+    ]
+  },
+  "wall_seconds": 5.406
+}

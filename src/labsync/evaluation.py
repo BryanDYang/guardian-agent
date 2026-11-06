@@ -392,7 +392,24 @@ def main() -> None:
         "--method", choices=["rules", "codex", "claude", "ollama"], default="rules"
     )
     parser.add_argument("--model")
+    parser.add_argument(
+        "--min-f1",
+        type=float,
+        help="Gate F1 (0..1), inference completion and citation validity.",
+    )
+    parser.add_argument(
+        "--require-case",
+        action="append",
+        default=[],
+        help="Require a named case to have no scoring errors (repeatable).",
+    )
     args = parser.parse_args()
+    if args.min_f1 is not None and (
+        args.command != "score" or not 0 <= args.min_f1 <= 1
+    ):
+        parser.error("--min-f1 requires score and a value between 0 and 1")
+    if args.require_case and args.command != "score":
+        parser.error("--require-case requires score")
     try:
         suite = load_suite(args.suite)
         if args.command == "run":
@@ -406,6 +423,17 @@ def main() -> None:
             )
             (args.directory / "report.md").write_text(markdown(report))
             print(markdown(report))
+            by_id = {row["id"]: row for row in report["cases"]}
+            for case_id in args.require_case:
+                if case_id not in by_id or by_id[case_id]["errors"]:
+                    parser.exit(1, f"evaluation: required case failed: {case_id}\n")
+            if args.min_f1 is not None:
+                f1 = report["metrics"]["task_f1_proxy"]["value"]
+                if report["counts"]["failed"] or f1 is None or f1 < args.min_f1:
+                    parser.exit(1, "evaluation: failed cases or F1 below CI floor\n")
+                citations = report["metrics"]["citation_validity"]["value"]
+                if citations != 1:
+                    parser.exit(1, "evaluation: citations missing or invalid\n")
     except (OSError, ValueError, KeyError, RuntimeError) as exc:
         parser.exit(1, f"evaluation: {exc}\n")
 

@@ -127,6 +127,8 @@ separates assembled technical sections from missing submission inputs. Bryan sen
 Will and Guadalupe requests for setup/report feedback and contribution/extension
 summaries, followed up with Derrick, and offered to record a non-synthetic final
 demo. Replies, task owners and the TA time remain unconfirmed. The current public
-video is a reference for that recording. TestFlight remains optional exploration.
+video is a reference for that recording. Bryan requested TestFlight preparation
+on November 5; signing, app identity and backend configuration remain release
+prerequisites recorded in the journal.
 See the [dated journal entry](../weekly_journal.md#october-30-team-update-and-submission-readiness)
 for this user-reported coordination; no messages were sent by the assistant.

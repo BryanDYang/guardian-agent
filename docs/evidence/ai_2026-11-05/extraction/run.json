@@ -1,0 +1,11 @@
+{
+  "suite_sha256": "12dac15605c0b354828b792d8dd5c136fa39ae3694cdc7dab29ce4245753d7b5",
+  "suite_version": "synthetic-extraction-dev-v1",
+  "method": "codex",
+  "model": "gpt-5.6-sol",
+  "started_at": "2026-11-05T16:19:32.790916+00:00",
+  "platform": "macOS-27.2-arm64-arm-64bit",
+  "python": "3.12.13",
+  "git_revision": "69c1b732730d55f2c778afc9364a6fdf79fa17cc",
+  "source_sha256": "8cc78013440ff239f2bca1eccbf31e133e8ec64600e8e1c8ad22aa685ceeb855"
+}

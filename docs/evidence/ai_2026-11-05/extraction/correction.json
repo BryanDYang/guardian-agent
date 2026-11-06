@@ -1,0 +1,48 @@
+{
+  "case_id": "correction",
+  "input_sha256": "6f50d2729ffa404d60d5aecff7c32a6ded9da500edafe345d32be112ec4aa106",
+  "project_id": "synthetic-eval",
+  "meeting_id": "correction",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "0e5d8355d2aa49263831e25fb1d269fc97322a3e5fdc3289c7eb7bf345377aa9",
+  "transcript_sha256": "c5a2cfba8fa66894676237490bd0ff84ca1e17f420e8cfef82ef630a0bc365f0",
+  "elapsed_seconds": 5.74,
+  "usage": {
+    "input_tokens": 16967,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 153,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam committed to sending the report by Monday, explicitly correcting the earlier Friday deadline.",
+    "decisions": [],
+    "commitments": [
+      {
+        "title": "Send the report",
+        "owner": "Sam",
+        "due_date_text": "by Monday, not Friday",
+        "evidence": [
+          {
+            "transcript_id": "t2",
+            "quote": "Correction: I will send the report by Monday, not Friday."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they intend to send the report by Monday.",
+        "what_they_see": "they clarify that Friday is no longer the stated deadline and replace it with Monday.",
+        "what_they_discuss": "Sam discusses sending the report and correcting its deadline;"
+      }
+    ]
+  },
+  "wall_seconds": 5.74
+}

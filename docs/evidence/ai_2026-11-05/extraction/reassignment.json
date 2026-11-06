@@ -1,0 +1,72 @@
+{
+  "case_id": "reassignment",
+  "input_sha256": "ba71cfaa167c6b502317300ffc903e5d730804f5847ade0988b155f0742483bd",
+  "project_id": "synthetic-eval",
+  "meeting_id": "reassignment",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "9a10a128a3b4bffe745f8288d930c717f2f443b32123e0eddb083bf90a17a2e1",
+  "transcript_sha256": "b5375356fff8dbc2e120ccb1af70174ca437b3d6e128cf03553ee03d6ccee591",
+  "elapsed_seconds": 8.644,
+  "usage": {
+    "input_tokens": 16969,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 313,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Sam says Will is taking over responsibility for sending the report, and Will explicitly accepts the reassignment and commits to send it by Friday.",
+    "decisions": [
+      {
+        "statement": "Will will send the report instead of Sam.",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I was going to send the report, but Will is taking over."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Yes, I will send the report by Friday instead of Sam."
+          }
+        ]
+      }
+    ],
+    "commitments": [
+      {
+        "title": "Send the report instead of Sam",
+        "owner": "Will",
+        "due_date_text": "by Friday",
+        "evidence": [
+          {
+            "transcript_id": "t1",
+            "quote": "I was going to send the report, but Will is taking over."
+          },
+          {
+            "transcript_id": "t2",
+            "quote": "Yes, I will send the report by Friday instead of Sam."
+          }
+        ]
+      }
+    ],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Sam",
+        "what_they_want": "they want Will to take over sending the report.",
+        "what_they_see": "they describe responsibility for the report as shifting away from them to Will.",
+        "what_they_discuss": "Sam discusses the reassignment of sending the report from themselves to Will."
+      },
+      {
+        "speaker": "Will",
+        "what_they_want": "they intend to send the report by Friday instead of Sam.",
+        "what_they_see": "they confirm that they are taking responsibility for the report.",
+        "what_they_discuss": "Will discusses accepting the reassigned responsibility to send the report."
+      }
+    ]
+  },
+  "wall_seconds": 8.644
+}

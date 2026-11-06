@@ -1,0 +1,36 @@
+{
+  "case_id": "partial_progress",
+  "input_sha256": "826826a235cbc4d03cc9a2ec46ad2cf49edaf606ab36f50662612b5a01d2ab75",
+  "project_id": "synthetic-eval",
+  "meeting_id": "partial_progress",
+  "provider": "codex-cli",
+  "model_requested": "gpt-5.6-sol",
+  "codex_version": "codex-cli 0.166.0-alpha.5.1",
+  "prompt_version": "meeting-extraction-v4",
+  "prompt_sha256": "947f4ebbf757ab87ec392d13ede0b01d239eb0ba5e3e3be28fd77f010aceac7f",
+  "transcript_sha256": "f318d18292a0b00ae74721cfe2ed08bc45d84edf3af08d4a4afc113d3286ec6f",
+  "elapsed_seconds": 5.679,
+  "usage": {
+    "input_tokens": 16931,
+    "cached_input_tokens": 15616,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 94,
+    "reasoning_output_tokens": 0
+  },
+  "evidence_repairs": [],
+  "extraction": {
+    "summary": "Will reported partial progress: half of the labels have been reviewed, and the review is not yet complete.",
+    "decisions": [],
+    "commitments": [],
+    "suggestions": [],
+    "storylines": [
+      {
+        "speaker": "Will",
+        "what_they_want": "",
+        "what_they_see": "they have reviewed half the labels but are not finished yet.",
+        "what_they_discuss": "Will discusses progress on reviewing the labels;"
+      }
+    ]
+  },
+  "wall_seconds": 5.68
+}

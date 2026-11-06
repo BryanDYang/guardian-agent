@@ -21,3 +21,40 @@ jobs:
       - run: uv run --no-sync ruff format --check src tests
       - run: uv run --no-sync pytest
       - run: uv run --no-sync labsync status --json
+
+  ai-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+      LABSYNC_EMAIL_MODE: capture
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.10.11"
+      - uses: supabase/setup-cli@v1
+        with:
+          version: "2.120.0"
+      - run: uv sync --locked --extra dev --extra server
+      - name: Start disposable database with repository migrations
+        run: |
+          mkdir -p /tmp/guardian-ci-db/supabase
+          cp -R supabase/migrations /tmp/guardian-ci-db/supabase/
+          printf 'project_id = "guardian-ci"\n[db]\nport = 54322\nmajor_version = 17\n' > /tmp/guardian-ci-db/supabase/config.toml
+          supabase db start --workdir /tmp/guardian-ci-db
+      - name: Retrieval, API isolation, citations and approval safety
+        run: uv run --no-sync pytest --junitxml=artifacts/ci/integration.xml
+      - name: Frozen extraction baseline
+        run: |
+          uv run --no-sync python -m labsync.evaluation run --directory artifacts/ci/extraction
+          uv run --no-sync python -m labsync.evaluation score --directory artifacts/ci/extraction --min-f1 0.70 --require-case injection
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-regression-results
+          path: artifacts/ci/
+          if-no-files-found: error
+      - name: Stop disposable database
+        if: always()
+        run: supabase stop --workdir /tmp/guardian-ci-db

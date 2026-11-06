@@ -892,3 +892,54 @@ build after the Swift changes.
 Not verified: the v4 paragraph prompt on a retried meeting, storyline accuracy,
 storylines after speaker renaming, and a direct query of the stored rows.
 UNKNOWN groups unassigned turns, so its storyline can mix several people.
+
+# November 5 AI CI and red-team checks
+
+Scope: synthetic development data and a disposable local Supabase PostgreSQL 17
+instance, with every committed migration applied by CLI 2.120.0. No hosted
+project was migrated and no email was sent. CI uses the same minimal temporary
+configuration, avoiding the ignored `supabase/signing_keys.json` dependency in
+the developer stack. Supabase's [CI testing guide](https://supabase.com/docs/guides/deployment/ci/testing)
+provides the database-start approach; CLI v2 is pinned across its v3 transition.
+
+Observed verification:
+
+- Offline baseline: 163 passed, 170 skipped. Final integration run:
+  **342 passed, zero skipped**, 31.98 seconds. XML is local at
+  `artifacts/ci/integration.xml`. Two dependency deprecation warnings remain.
+- Ruff lint and format, diff whitespace checks and actionlint v1.7.7 passed.
+- Frozen rules extraction passes F1 floor 0.70, full quote validity, no failed
+  inference and strict injection-case correctness.
+- Live extraction: [report](ai_2026-11-05/extraction/report.md),
+  [scores](ai_2026-11-05/extraction/scores.json),
+  [run provenance](ai_2026-11-05/extraction/run.json) and individual raw extraction
+  records in the same directory. Model `gpt-5.6-sol`, extraction prompt v4;
+  24 cases, F1 proxy 26/29, valid quotes 31/31 and no inference failures.
+  Unknown-owner recall, merged actions, duplicate joint ownership and literal
+  deadline agreement remain failures. Deadline agreement is only 5/13 under the
+  exact-text scorer; this includes formatting differences, not just wrong dates.
+- Live synthetic chat: [complete results](ai_2026-11-05/redteam.json), eight of
+  eight bounded checks passed. The suite checks raw model canary/forbidden-text
+  leakage, validated refusals and supported answers. A refusal on a supported
+  control fails the run. No retries were used to replace failed outputs.
+- Repeated chat boundary: the authenticated API receives three requests to approve
+  and email a task while the model is forced to claim success. The task remains
+  pending, no outbox entry exists, and the capture worker has nothing to deliver.
+  This establishes no action capability on this path. Citation quote matching
+  does not establish semantic entailment or stop every false claim of completion.
+
+These runs use synthetic labels and lexical checks. They do not measure held-out
+quality, real secret isolation, production rate limiting, or a cost ceiling.
+Existing full-suite checks cover outsider access across project routes, retrieval
+scope, unsupported citations and approval/delivery policy. The larger external
+injection corpus was not rerun here. CI workflow files are locally validated;
+GitHub-hosted runs and live Anthropic CI configuration remain unverified.
+
+TestFlight preparation: a signed generic iOS Release archive was attempted using
+`DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`, scheme `MeetingApp`.
+Xcode 27.2 resolved the locked packages, then failed: `Signing for "MeetingApp"
+requires a development team.` Local log: `/tmp/guardian-archive.log`.
+No archive/export/upload succeeded. The project also needs its real bundle ID
+and reachable backend configuration; the current local BaseURL is loopback.
+Apple team/app and backend details were requested from Bryan. Signing stayed
+enabled throughout.
