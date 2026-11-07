@@ -361,6 +361,9 @@ def test_delete_project_removes_recordings_only_after_database_success(
 
     monkeypatch.setattr("labsync.server.project_store.delete_project", delete_project)
     monkeypatch.setattr("labsync.server.project_store.member_ids", lambda conn, p: [])
+    monkeypatch.setattr(
+        "labsync.server.project_store.require_owner", lambda *a, **kw: None
+    )
     signed_in_member(app, monkeypatch)
     with TestClient(app) as client:
         directory.mkdir()
@@ -370,8 +373,10 @@ def test_delete_project_removes_recordings_only_after_database_success(
                 {"id": str(meeting_id), "project": str(project_id), "status": status}
             )
         )
-        app.state.pool = SimpleNamespace(connection=lambda: nullcontext(object()))
-        response = client.delete(f"/api/v1/projects/{project_id}")
+        app.state.pool = SimpleNamespace(
+            connection=lambda: nullcontext(SimpleNamespace(commit=lambda: None))
+        )
+        response = client.delete(f"/api/v1/projects/{project_id}/permanent")
         app.state.pool = None
         if status == "queued":
             assert response.status_code == 409
@@ -405,6 +410,9 @@ def test_delete_project_preserves_recordings_when_database_rejects(
 
     monkeypatch.setattr("labsync.server.project_store.delete_project", reject)
     monkeypatch.setattr("labsync.server.project_store.member_ids", lambda conn, p: [])
+    monkeypatch.setattr(
+        "labsync.server.project_store.require_owner", lambda *a, **kw: None
+    )
     signed_in_member(app, monkeypatch)
     with TestClient(app) as client:
         directory = tmp_path / str(meeting_id)
@@ -418,8 +426,10 @@ def test_delete_project_preserves_recordings_when_database_rejects(
                 }
             )
         )
-        app.state.pool = SimpleNamespace(connection=lambda: nullcontext(object()))
-        response = client.delete(f"/api/v1/projects/{project_id}")
+        app.state.pool = SimpleNamespace(
+            connection=lambda: nullcontext(SimpleNamespace(commit=lambda: None))
+        )
+        response = client.delete(f"/api/v1/projects/{project_id}/permanent")
         app.state.pool = None
         assert response.status_code == (409 if busy else 404)
         assert directory.exists()

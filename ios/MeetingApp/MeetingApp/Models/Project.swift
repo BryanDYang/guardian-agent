@@ -9,6 +9,13 @@ final class Project {
     var colorHex: String
     var iconSystemName: String
     var createdAt: Date
+    /// This account's on-device project order. Older caches use creation order.
+    var displayOrder: Int? = nil
+    /// This member's server-backed archive preference.
+    var archivedAt: Date? = nil
+    var membershipRole: String? = nil
+
+    var canDelete: Bool { membershipRole == "owner" || !isServerID(id) }
     /// People who have joined, from GET /api/v1/projects. nil for sample projects.
     var memberCount: Int?
 

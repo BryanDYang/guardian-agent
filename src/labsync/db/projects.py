@@ -12,21 +12,27 @@ class ProjectBusyError(Exception):
 COLUMNS = "p.id, p.name, p.image_url AS image_path, p.created_at, p.updated_at"
 
 
-def list_projects(conn: Connection, user_id: UUID) -> list[dict]:
+def list_projects(
+    conn: Connection, user_id: UUID, *, deleted: bool = False
+) -> list[dict]:
     """Only projects this user is a member of."""
     return conn.execute(
         f"""
-        SELECT {COLUMNS}, count(m.id) AS meeting_count,
+        SELECT {COLUMNS}, pm.role, pm.archived_at, p.deleted_at,
+            count(m.id) AS meeting_count,
             (SELECT count(*) FROM project_members WHERE project_id = p.id)
                 AS member_count,
             COALESCE(max(m.created_at), p.created_at) AS last_activity_at
         FROM projects p
         JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = %s
         LEFT JOIN meetings m ON m.project_id = p.id
-        GROUP BY p.id
+        WHERE (p.deleted_at IS NOT NULL) = %s
+            AND (p.deleted_at IS NULL OR (pm.role = 'owner'
+                AND p.deleted_at > now() - interval '30 days'))
+        GROUP BY p.id, pm.role, pm.archived_at
         ORDER BY p.created_at DESC
         """,
-        (user_id,),
+        (user_id, deleted),
     ).fetchall()
 
 
@@ -47,6 +53,9 @@ def create_project(
         (row["id"], created_by),
     )
     return row | {
+        "role": "owner",
+        "archived_at": None,
+        "deleted_at": None,
         "meeting_count": 0,
         "member_count": 1,
         "last_activity_at": row["created_at"],
@@ -152,4 +161,46 @@ def delete_project(conn: Connection, project_id: UUID) -> bool:
             "DELETE FROM projects WHERE id = %s RETURNING id", (project_id,)
         ).fetchone()
         is not None
+    )
+
+
+def lock_delivery(conn: Connection, project_id: UUID) -> None:
+    """Serialize project deletion with in-flight follow-through delivery."""
+    conn.execute(
+        "SELECT pg_advisory_xact_lock(hashtextextended(%s, 0))", (str(project_id),)
+    )
+
+
+def require_owner(
+    conn: Connection, project_id: UUID, user_id: UUID, *, deleted: bool = False
+) -> None:
+    from fastapi import HTTPException
+
+    lock_delivery(conn, project_id)
+    row = conn.execute(
+        "SELECT p.deleted_at, pm.role FROM projects p "
+        "JOIN project_members pm ON pm.project_id=p.id AND pm.user_id=%s "
+        "WHERE p.id=%s FOR UPDATE OF p, pm",
+        (user_id, project_id),
+    ).fetchone()
+    if not row or (row["deleted_at"] is not None) != deleted:
+        raise HTTPException(404, "Project not found")
+    if row["role"] != "owner":
+        raise HTTPException(403, "Only project owners can delete or restore projects")
+
+
+def move_to_trash(conn: Connection, project_id: UUID) -> None:
+    if conn.execute(
+        "SELECT 1 FROM meetings WHERE project_id=%s AND status IN "
+        "('queued','transcribing','diarizing','extracting') LIMIT 1",
+        (project_id,),
+    ).fetchone():
+        raise ProjectBusyError
+    conn.execute("UPDATE projects SET deleted_at=now() WHERE id=%s", (project_id,))
+    conn.execute(
+        "UPDATE task_followup_emails SET state='cancelled', "
+        "last_error='Project moved to Recently Deleted', updated_at=now() "
+        "WHERE task_id IN (SELECT id FROM tasks WHERE project_id=%s) "
+        "AND state IN ('queued','sending')",
+        (project_id,),
     )

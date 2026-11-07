@@ -307,8 +307,11 @@ def test_delete_meetings_without_processing_jobs(
     endpoint = (
         f"/api/projects/{project}/meetings"
         if purge_only
-        else f"/api/v1/projects/{project}"
+        else f"/api/v1/projects/{project}/permanent"
     )
+    if not purge_only:
+        with apps[0].state.pool.connection() as conn:
+            conn.execute("UPDATE projects SET deleted_at=now() WHERE id=%s", (project,))
     _, outsider = make_user()
     assert first.delete(endpoint, headers=outsider).status_code == 404
     response = first.delete(endpoint, headers=auth)
@@ -414,3 +417,15 @@ def test_connected_meetings_wait_for_previous_job(pair, member):
     next_job = claim_for(apps[1])
     assert str(next_job["meeting_id"]) == second_id
     apps[1].state.shared.process(next_job)
+
+
+def test_shared_backend_retains_soft_deleted_project(pair, member):
+    apps, first, _, _ = pair
+    project, auth = member
+    url = f"/api/v1/projects/{project}"
+    assert first.delete(url, headers=auth).status_code == 200
+    assert first.get("/api/v1/projects", headers=auth).json() == []
+    deleted = first.get("/api/v1/projects/recently-deleted", headers=auth).json()
+    assert [item["id"] for item in deleted] == [str(project)]
+    assert first.post(url + "/restore", headers=auth).status_code == 200
+    assert len(first.get("/api/v1/projects", headers=auth).json()) == 1

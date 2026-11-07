@@ -78,6 +78,8 @@ struct AddProjectSheet: View {
                 iconSystemName: "folder",
                 createdAt: .now
             )
+            project.membershipRole = remote.role
+            project.memberCount = remote.memberCount
             context.insert(project)
             try context.save()
             dismiss()

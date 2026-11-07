@@ -12,6 +12,9 @@ struct MeetingsListView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isSelecting = false
+    @State private var isReordering = false
+    @State private var showingArchived = false
+    @State private var showRecentlyDeleted = false
     @State private var selectedIDs: Set<String> = []
     @State private var pendingDeletion: [Project] = []
     @State private var showDeleteConfirmation = false
@@ -19,13 +22,13 @@ struct MeetingsListView: View {
     @State private var errorMessage: String?
     @State private var showAddProject = false
     @State private var showAddMeeting = false
-    @State private var showInvite = false
-    @State private var showFollowup = false
+    @State private var inviteProject: Project?
+    @State private var followupProject: Project?
 
     var body: some View {
-        ScrollView {
+        Group {
             if let project {
-                sessionStream(for: project)
+                ScrollView { sessionStream(for: project) }
             } else {
                 projectsList
             }
@@ -36,8 +39,9 @@ struct MeetingsListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 if projectID == nil && !projects.isEmpty {
-                    Button(isSelecting ? "Done" : "Select") {
-                        isSelecting.toggle()
+                    Button(isSelecting || isReordering ? "Done" : "Select") {
+                        if isReordering { isReordering = false }
+                        else { isSelecting.toggle() }
                         selectedIDs.removeAll()
                     }
                     .disabled(isDeleting)
@@ -46,7 +50,7 @@ struct MeetingsListView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 if isSelecting {
                     Button(role: .destructive) {
-                        pendingDeletion = projects.filter { selectedIDs.contains($0.id) }
+                        pendingDeletion = projects.filter { selectedIDs.contains($0.id) && $0.canDelete }
                         showDeleteConfirmation = true
                     } label: {
                         if isDeleting { ProgressView() }
@@ -58,13 +62,19 @@ struct MeetingsListView: View {
                     Menu {
                         if isServerID(project.id) {
                             Button("Follow-through", systemImage: "envelope") {
-                                showFollowup = true
+                                followupProject = project
                             }
                             Button("Invite People", systemImage: "person.badge.plus") {
-                                showInvite = true
+                                inviteProject = project
                             }
                         }
-                        Button("Delete Project", systemImage: "trash", role: .destructive) {
+                        Button(project.archivedAt == nil ? "Archive Project" : "Restore Project",
+                               systemImage: project.archivedAt == nil ? "archivebox" : "arrow.uturn.backward") {
+                            setArchived(project, archived: project.archivedAt == nil)
+                        }
+                        Button(project.canDelete ? "Delete Project" : "Leave Project",
+                               systemImage: project.canDelete ? "trash" : "rectangle.portrait.and.arrow.right",
+                               role: .destructive) {
                             pendingDeletion = [project]
                             showDeleteConfirmation = true
                         }
@@ -76,13 +86,30 @@ struct MeetingsListView: View {
                 }
             }
             ToolbarItem(placement: .topBarTrailing) {
+                if projectID == nil && !isSelecting && !isReordering {
+                    Menu {
+                        Button("Recently Deleted", systemImage: "trash") {
+                            showRecentlyDeleted = true
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
+                    .accessibilityLabel("Projects options")
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     if project == nil { showAddProject = true } else { showAddMeeting = true }
                 } label: {
                     Image(systemName: "plus")
                 }
-                .disabled(isSelecting || isDeleting)
+                .disabled(isSelecting || isReordering || isDeleting)
             }
+        }
+        .sheet(isPresented: $showRecentlyDeleted, onDismiss: {
+            Task { await refreshProjects() }
+        }) {
+            RecentlyDeletedProjectsView()
         }
         .sheet(isPresented: $showAddProject) {
             AddProjectSheet()
@@ -92,26 +119,26 @@ struct MeetingsListView: View {
                 AddMeetingSheet(project: project)
             }
         }
-        .sheet(isPresented: $showInvite) {
-            if let project {
-                InviteMembersSheet(project: project)
-            }
+        .sheet(item: $inviteProject) { project in
+            InviteMembersSheet(project: project)
         }
-        .sheet(isPresented: $showFollowup) {
-            if let project { FollowupSettingsSheet(projectID: project.id) }
+        .sheet(item: $followupProject) { project in
+            FollowupSettingsSheet(projectID: project.id)
         }
         .confirmationDialog(
-            pendingDeletion.count == 1 ? "Delete this project?" : "Delete these projects?",
+            pendingDeletion.first?.canDelete == false ? "Leave this project?" : "Move to Recently Deleted?",
             isPresented: $showDeleteConfirmation, titleVisibility: .visible
         ) {
-            Button(pendingDeletion.count == 1 ? "Delete Project" : "Delete \(pendingDeletion.count) Projects",
+            Button(pendingDeletion.first?.canDelete == false ? "Leave Project" : "Delete Project",
                    role: .destructive) {
                 Task { await deleteProjects() }
             }
         } message: {
-            Text("Projects and their meetings, tasks, and chats will be permanently deleted.")
+            Text(pendingDeletion.first?.canDelete == false
+                 ? "You will lose access to this project. An owner can invite you back."
+                 : "You can restore this project and its content within 30 days. Follow-through emails will stop for everyone.")
         }
-        .alert("Couldn’t delete projects", isPresented: Binding(
+        .alert("Couldn’t update projects", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
         )) {
@@ -176,42 +203,159 @@ struct MeetingsListView: View {
 
     // MARK: Projects list
 
+    private var orderedProjects: [Project] {
+        projects.filter { ($0.archivedAt != nil) == showingArchived }.sorted {
+            if $0.displayOrder != $1.displayOrder {
+                return ($0.displayOrder ?? Int.max) < ($1.displayOrder ?? Int.max)
+            }
+            if $0.createdAt != $1.createdAt { return $0.createdAt < $1.createdAt }
+            return $0.id < $1.id
+        }
+    }
+
     private var projectsList: some View {
-        LazyVStack(spacing: 12) {
-            if projects.isEmpty {
+        List {
+            Picker("Project list", selection: $showingArchived) {
+                Text("Active").tag(false)
+                Text("Archived").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .disabled(isSelecting || isReordering)
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
+            if orderedProjects.isEmpty {
                 ContentUnavailableView(
-                    "No projects yet", systemImage: "folder",
-                    description: Text("Tap + to create a workspace for your meetings.")
+                    showingArchived ? "No archived projects" : "No active projects", systemImage: showingArchived ? "archivebox" : "folder",
+                    description: Text(showingArchived ? "Projects you archive will appear here." : "Tap + to create a workspace for your meetings.")
                 )
                 .padding(.top, 40)
             }
-            ForEach(projects) { project in
-                if isSelecting {
-                    Button {
-                        if selectedIDs.contains(project.id) { selectedIDs.remove(project.id) }
-                        else { selectedIDs.insert(project.id) }
-                    } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: selectedIDs.contains(project.id)
-                                  ? "checkmark.circle.fill" : "circle")
-                                .font(.title2)
-                                .foregroundStyle(selectedIDs.contains(project.id) ? Color.accentColor : .secondary)
-                            projectRow(project)
+            ForEach(orderedProjects) { project in
+                Group {
+                    if isSelecting {
+                        Button {
+                            guard project.canDelete else { return }
+                            if selectedIDs.contains(project.id) { selectedIDs.remove(project.id) }
+                            else { selectedIDs.insert(project.id) }
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: selectedIDs.contains(project.id)
+                                      ? "checkmark.circle.fill" : "circle")
+                                    .font(.title2)
+                                    .foregroundStyle(selectedIDs.contains(project.id) ? Color.accentColor : .secondary)
+                                projectRow(project)
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(project.title)
+                        .accessibilityAddTraits(selectedIDs.contains(project.id) ? .isSelected : [])
+                        .disabled(isDeleting || !project.canDelete)
+                    } else if isReordering {
+                        projectRow(project)
+                    } else {
+                        HStack(spacing: 8) {
+                            NavigationLink(value: MeetingsRoute.project(project.id)) {
+                                projectRow(project)
+                            }
+                            .buttonStyle(.plain)
+                            Menu {
+                                if isServerID(project.id) {
+                                    Button("Follow-through", systemImage: "envelope") {
+                                        followupProject = project
+                                    }
+                                    Button("Invite People", systemImage: "person.badge.plus") {
+                                        inviteProject = project
+                                    }
+                                }
+                                Button(showingArchived ? "Restore Project" : "Archive Project",
+                                       systemImage: showingArchived ? "arrow.uturn.backward" : "archivebox") {
+                                    setArchived(project, archived: !showingArchived)
+                                }
+                                Button("Reorder Projects", systemImage: "arrow.up.arrow.down") {
+                                    withAnimation { isReordering = true }
+                                }
+                                Button(project.canDelete ? "Delete Project" : "Leave Project",
+                               systemImage: project.canDelete ? "trash" : "rectangle.portrait.and.arrow.right",
+                               role: .destructive) {
+                                    pendingDeletion = [project]
+                                    showDeleteConfirmation = true
+                                }
+                            } label: {
+                                Image(systemName: "ellipsis")
+                                    .font(.body.weight(.semibold))
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 44, height: 44)
+                                    .contentShape(Rectangle())
+                            }
+                            .menuStyle(.borderlessButton)
+                            .accessibilityLabel("Options for \(project.title)")
+                            .disabled(isDeleting)
                         }
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(project.title)
-                    .accessibilityAddTraits(selectedIDs.contains(project.id) ? .isSelected : [])
-                    .disabled(isDeleting)
-                } else {
-                    NavigationLink(value: MeetingsRoute.project(project.id)) {
-                        projectRow(project)
-                    }
-                    .buttonStyle(.plain)
                 }
+                .simultaneousGesture(
+                    LongPressGesture(minimumDuration: 0.5).onEnded { _ in
+                        guard !isSelecting && !isDeleting else { return }
+                        withAnimation { isReordering = true }
+                    }
+                )
+                .accessibilityHint(isSelecting ? "" : "Touch and hold to reorder projects")
+                .accessibilityAction(named: Text("Reorder projects")) {
+                    guard !isSelecting && !isDeleting else { return }
+                    isReordering = true
+                }
+                .moveDisabled(!isReordering)
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    if !isSelecting && !isReordering {
+                        Button {
+                            setArchived(project, archived: !showingArchived)
+                        } label: {
+                            Label(showingArchived ? "Restore" : "Archive",
+                                  systemImage: showingArchived ? "arrow.uturn.backward" : "archivebox")
+                        }
+                        .tint(.indigo)
+                    }
+                }
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(card.padding(.horizontal, 16).padding(.vertical, 6))
+            }
+            .onMove(perform: moveProjects)
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .environment(\.editMode, .constant(isReordering ? .active : .inactive))
+    }
+
+    private func moveProjects(from source: IndexSet, to destination: Int) {
+        var reordered = orderedProjects
+        let previous = reordered.map { ($0, $0.displayOrder) }
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, project) in reordered.enumerated() {
+            project.displayOrder = index
+        }
+        do {
+            try context.save()
+        } catch {
+            for (project, order) in previous { project.displayOrder = order }
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    private func setArchived(_ project: Project, archived: Bool) {
+        Task {
+            do {
+                if isServerID(project.id) {
+                    try await MeetingAPIClient.shared.archiveProject(project.id, archived: archived)
+                }
+                project.archivedAt = archived ? Date() : nil
+                try context.save()
+                if archived && projectID == project.id { dismiss() }
+            } catch {
+                errorMessage = error.localizedDescription
+                await refreshProjects()
             }
         }
-        .padding(16)
     }
 
     @MainActor
@@ -223,7 +367,13 @@ struct MeetingsListView: View {
             let id = project.id
             let title = project.title
             do {
-                try await ProjectSync.deleteProject(project, context: context, api: .shared)
+                if !project.canDelete {
+                    try await MeetingAPIClient.shared.leaveProject(id)
+                    ProjectSync.removeCachedProject(project, context: context)
+                    try context.save()
+                } else {
+                    try await ProjectSync.deleteProject(project, context: context, api: .shared)
+                }
                 selectedIDs.remove(id)
                 if projectID == id { dismiss() }
             } catch {
@@ -270,15 +420,10 @@ struct MeetingsListView: View {
 
             Spacer(minLength: 0)
 
-            if !isSelecting {
-                Image(systemName: "chevron.right")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(.tertiary)
-            }
         }
         .padding(16)
-        .background(card)
         .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
     }
 
     // MARK: Session stream

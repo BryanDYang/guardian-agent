@@ -729,3 +729,49 @@ demo using the earlier recording as a reference.
 Generated model evidence is preserved under
 [`evidence/ai_2026-11-05`](evidence/ai_2026-11-05/). Exact observed results and
 residual risks are recorded in the [walkthrough](evidence/demo_walkthrough.md#november-5-ai-ci-and-red-team-checks).
+
+
+## November 6 demo preparation and Derrick feedback follow-up
+
+Bryan selected his own human-review inputs and judgments for the presentation.
+The report and review entry points now use his eight personal-case judgments and
+28 RAG judgments as separate evidence sets. Historical teammate reviews remain
+archived. Cross-reviewer adjudication is outside this selected presentation scope.
+
+Simplified the [presenter guide](milestone_4/demo_script.md) at Bryan's request.
+It now uses one interview-study recording, one manually approved task, cited chat
+and an unsupported-budget question. The 3-5 minute tell-show-tell script includes
+explicit AI narration, optional editing labels and five quick dry-run checks.
+Bryan will rehearse directly in the app before recording.
+
+The supplied meeting summary reports Derrick's Milestone 4 check-in completed.
+Corrected the active report's pending-check-in wording and mapped his feedback in
+the guide. Remaining follow-ups include sharing the video/build, reviewing Will's
+emailed results, considering chunk-level relevance metrics and the suggested
+tool-calling enhancement, checking model/system documentation, and confirming
+presentation logistics. Peer-review extra credit is optional.
+
+Confirmed both smoke and ai-regression succeeded in GitHub CI for be83d03.
+Updated the report's extraction section to the November 5 prompt-v4 evidence.
+The live-model GitHub workflow still awaits provider configuration. Preparing
+the script establishes no new product acceptance or human judgment.
+
+### November 6 - Recoverable project deletion
+
+- Owners now move projects into Recently Deleted for 30 days. The top-level
+  Projects menu opens recovery with days remaining, Restore, and a confirmed
+  permanent-delete action. Other members use Leave Project.
+- Project content remains intact during recovery. Queued follow-through emails
+  are cancelled, and deletion waits for an in-flight delivery. Restoring does
+  not resend cancelled email. Per-member archive preferences now persist on
+  the server and survive restoration and sign-out.
+- Backend startup and daily cleanup expire deleted projects. Shared audio uses
+  the existing deletion queue, and local recordings use a durable cleanup queue
+  limited to the original backend's storage directory.
+- Applied migration `20261107001120_project_recovery` to the app database.
+  Signed simulator build passed. All 354 Python tests passed against disposable
+  Postgres, including access isolation, retention, restore, cancelled email,
+  and recording cleanup. Simulator creation, recoverable deletion, 30-day label,
+  and restoration passed. Removed the empty UI test fixture afterwards.
+- Security advisor reported no errors and two existing warnings concerning the
+  transcript search trigger's search path and the vector extension schema.

@@ -53,7 +53,9 @@ def task_summary(conn: Connection, user_id: UUID) -> dict:
             count(*) FILTER (WHERE t.lifecycle_status = 'done') AS done
         FROM tasks t
         JOIN project_members pm ON pm.project_id = t.project_id AND pm.user_id = %s
+        JOIN projects p ON p.id=t.project_id
         WHERE t.assignee_user_id = %s AND t.review_status = 'approved'
+            AND p.deleted_at IS NULL
         """,
         (user_id, user_id),
     ).fetchone()

@@ -1,6 +1,6 @@
 # Milestone 4 release scope and acceptance
 
-Prepared October 26, 2026. Track: **AI Engineering**. This document owns current
+Prepared October 26, updated November 6, 2026. Track: **AI Engineering**. This document owns current
 milestone scope and acceptance. Record progress in the [journal](../weekly_journal.md)
 and observed runs in the [walkthrough](../evidence/demo_walkthrough.md).
 The [Milestone 3 roadmap](../archive/milestone_3/roadmap.md) is historical.
@@ -10,7 +10,8 @@ The [Milestone 3 roadmap](../archive/milestone_3/roadmap.md) is historical.
 Local assignment sources: `contexts/milestone_4/Milestone 4.pdf` and
 `contexts/milestone_4/CIS-5980_Phase 4.pptx`. These ignored references are not
 available in a fresh clone. The PDF requires a single submission PDF, repository
-link, weekly updates, and a mandatory TA check-in. Canvas owns the deadline;
+link, weekly updates, and a mandatory TA check-in. The user-supplied meeting summary
+reports the Derrick check-in completed and counted toward Milestone 4. Canvas owns the deadline;
 Bryan confirmed November 16, 2026 as the Canvas deadline on October 26. The rubric allocates 60 points
 to release/evaluation readiness and 40 to documentation/demo readiness.
 
@@ -45,9 +46,10 @@ application deployment is optional; a publicly accessible demo video is required
 - The RAG run completed all 28 retrieval rankings but only nine answers; three
   calls timed out, one was interrupted and 15 were not run. Both unsupported
   answer pairs were unrun. Target recovery is not semantic answer accuracy.
-- Bryan and Guadalupe filled all eight personal-case review tables October
-  22-23. Guadalupe reviewed transcripts only; prior exposure and adjudication
-  remain unrecorded. Older archived status text may describe earlier checkpoints.
+- For the final presentation, Bryan selected his own eight personal-case
+  judgments and 28 RAG judgments on November 6. Keep each set separate. Historical
+  teammate judgments remain archived. Cross-reviewer adjudication is outside the
+  selected presentation scope.
 - Known product gaps include automatic structured dates, missing owner mappings,
   deadline-change evidence and completion-state proposals. Real inbox delivery,
   recurring reminders and two-host recovery lack completed acceptance evidence.
@@ -56,18 +58,23 @@ application deployment is optional; a publicly accessible demo video is required
 See the [dated RAG evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
 and [review update](../weekly_journal.md#october-22-23-human-review-and-demo-preparation).
 
+## Presenter entry point
+
+Use the [current demo guide](demo_script.md) for the user story, simple 3-5 minute
+tell-show-tell script, explicit AI callouts and short dry run. The new rehearsal and final recording still require observed results.
+
 ## Release candidate flow
 
-A consented recording in a fresh project becomes a transcript, summary and
-reviewable task with source evidence. A human confirms identity, owner and any
-unresolved date, approves the task, sees it in Tasks/Calendar and inspects one
-captured follow-up. Supported chat cites project evidence; unsupported chat
-abstains. Relaunch preserves the result.
+The current research demo uses two lab check-ins. AI transcribes, summarizes
+and extracts commitments. Bryan confirms the speaker account. Eligible clear
+commitments are automatically approved and emailed, while ambiguous candidates
+stay pending for review. Bryan marks the earlier task complete and uses cited
+project chat to recover the experiment rationale.
 
-This is the selected manual-review acceptance scope, not a claim it has passed. Label capture
-mode visibly; real inbox delivery requires observed receipt. Demonstrate
-experimental automatic approval separately and disclose its gates. Do not imply
-that manual date entry or task completion proves automatic continuity.
+The earlier October acceptance runs used manual approval and captured email.
+The updated demo awaits Bryan's rehearsal with live email. Automatic approval
+requires a confirmed account, explicit evidence and the existing policy gates.
+Dates and task completion still require human input in this flow.
 
 ## Work order and acceptance gates
 
@@ -79,7 +86,7 @@ has been sent as part of this assessment.
 | 1 | Freeze release configuration, flow and claims; confirm Canvas and TA session | Recorded revision/configuration, explicit exclusions, confirmed dates and owners | Bryan with team |
 | 2 | Follow setup from a fresh checkout; choose Mac/container boundary and transcriber delivery | Another reviewer reproduces representative output using documented prerequisites and exact commands | Team |
 | 3 | Run fresh-project native acceptance; reproduce failures before fixes | Saved run ledger and recording covering the proposed flow, including refusal and relaunch | Bryan with assistant support |
-| 4 | Diagnose CLI timeouts; adjudicate labels; complete current evaluation | Results table with denominators, model/prompt/data versions, timeout/error counts and reviewed correctness/citation/refusal judgments | Bryan and reviewers |
+| 4 | Complete current evaluation using Bryan's selected human judgments | Results table with denominators, model/prompt/data versions, timeout/error counts and Bryan's reviewed correctness/citation/refusal judgments | Bryan |
 | 5 | Run bounded red-team exercise and mitigate findings | Evidence for transcript/retrieval injection, cross-project access, unsupported citations, unintended approval/delivery and expensive/repeated requests; failures retested or disclosed | Team |
 | 6 | Measure recording-to-results, supported chat and unsupported chat | Workload/environment definitions, cold/warm distinction, timings including failures, usage and clearly labeled estimates | Bryan with assistant support |
 | 7 | Rehearse, record and assemble | Captioned public demo link, reviewer checklist, updated cards, TA packet, contribution/extension updates and visually checked single PDF | Team |

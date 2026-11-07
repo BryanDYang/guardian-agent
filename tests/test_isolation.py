@@ -40,6 +40,14 @@ def upload_form(ids):
 # Routes that act on one project's data. An outsider must get 404 from each.
 # Each entry: (method, route path exactly as declared, request options).
 PROJECT_ROUTES = [
+    ("DELETE", "/api/v1/projects/{project_id}/permanent", lambda ids: {}),
+    ("POST", "/api/v1/projects/{project_id}/restore", lambda ids: {}),
+    ("POST", "/api/v1/projects/{project_id}/leave", lambda ids: {}),
+    (
+        "PUT",
+        "/api/v1/projects/{project_id}/archive",
+        lambda ids: {"json": {"archived": True}},
+    ),
     (
         "POST",
         "/api/v1/meetings/zoom-summary",
@@ -153,6 +161,7 @@ PROJECT_ROUTES = [
 # Routes that only ever show the caller's own data, so they answer an outsider
 # with 200 and nothing of the project's. Checked one by one below.
 OWN_DATA_ROUTES = [
+    ("GET", "/api/v1/projects/recently-deleted"),
     ("GET", "/api/v1/me"),
     ("PATCH", "/api/v1/me"),
     ("POST", "/api/v1/me/onboarding/complete"),
@@ -300,6 +309,7 @@ def test_own_data_routes_show_outsiders_nothing(app, seeded):
         assert renamed.json()["display_name"] == "Bobby"
         projects = client.get("/api/v1/projects").json()
         assert ids["project_id"] not in [p["id"] for p in projects]
+        assert client.get("/api/v1/projects/recently-deleted").json() == []
         assert client.get("/api/v1/conversations").json() == []
         assert client.get("/api/v1/invitations").json() == []
         summary = client.get("/api/v1/me/tasks/summary").json()

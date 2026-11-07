@@ -108,6 +108,20 @@ in order or inspect a migrated disposable database when reviewing the data model
    short-lived signed audio URL. Privileged storage credentials stay server-side.
 
 Cloudflare exposes the API; it does not replace application authentication.
+Owners can move a project into Recently Deleted for 30 days. Content remains
+in PostgreSQL, while normal project, meeting, task, invitation and chat access
+excludes deleted projects. Deletion cancels queued task emails and waits for any
+in-flight delivery before completing. Restore preserves each member's archive
+preference, which is stored in `project_members.archived_at`. Non-owners leave a
+project through the existing membership removal path.
+
+`project_cleanup.ProjectCleanup` runs at backend startup and daily, permanently
+removing expired projects. Restoration is blocked at the 30-day deadline even
+between cleanup runs. Shared audio uses the existing Storage deletion queue.
+Local recording deletions use a durable queue consumed only by the backend that
+owns the recording directory, so cleanup can retry after a restart. The backend
+must run for automatic cleanup to execute.
+
 A user needs an app account and project membership, not Supabase dashboard/team
 membership just to use the app. Provider-specific Google test-user restrictions
 may still affect sign-in during development.

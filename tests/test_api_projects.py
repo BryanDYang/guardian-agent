@@ -132,6 +132,7 @@ def test_delete_project_cascades_meetings_and_chats(client, make_user):
     url = f"/api/v1/projects/{project['id']}"
     assert client.delete(url, headers=auth).status_code == 200
     assert client.delete(url, headers=auth).status_code == 404
+    assert client.delete(url + "/permanent", headers=auth).status_code == 200
     with psycopg.connect(DATABASE_URL) as conn:
         assert (
             conn.execute(
@@ -242,3 +243,89 @@ def test_project_events_stream_nudges_on_changes(client, make_user):
     assert response.text.count("data: projects\n\n") == 2
     assert client.get("/api/v1/projects/events", headers=other).status_code == 200
     assert client.get("/api/v1/projects/events").status_code == 401
+
+
+def test_recovery_preserves_content_archive_and_access(client, make_user):
+    _, owner = make_user()
+    member_id, member = make_user()
+    project = client.post(
+        "/api/v1/projects", json={"name": "pytest recovery"}, headers=owner
+    ).json()
+    url = f"/api/v1/projects/{project['id']}"
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "INSERT INTO project_members(project_id,user_id,role) "
+            "VALUES(%s,%s,'member')",
+            (project["id"], member_id),
+        )
+        meeting = conn.execute(
+            "INSERT INTO meetings(project_id,name,meeting_date,status) "
+            "VALUES(%s,'Retained',now(),'completed') RETURNING id",
+            (project["id"],),
+        ).fetchone()[0]
+    assert (
+        client.put(url + "/archive", json={"archived": True}, headers=owner).status_code
+        == 200
+    )
+    assert client.delete(url, headers=member).status_code == 403
+    assert client.delete(url + "/permanent", headers=owner).status_code == 404
+    assert client.delete(url, headers=owner).status_code == 200
+    assert client.get("/api/v1/projects", headers=owner).json() == []
+    assert client.get("/api/v1/projects", headers=member).json() == []
+    assert client.get(f"/api/meetings/{meeting}", headers=owner).status_code == 404
+    assert client.get(url + "/followup", headers=owner).status_code == 404
+    deleted = client.get("/api/v1/projects/recently-deleted", headers=owner).json()
+    assert [p["id"] for p in deleted] == [project["id"]]
+    assert deleted[0]["archived_at"] is not None
+    assert client.get("/api/v1/projects/recently-deleted", headers=member).json() == []
+    assert client.post(url + "/restore", headers=member).status_code == 403
+    assert client.delete(url + "/permanent", headers=member).status_code == 403
+    assert client.post(url + "/restore", headers=owner).status_code == 200
+    restored = client.get("/api/v1/projects", headers=owner).json()[0]
+    assert restored["archived_at"] == deleted[0]["archived_at"]
+    assert restored["meeting_count"] == 1
+    assert client.get(url + "/members", headers=member).status_code == 200
+
+
+def test_expired_project_cannot_be_restored_and_cleanup_removes_content(
+    client, make_user, tmp_path
+):
+    from labsync.project_cleanup import ProjectCleanup
+
+    _, auth = make_user()
+    project = client.post(
+        "/api/v1/projects", json={"name": "pytest expired"}, headers=auth
+    ).json()
+    url = f"/api/v1/projects/{project['id']}"
+    directory = tmp_path / str(uuid.uuid4())
+    directory.mkdir()
+    (directory / "recording.wav").write_bytes(b"retained recording")
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "INSERT INTO meetings"
+            "(id,project_id,name,meeting_date,status,audio_file_path) "
+            "VALUES(%s,%s,'Retained audio',now(),'completed',%s)",
+            (directory.name, project["id"], str(directory / "recording.wav")),
+        )
+    assert client.delete(url, headers=auth).status_code == 200
+    cleaner = ProjectCleanup(
+        client.app.state.pool, tmp_path, client.app.state.project_events
+    )
+    cleaner.run_once()
+    assert (directory / "recording.wav").read_bytes() == b"retained recording"
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "UPDATE projects SET deleted_at=now()-interval '30 days' WHERE id=%s",
+            (project["id"],),
+        )
+    assert client.post(url + "/restore", headers=auth).status_code == 410
+    assert client.get("/api/v1/projects/recently-deleted", headers=auth).json() == []
+    cleaner.run_once()
+    assert not directory.exists()
+    with psycopg.connect(DATABASE_URL) as conn:
+        assert (
+            conn.execute(
+                "SELECT id FROM projects WHERE id=%s", (project["id"],)
+            ).fetchone()
+            is None
+        )

@@ -184,7 +184,7 @@ def test_confirmed_speaker_auto_approves_and_queues(flow):
             "AND action='AUTO_APPROVE'",
             (f["task"],),
         ).fetchone()
-        assert audit["new_value"]["policy"] == "explicit-self-commitment-v1"
+        assert audit["new_value"]["policy"] == "explicit-self-commitment-v2"
     assert len(logs(f)) == 1
     assert EmailWorker(f["app"].state.pool).process_one()
     assert logs(f)[0]["state"] == "captured"
@@ -451,3 +451,75 @@ def test_repeated_chat_instructions_cannot_approve_or_send_email(flow, monkeypat
         assert task["review_status"] == "pending"
     assert not logs(f)
     assert not EmailWorker(f["app"].state.pool).process_one()
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        "I'm Bryan Yang. I will share the recording.",
+        "The meeting is finished. I will share the recording. The team needs a copy.",
+    ],
+)
+def test_clear_commitment_after_intro_auto_approves(flow, content):
+    f = flow
+    configure(f, auto=True)
+    with f["app"].state.pool.connection() as conn:
+        conn.execute(
+            "UPDATE meeting_transcripts SET content=%s WHERE meeting_id=%s",
+            (content, f["meeting"]),
+        )
+    response = connect(f)
+    assert response.status_code == 200, response.text
+    assert response.json()["auto_approved_tasks"] == 1
+    assert len(logs(f)) == 1
+    assert EmailWorker(f["app"].state.pool).process_one()
+    assert logs(f)[0]["state"] == "captured"
+
+
+@pytest.mark.parametrize(
+    "content,quote",
+    [
+        ("I'm Bryan. I will share the recording if allowed.", "share the recording"),
+        ("I'm Bryan. I will not share the recording.", "share the recording"),
+        ("I'm Bryan. I will share the recording?", "share the recording"),
+        (
+            "I will review the draft. Sam will share the recording.",
+            "share the recording",
+        ),
+        ("I will share the recording. Only if allowed.", "share the recording"),
+    ],
+)
+def test_intro_does_not_bypass_uncertainty_or_evidence_scope(flow, content, quote):
+    f = flow
+    configure(f, auto=True)
+    with f["app"].state.pool.connection() as conn:
+        conn.execute(
+            "UPDATE meeting_transcripts SET content=%s WHERE meeting_id=%s",
+            (content, f["meeting"]),
+        )
+        conn.execute(
+            "UPDATE item_evidence SET quote=%s WHERE task_id=%s",
+            (quote, f["task"]),
+        )
+    response = connect(f)
+    assert response.status_code == 200, response.text
+    assert response.json()["auto_approved_tasks"] == 0
+    assert not logs(f)
+
+
+def test_deleted_project_cancels_email_even_after_restore(flow):
+    f, c = flow, flow["client"]
+    configure(f)
+    connect(f)
+    c.patch(f"/api/v1/tasks/{f['task']}/review", json={"action": "approve"})
+    url = f"/api/v1/projects/{f['project']}"
+    assert c.delete(url).status_code == 200
+    assert c.post(url + "/restore").status_code == 200
+    assert not EmailWorker(f["app"].state.pool).process_one()
+    with f["app"].state.pool.connection() as conn:
+        assert (
+            conn.execute(
+                "SELECT state FROM task_followup_emails WHERE task_id=%s", (f["task"],)
+            ).fetchone()["state"]
+            == "cancelled"
+        )

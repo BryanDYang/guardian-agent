@@ -1,14 +1,16 @@
 # Milestone 4: Meeting Follow-Through Assistant
 
-AI Engineering track. Draft prepared October 26; review results updated October
-30, 2026. Deadline: November 16, 2026, confirmed by Bryan. **Not final submission:**
-demo sign-off, team contribution confirmation and TA check-in remain open.
+AI Engineering track. Draft prepared October 26, updated November 6, 2026.
+Deadline November 16, 2026, confirmed by Bryan. Final demo sign-off and team
+contribution confirmation remain open.
+
+The supplied meeting summary reports the Derrick check-in completed.
 Native acceptance below uses
 synthetic uploaded audio and manual assignment/date entry.
 
 Repository: https://github.com/BryanDYang/guardian-agent
 
-## Submission readiness as of October 30
+## Submission readiness as of November 6
 
 The technical report draft is assembled and Bryan's 28-output human review is
 complete. It is not yet the final submission. Bryan sent the team a progress
@@ -25,10 +27,10 @@ been recorded.
 | Representative latency and cost | Recorded | Report the measured component workloads and estimates with their exclusions |
 | Red-teaming and mitigations | Recorded | Keep the bounded scope and residual risks explicit |
 | Architecture, deployment and reviewer checklist | Drafted | Incorporate teammate feedback and verify final run instructions |
-| Demo script and public video | Reference video available | Bryan offered to record a final version with non-synthetic audio, using the current video as a reference; review and replace the public link when ready |
+| Demo script and public video | Current [presenter guide](demo_script.md) and reference video available | Run the timed rehearsal, record Bryan's final take with explicit AI callouts, review it and update the public link |
 | Weekly progress and blockers | Recorded | Add teammate outcomes and subsequent check-in results |
 | Team roles and selected extensions | Incomplete | Obtain each member's contribution summary, selected-extension progress and agreed next-task ownership |
-| Mandatory TA check-in | Pending | Bryan followed up with Derrick again on October 30; confirm a time, attend and record feedback |
+| Mandatory TA check-in | Reported complete in the supplied meeting summary | Confirm the meeting date and send Derrick the demo for follow-up feedback |
 | Single submission PDF | Working export available | Refresh after the remaining inputs, visually review and submit by November 16 |
 
 Independent teammate setup is the team's requested reproducibility check; the
@@ -93,7 +95,7 @@ tests use an isolated Docker database; that is not application containerization.
 - [ ] Execute the [native acceptance procedure](../archive/milestone_3/follow_through.md#clean-app-journey-screen-recording)
   in a fresh M4 project with automatic approval off and Test inbox delivery.
 - [x] Bryan completed all 28 answer/citation/refusal judgments on October 30.
-- [ ] Confirm demo sign-off and TA session.
+- [ ] Complete the [dry run](demo_script.md#your-dry-run), confirm demo sign-off and send Derrick the recording.
 
 ```sh
 uv sync --locked --extra dev --extra server --extra audio
@@ -155,7 +157,9 @@ refusals. Power/hybrid and curve/dense were inappropriate refusals; style/dense
 had an unsupported pending-status qualifier. Citation judgments consider the
 full source, with incomplete quote previews recorded separately. This was an
 informed single-reviewer assessment after AI-assisted preparation, not blinded
-validation or independent gold. Personal-case adjudication remains separate.
+validation or independent gold. Final presentation human-review claims use Bryan's judgments only. His eight
+personal cases retain a separate denominator from these 28 RAG outputs.
+Historical teammate judgments remain archived.
 
 The prior run's three timeouts, interruption and unrun pairs remain preserved.
 The current CLI is 0.163.0, whereas the old run used 0.163.0-alpha.10.2. Timeouts
@@ -170,29 +174,29 @@ compare every output with the sources in the linked October 21 packet using
 [the completed answer review](human_review.md). Personal-case review and
 adjudication remain separate from RAG quality.
 
-### Current extraction development pass
+### November 5 extraction development pass
 
 All 24 frozen synthetic micro-meetings were rerun through the production Codex
 extractor and the rules baseline. Both completed 24/24 with zero missing/failed
 cases. Labels remain AI-authored and matching is lexical `action-terms-v1`;
 these are development proxies, not held-out semantic accuracy.
 
-| Metric | Codex gpt-5.6-sol / prompt v2 | Rules baseline |
+| Metric | Codex gpt-5.6-sol / prompt v4 | Rules baseline |
 | --- | --- | --- |
 | Matched / predicted / labeled tasks | 13 / 14 / 15 | 11 / 16 / 15 |
 | Task precision / recall / F1 proxy | .929 / .867 / .897 | .688 / .733 / .710 |
 | Negative cases with no predicted task | 11/11 | 9/11 |
-| Literal citation validity | 28/28 | 16/16 |
+| Literal citation validity | 31/31 | 16/16 |
 | Exact deadline-text agreement on matched tasks | 5/13 | 10/11 |
-| Mean extraction wall time, 24 attempts | 4.402 s | Below meaningful timing resolution |
+| Mean extraction wall time, 24 attempts | 6.182 s | Below meaningful timing resolution |
 
-Codex's proxy scores match the historical baseline; this is a current rerun, not
-a new quality improvement. It still omits the unknown-owner obligation, merges
+Codex's task matching counts match the historical baseline. The November 5
+run uses prompt v4 and retains the observed failure cases. It still omits the unknown-owner obligation, merges
 two actions, and emits two task records for a joint obligation. Deadline mismatches
 include different valid spans such as “by Friday” versus “Friday”; they do not
 measure calendar-date accuracy. Rules still create false tasks from negation and
 quoted examples. Exact outputs, source hashes, counts and per-case errors are in
-[the extraction packet](../evidence/m4_2026-10-26/extraction.json).
+[the current extraction report](../evidence/ai_2026-11-05/extraction/report.md).
 
 Reproduce with the existing `python -m labsync.evaluation run` and `score` commands,
 using `--method codex --model gpt-5.6-sol` or `--method rules`, and a new
@@ -264,6 +268,21 @@ quota/load/abuse acceptance pass. The tiny scripted corpus does not measure
 fairness across languages, accents or speaker groups. Do not publicly expose an
 unmonitored backend based on these results alone.
 
+### November 5 CI and red-team follow-up
+
+The newer eight-case synthetic chat suite passed its bounded live checks. It
+includes supported controls, direct/source injection, role spoofing, unsupported
+budget, secret and action requests. The full integration suite passed 342 tests
+with zero skips. A repeated compromised-chat test retained pending task state
+and queued no delivery. These checks preserve separate scopes from Bryan's human
+judgments. Exact outputs are in the
+[November 5 red-team packet](../evidence/ai_2026-11-05/redteam.json).
+
+Both `smoke` and `ai-regression` passed in the pushed GitHub CI run for be83d03.
+The full database-backed job and frozen extraction gate execute on PRs. The
+separate live-model workflow awaits its provider secret and model configuration.
+[Successful CI run](https://github.com/BryanDYang/guardian-agent/actions/runs/42289142043)
+
 ## Observability, privacy and recovery
 
 Codex calls log a fresh request ID, task, requested model/provider, completion or
@@ -288,20 +307,27 @@ bounded demo. A full production monitoring/rollback drill remains pending.
 
 ## Demo and TA packet
 
-Use [the 85-second demo plan](../evidence/demo_walkthrough.md#milestone-4-demo-edit-plan)
-with the full native acceptance recording as source evidence. The [85-second review video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4)
-has burned-in captions, macOS Samantha synthetic narration, and a 1080x2600
-portrait frame, linked from the README. Bryan now plans a final recording with
-non-synthetic audio, using this video as a reference. That recording is not yet
-complete. It will retain explicit manual assignment/date entry and captured-email
-labels unless new evidence establishes different behavior. Review and update the
-public link after recording. Public application hosting is optional.
+Use the [current presenter guide](demo_script.md) for the user story, timed
+simple 3-5 minute tell-show-tell sequence, explicit AI callouts and short dry run.
+Bryan will use two short lab check-ins about preparing evaluation questions
+and running a retrieval experiment, with an email for each approved commitment. The earlier
+[85-second review video](demo_draft.mp4) remains the visual reference. The new
+rehearsal and final recording await execution and sign-off.
 
-TA packet: this draft supplies run instructions, evaluation table/failures,
-latency/cost table, red-team summary, architecture/doc links and demo plan. Ask the
-TA to confirm the Mac-specific reproducibility boundary and intended evaluation
-claims. **TA time remains unconfirmed. Bryan reports following up with Derrick again
-on October 30; no completed check-in is recorded.**
+The demo names transcription, summarization, task extraction and
+retrieval-augmented answering while showing their outputs. Bryan verifies source
+evidence and confirms the speaker account. Eligible clear commitments are
+automatically approved and emailed. He manually marks preparation
+complete, shows the next experiment and its email, then uses cited chat to recover
+the experiment rationale and asks about results the meetings have not reported. The presentation's human-review evidence uses Bryan's eight personal
+case judgments and 28 RAG judgments separately.
+
+The supplied automated meeting summary reports that Derrick's check-in counted
+for Milestone 4. Its feedback is mapped in the presenter guide. Follow up with the
+reviewed demo or TestFlight build, review Will's evaluation files, consider
+chunk-level relevance metrics, and confirm final presentation details. Existing
+structured output and human-approved actions should be described precisely when
+discussing Derrick's suggestion of tool calling or an agentic decision loop.
 
 ## Team, extensions and remaining submission fields
 
@@ -319,13 +345,13 @@ not a complete allocation of credit.
 Independent setup and report-feedback owners remain unassigned until a teammate
 responds. Selected-extension names, completed work, remaining work and final-stage
 plans must be supplied or confirmed by the team before filling that report
-section. TestFlight is proposed for discussion; no distribution work or decision
-is claimed here. Weekly progress and the sent update are recorded in the
+section. TestFlight preparation was requested. Its signed archive attempt needs the
+Apple Developer team/app, signing access and reachable backend configuration. Weekly progress and the sent update are recorded in the
 [journal](../weekly_journal.md#october-30-team-update-and-submission-readiness).
 
 Before submission: incorporate teammate contributions/extension progress and
-setup/report feedback; confirm and complete the TA check-in; record/review the
+setup/report feedback; record the reported TA check-in date and follow-up feedback; record/review the
 final demo and update its public link; refresh and visually check the single PDF.
 Retain the known product limitations rather than treating unimplemented automatic
-behavior or real inbox delivery as completed. Personal-case adjudication and
-broader performance testing remain separate evidence improvements.
+behavior or real inbox delivery as completed. The selected human-review scope uses Bryan's judgments. Broader performance
+testing remains a separate evidence improvement.

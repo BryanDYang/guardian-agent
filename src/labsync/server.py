@@ -259,8 +259,17 @@ def create_app(
                         record["attempt"],
                         record["error"],
                     )
+            if app.state.pool is not None:
+                from .project_cleanup import ProjectCleanup
+
+                app.state.project_cleanup = ProjectCleanup(
+                    app.state.pool, storage, app.state.project_events
+                )
+                app.state.project_cleanup.start()
             yield
         finally:
+            if hasattr(app.state, "project_cleanup"):
+                app.state.project_cleanup.stop()
             if hasattr(app.state, "email_worker"):
                 app.state.email_worker.stop()
             if shared_audio is not None and hasattr(app.state, "shared"):
@@ -421,9 +430,9 @@ def create_app(
         finally:
             file.file.close()
 
-    @app.delete("/api/v1/projects/{project_id}")
+    @app.delete("/api/v1/projects/{project_id}/permanent")
     def delete_project(project_id: UUID, user: User, conn: Conn):
-        require_member(conn, user, project_id)
+        project_store.require_owner(conn, project_id, user.id, deleted=True)
         recipients = project_store.member_ids(conn, project_id)
         with lock:
             records = [
@@ -434,16 +443,15 @@ def create_app(
                 raise HTTPException(
                     409, "Wait for active meetings to finish before deleting"
                 )
-            with app.state.pool.connection() as conn:
-                try:
-                    deleted = project_store.delete_project(conn, project_id)
-                except project_store.ProjectBusyError as exc:
-                    raise HTTPException(
-                        409, "Wait for active meetings to finish before deleting"
-                    ) from exc
-                if not deleted:
-                    raise HTTPException(404, "Project not found")
-            # Committed when the block above closed its connection.
+            try:
+                deleted = project_store.delete_project(conn, project_id)
+            except project_store.ProjectBusyError as exc:
+                raise HTTPException(
+                    409, "Wait for active meetings to finish before deleting"
+                ) from exc
+            if not deleted:
+                raise HTTPException(404, "Project not found")
+            conn.commit()
             app.state.project_events.publish(recipients)
             for record in matching:
                 shutil.rmtree(folder(record["id"]), ignore_errors=True)

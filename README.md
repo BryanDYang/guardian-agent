@@ -4,6 +4,8 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Milestone 4 review demo:** [85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4). Synthetic audio/narration, manual assignment/date entry, captured follow-up, and edited processing waits.
 
+**Rehearse your demo** with the [user story, 3-5 minute tell-show-tell script and dry-run checklist](docs/milestone_4/demo_script.md).
+
 **Repository:** https://github.com/BryanDYang/guardian-agent
 
 **Pipeline:** iOS uploads audio through Cloudflare Tunnel → the Mac backend queues processing → local Whisper/diarization and Codex or Claude produce results → PostgreSQL stores meeting/task state → the app refreshes its cache. Optional immediate task email runs through a separate backend worker.

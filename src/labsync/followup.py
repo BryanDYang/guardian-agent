@@ -15,7 +15,7 @@ from psycopg.types.json import Jsonb
 from .db import tasks
 
 logger = logging.getLogger(__name__)
-POLICY = "explicit-self-commitment-v1"
+POLICY = "explicit-self-commitment-v2"
 
 
 def delivery_mode():
@@ -34,6 +34,7 @@ def enqueue(conn, task, mode=None):
         "SELECT %s,pm.user_id,%s FROM project_members pm "
         "JOIN projects p ON p.id=pm.project_id "
         "WHERE p.id=%s AND pm.user_id=%s AND p.followup_email_enabled "
+        "AND p.deleted_at IS NULL "
         "AND pm.followup_email_enabled ON CONFLICT DO NOTHING",
         (
             task["id"],
@@ -41,6 +42,22 @@ def enqueue(conn, task, mode=None):
             task["project_id"],
             task["assignee_user_id"],
         ),
+    )
+
+
+def explicit_self_commitment(content, quote):
+    if quote not in content or re.search(
+        r"\b(if|maybe|might|could|try|unless|not|never|still|already)\b|\?",
+        content,
+        re.I,
+    ):
+        return False
+    # A diarized turn can contain an introduction before the actual promise.
+    # The cited words must belong to the self-commitment, not another sentence.
+    return any(
+        re.match(r"^\s*I(?: will|'ll)\s+\w", sentence, re.I)
+        and (quote in sentence or sentence in quote)
+        for sentence in re.split(r"(?<=[.!?])\s+|\n+", content)
     )
 
 
@@ -101,13 +118,7 @@ def auto_approve(conn, meeting_id):
         ).fetchall()
         if not evidence or any(
             e["speaker_label"] not in labels
-            or e["quote"] not in e["content"]
-            or not re.match(r"^\s*I(?: will|'ll)\s+\w", e["content"], re.I)
-            or re.search(
-                r"\b(if|maybe|might|could|try|unless|not|never|still|already)\b|\?",
-                e["content"],
-                re.I,
-            )
+            or not explicit_self_commitment(e["content"], e["quote"])
             for e in evidence
         ):
             continue
@@ -187,6 +198,7 @@ class ResendEmail:
             headers={
                 "Authorization": f"Bearer {self.key}",
                 "Content-Type": "application/json",
+                "User-Agent": "MeetingMemory/0.1",
                 "Idempotency-Key": key,
             },
         )
@@ -219,15 +231,35 @@ class EmailWorker:
             self.shutdown.wait(2)
 
     def process_one(self):
+        from .db import projects
+
+        # Keep this transaction's project lock through the provider request.
+        # Deletion waits for that request before cancelling the remaining queue.
+        with self.pool.connection() as guard:
+            candidate = guard.execute(
+                "SELECT t.project_id FROM task_followup_emails e "
+                "JOIN tasks t ON t.id=e.task_id WHERE e.mode=%s "
+                "AND ((e.state='queued' AND e.next_attempt_at<=now()) OR "
+                "(e.state='sending' AND e.lease_until<now())) "
+                "ORDER BY e.created_at LIMIT 1",
+                (self.mode,),
+            ).fetchone()
+            if not candidate:
+                return False
+            projects.lock_delivery(guard, candidate["project_id"])
+            return self.process_project(candidate["project_id"])
+
+    def process_project(self, project_id):
         now = datetime.now(timezone.utc)
         token = uuid4()
         with self.pool.connection() as conn:
             row = conn.execute(
                 "SELECT * FROM task_followup_emails WHERE mode=%s "
+                "AND task_id IN (SELECT id FROM tasks WHERE project_id=%s) "
                 "AND ((state='queued' AND next_attempt_at<=now()) OR "
                 "(state='sending' AND lease_until<now())) ORDER BY created_at "
                 "LIMIT 1 FOR UPDATE SKIP LOCKED",
-                (self.mode,),
+                (self.mode, project_id),
             ).fetchone()
             if not row:
                 return False
@@ -240,7 +272,8 @@ class EmailWorker:
                 return False
             recipient = conn.execute(
                 "SELECT pr.email,pm.followup_email_enabled AS opted_in,"
-                "p.followup_email_enabled AS enabled,m.name AS meeting_name, "
+                "(p.followup_email_enabled AND p.deleted_at IS NULL) AS enabled,"
+                "m.name AS meeting_name, "
                 "m.model_metadata->'transcription'->>'input_kind' AS source_kind "
                 "FROM tasks t JOIN project_members pm ON pm.project_id=t.project_id "
                 "AND pm.user_id=%s JOIN profiles pr ON pr.id=pm.user_id "

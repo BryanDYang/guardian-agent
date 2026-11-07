@@ -18,7 +18,7 @@ FROM = """
     JOIN projects p ON p.id = i.project_id
     LEFT JOIN profiles inviter ON inviter.id = i.invited_by
 """
-OPEN = "i.status = 'pending' AND i.expires_at > now()"
+OPEN = "p.deleted_at IS NULL AND i.status = 'pending' AND i.expires_at > now()"
 
 
 def token_hash(token: str) -> bytes:
@@ -105,7 +105,11 @@ def resolve(
 def accept(conn: Connection, invitation: dict, user_id: UUID) -> bool:
     """FR-INV-7: membership and the accepted status land in one transaction
     (the request's connection commits both or neither)."""
-    if not resolve(conn, invitation["id"], "accepted", user_id):
+    project = conn.execute(
+        "SELECT id FROM projects WHERE id=%s AND deleted_at IS NULL FOR SHARE",
+        (invitation["project_id"],),
+    ).fetchone()
+    if not project or not resolve(conn, invitation["id"], "accepted", user_id):
         return False
     conn.execute(
         "INSERT INTO project_members (project_id, user_id, role) "

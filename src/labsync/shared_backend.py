@@ -194,7 +194,7 @@ def install_routes(app):
         "/api/meetings/{meeting_id}/audio",
         "/api/meetings/{meeting_id}/retry",
         "/api/projects/{project_id}/meetings",
-        "/api/v1/projects/{project_id}",
+        "/api/v1/projects/{project_id}/permanent",
         "/api/v1/me",
         "/api/health",
     }
@@ -206,7 +206,7 @@ def install_routes(app):
             and (
                 "DELETE" in getattr(route, "methods", set())
                 or getattr(route, "path", None)
-                not in {"/api/v1/projects/{project_id}", "/api/v1/me"}
+                not in {"/api/v1/projects/{project_id}/permanent", "/api/v1/me"}
             )
         )
     ]
@@ -440,9 +440,9 @@ def install_routes(app):
         count = meetings.delete_project_meetings(conn, project_id)
         return {"deleted": count}
 
-    @app.delete("/api/v1/projects/{project_id}")
+    @app.delete("/api/v1/projects/{project_id}/permanent")
     def delete_project(project_id: UUID, user: User, conn: Conn):
-        require_member(conn, user, project_id)
+        projects.require_owner(conn, project_id, user.id, deleted=True)
         lock_project(conn, project_id)
         recipients = projects.member_ids(conn, project_id)
         projects.delete_project(conn, project_id)

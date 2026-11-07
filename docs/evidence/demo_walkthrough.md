@@ -1,5 +1,9 @@
 # UI demo walkthrough
 
+For the current presentation, start with the [user story, tell-show-tell script
+and dry run](../milestone_4/demo_script.md). This walkthrough preserves dated
+execution evidence and earlier demo plans.
+
 Start from the story we want to demonstrate, perform it in the iOS UI, and use failures to choose the next implementation work. Repository checkboxes track implementation only. A successful build, API health check, or scripted backend response does not establish that the corresponding UI journey works.
 
 
@@ -943,3 +947,21 @@ No archive/export/upload succeeded. The project also needs its real bundle ID
 and reachable backend configuration; the current local BaseURL is loopback.
 Apple team/app and backend details were requested from Bryan. Signing stayed
 enabled throughout.
+
+
+## November 6 presenter guide and selected human-review scope
+
+Bryan requested explicit AI callouts, a findable user story, step-by-step
+tell-show-tell narration and a dry run before recording the 3-5 minute demo.
+The [presenter guide](../milestone_4/demo_script.md) was simplified at Bryan's
+request to one recording, one approved task, cited chat and an unsupported-budget
+question. It includes explicit AI narration, optional editing labels and five
+quick rehearsal checks.
+
+The new interview-study rehearsal awaits Bryan's run. No microphone, model-output,
+citation, delivery or timing pass is assigned by preparing this guide.
+Bryan selected his eight personal-case judgments and 28 RAG judgments as the
+presentation's human-review scope. Historical teammate reviews are preserved.
+
+Read-only GitHub verification confirmed both smoke and ai-regression succeeded
+for be83d03. [Observed CI run](https://github.com/BryanDYang/guardian-agent/actions/runs/42289142043)

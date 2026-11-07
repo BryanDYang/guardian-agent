@@ -148,6 +148,36 @@ struct MeetingAPIClient {
         let _: PurgeResponse = try await send(request)
     }
 
+    func recentlyDeletedProjects() async throws -> [RemoteProject] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/projects/recently-deleted")))
+    }
+
+    func restoreProject(_ projectID: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/restore"))
+        request.httpMethod = "POST"
+        let _: [String: Int] = try await send(request)
+    }
+
+    func permanentlyDeleteProject(_ projectID: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/permanent"))
+        request.httpMethod = "DELETE"
+        let _: PurgeResponse = try await send(request)
+    }
+
+    func archiveProject(_ projectID: String, archived: Bool) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/archive"))
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["archived": archived])
+        let _: [String: Bool] = try await send(request)
+    }
+
+    func leaveProject(_ projectID: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/projects/\(projectID)/leave"))
+        request.httpMethod = "POST"
+        let _: [String: Int] = try await send(request)
+    }
+
     func purgeProject(_ projectID: String) async throws -> Int {
         var request = URLRequest(
             url: baseURL.appending(path: "api/projects/\(projectID)/meetings")
@@ -592,11 +622,26 @@ struct RemoteProject: Decodable {
     let imagePath: String?
     let memberCount: Int?
     let lastActivityAt: String?
+    let role: String?
+    let archivedAt: String?
+    let deletedAt: String?
+
+    static func timestamp(_ value: String?) -> Date? {
+        guard let value else { return nil }
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: value) { return date }
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: value)
+    }
 
     enum CodingKeys: String, CodingKey {
         case id, name
         case imagePath = "image_path"
         case memberCount = "member_count"
+        case role
+        case archivedAt = "archived_at"
+        case deletedAt = "deleted_at"
         case lastActivityAt = "last_activity_at"
     }
 }

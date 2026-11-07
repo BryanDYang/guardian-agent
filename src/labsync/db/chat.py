@@ -13,8 +13,9 @@ CONVERSATION = """
 # A conversation is private to its creator, who must still be a project member.
 VISIBLE = """
     c.user_id = %(user_id)s AND EXISTS (
-        SELECT 1 FROM project_members pm
+        SELECT 1 FROM project_members pm JOIN projects p ON p.id=pm.project_id
         WHERE pm.project_id = c.project_id AND pm.user_id = %(user_id)s
+        AND p.deleted_at IS NULL
     )
 """
 

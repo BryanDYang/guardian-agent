@@ -161,3 +161,58 @@ def remove_member(
     unassigned = projects.remove_member(conn, project_id, member_id)
     announce(request, conn, recipients)
     return {"removed": 1, "unassigned_tasks": unassigned}
+
+
+@router.get("/recently-deleted")
+def recently_deleted(user: User, conn: Conn) -> list[dict]:
+    return projects.list_projects(conn, user.id, deleted=True)
+
+
+@router.delete("/{project_id}")
+def delete_project(project_id: UUID, user: User, conn: Conn, request: Request):
+    projects.require_owner(conn, project_id, user.id)
+    try:
+        projects.move_to_trash(conn, project_id)
+    except projects.ProjectBusyError as exc:
+        raise HTTPException(
+            409, "Wait for active meetings to finish before deleting"
+        ) from exc
+    announce(request, conn, projects.member_ids(conn, project_id))
+    return {"deleted": 1}
+
+
+@router.post("/{project_id}/restore")
+def restore_project(project_id: UUID, user: User, conn: Conn, request: Request):
+    projects.require_owner(conn, project_id, user.id, deleted=True)
+    restored = conn.execute(
+        "UPDATE projects SET deleted_at=NULL WHERE id=%s "
+        "AND deleted_at > now() - interval '30 days' RETURNING id",
+        (project_id,),
+    ).fetchone()
+    if not restored:
+        raise HTTPException(410, "The 30-day recovery period has ended")
+    announce(request, conn, projects.member_ids(conn, project_id))
+    return {"restored": 1}
+
+
+class ArchivePreference(BaseModel):
+    archived: bool
+
+
+@router.put("/{project_id}/archive")
+def archive_project(
+    project_id: UUID, body: ArchivePreference, user: User, conn: Conn, request: Request
+):
+    require_member(conn, user, project_id)
+    conn.execute(
+        "UPDATE project_members SET archived_at=CASE WHEN %s THEN now() ELSE NULL END "
+        "WHERE project_id=%s AND user_id=%s",
+        (body.archived, project_id, user.id),
+    )
+    announce(request, conn, [user.id])
+    return {"archived": body.archived}
+
+
+@router.post("/{project_id}/leave")
+def leave_project(project_id: UUID, user: User, conn: Conn, request: Request):
+    return remove_member(project_id, user.id, user, conn, request)

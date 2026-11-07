@@ -24,7 +24,7 @@ struct FollowupSettingsSheet: View {
                     } header: {
                         Text("Project automation")
                     } footer: {
-                        Text("Automatic approval is experimental. It requires a confirmed speaker account, an explicit self-commitment, quoted evidence, and no possible duplicate or unresolved deadline. Other tasks stay in review. Enabling it also checks existing candidates.")
+                        Text("After processing a recording, confirm the speaker’s app member in Review speaker names. Clear commitments are then approved automatically and emailed when task email is on. Tasks needing clarification stay in review.")
                     }
                     Section {
                         Toggle("Receive emails for my tasks", isOn: $receiveEmail)
@@ -42,7 +42,7 @@ struct FollowupSettingsSheet: View {
                     }
                     Section("Recent follow-ups") {
                         if emails.isEmpty {
-                            Text("No follow-ups yet. Enable email, connect a speaker to an app member, then approve a task or use automatic approval.")
+                            Text("New follow-ups will appear here. After your recording finishes, link your speaker to your app member in Review speaker names.")
                                 .foregroundStyle(.secondary)
                         }
                         ForEach(emails) { email in

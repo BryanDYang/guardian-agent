@@ -4,11 +4,12 @@
 to define and validate the release candidate. Milestone 3 documents are archived;
 their unfinished acceptance and evaluation work carries forward explicitly.
 
-Bryan and Guadalupe completed the eight personal-case review tables on October
-22-23. Bryan completed all 28 M4 RAG answer/citation/refusal judgments on October
-30 after AI-assisted preparation. Personal-case adjudication, review provenance
-and AMI sequence labels remain open. The [journal](weekly_journal.md) records
-the latest review status; the [walkthrough](evidence/demo_walkthrough.md) records runtime evidence.
+For the final presentation, use Bryan's human-review judgments only. His eight
+personal-case judgments and 28 RAG judgments retain separate scopes and counts.
+Historical teammate reviews remain in the archive. The current presenter guide
+contains one user story, a simple 3-5 minute script, AI callouts and a short dry run.
+The [journal](weekly_journal.md) records progress and the
+[walkthrough](evidence/demo_walkthrough.md) records observed execution.
 Each document below has one responsibility.
 
 | Question | Authoritative document |
@@ -16,6 +17,7 @@ Each document below has one responsibility.
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
 | Where do we review model outputs? | [M4 answer review](milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
+| How do I rehearse and record the 3-5 minute demo? | [User story, tell-show-tell script and dry run](milestone_4/demo_script.md) |
 | What remains for Milestone 4? | [Release scope, gap assessment, and acceptance](milestone_4/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |

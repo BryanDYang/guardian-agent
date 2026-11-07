@@ -1,5 +1,14 @@
 # Milestone 4 answer review results
 
+## Reviewer and final presentation scope
+
+Bryan Yang confirmed all 28 judgments on October 30, 2026 after AI-assisted
+preparation. On November 6 he selected his own inputs and judgments as the
+human-review scope for the presentation. The 28-output results below are his
+review. His eight personal scripted cases remain a separate set in the archived
+Bryan worksheet. Historical teammate judgments are excluded from the final
+presentation's human-review claims. The new demo rehearsal awaits its own results.
+
 ## Results
 
 | Final-output correctness | Entries |
