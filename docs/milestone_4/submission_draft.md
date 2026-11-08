@@ -1,6 +1,6 @@
 # Milestone 4: Meeting Follow-Through Assistant
 
-AI Engineering track. Draft prepared October 26, updated November 6, 2026.
+AI Engineering track. Draft prepared October 26, updated November 8, 2026.
 Deadline November 16, 2026, confirmed by Bryan. Final demo sign-off and team
 contribution confirmation remain open.
 
@@ -9,6 +9,8 @@ Native acceptance below uses
 synthetic uploaded audio and manual assignment/date entry.
 
 Repository: https://github.com/BryanDYang/guardian-agent
+
+Demo video: [LabSync Milestone 4 demo](https://www.youtube.com/watch?v=xgaeo0GTi1Y) (provided by Bryan, November 8).
 
 ## Submission readiness as of November 6
 
@@ -27,7 +29,7 @@ been recorded.
 | Representative latency and cost | Recorded | Report the measured component workloads and estimates with their exclusions |
 | Red-teaming and mitigations | Recorded | Keep the bounded scope and residual risks explicit |
 | Architecture, deployment and reviewer checklist | Drafted | Incorporate teammate feedback and verify final run instructions |
-| Demo script and public video | Current [presenter guide](demo_script.md) and reference video available | Run the timed rehearsal, record Bryan's final take with explicit AI callouts, review it and update the public link |
+| Demo script and public video | [Demo recording](https://www.youtube.com/watch?v=xgaeo0GTi1Y) provided November 8; [presenter guide](demo_script.md) available | Review the linked recording and confirm final demo sign-off |
 | Weekly progress and blockers | Recorded | Add teammate outcomes and subsequent check-in results |
 | Team roles and selected extensions | Incomplete | Obtain each member's contribution summary, selected-extension progress and agreed next-task ownership |
 | Mandatory TA check-in | Reported complete in the supplied meeting summary | Confirm the meeting date and send Derrick the demo for follow-up feedback |
@@ -309,10 +311,11 @@ bounded demo. A full production monitoring/rollback drill remains pending.
 
 Use the [current presenter guide](demo_script.md) for the user story, timed
 simple 3-5 minute tell-show-tell sequence, explicit AI callouts and short dry run.
-Bryan will use two short lab check-ins about preparing evaluation questions
-and running a retrieval experiment, with an email for each approved commitment. The earlier
-[85-second review video](demo_draft.mp4) remains the visual reference. The new
-rehearsal and final recording await execution and sign-off.
+Bryan provided the [LabSync Milestone 4 demo recording](https://www.youtube.com/watch?v=xgaeo0GTi1Y)
+on November 8. Final team sign-off remains open. The presenter guide uses two
+short lab check-ins about preparing evaluation questions and running a retrieval
+experiment, with an email for each approved commitment. The earlier
+[85-second review video](demo_draft.mp4) is retained as a historical reference.
 
 The demo names transcription, summarization, task extraction and
 retrieval-augmented answering while showing their outputs. Bryan verifies source
@@ -324,7 +327,7 @@ case judgments and 28 RAG judgments separately.
 
 The supplied automated meeting summary reports that Derrick's check-in counted
 for Milestone 4. Its feedback is mapped in the presenter guide. Follow up with the
-reviewed demo or TestFlight build, review Will's evaluation files, consider
+linked demo recording, review Will's evaluation files, consider
 chunk-level relevance metrics, and confirm final presentation details. Existing
 structured output and human-approved actions should be described precisely when
 discussing Derrick's suggestion of tool calling or an agentic decision loop.
@@ -338,20 +341,21 @@ not a complete allocation of credit.
 
 | Member | Confirmed in this checkpoint | Next work / confirmation needed |
 | --- | --- | --- |
-| Bryan Yang | Completed the 28-output human review, sent the team update and followed up with Derrick | Offered to record the non-synthetic final demo; confirm schedule and final report/demo approval |
+| Bryan Yang | Completed the 28-output human review, sent the team update and followed up with Derrick | Provided the demo recording November 8; confirm final report/demo approval |
 | Will Liu | Contribution summary requested; not yet recorded for this submission | Confirm implementation work, selected-extension progress and which requested task he can take |
 | Guadalupe Cantera | October 23 transcript-only personal-case review is recorded in the journal | Confirm complete Milestone 4 contributions, selected-extension progress and which requested task she can take |
 
 Independent setup and report-feedback owners remain unassigned until a teammate
 responds. Selected-extension names, completed work, remaining work and final-stage
 plans must be supplied or confirmed by the team before filling that report
-section. TestFlight preparation was requested. Its signed archive attempt needs the
-Apple Developer team/app, signing access and reachable backend configuration. Weekly progress and the sent update are recorded in the
+section. TestFlight distribution is on hold at Bryan's request as of November 8.
+Resuming requires an enrolled Apple Developer team, signing access and reachable
+backend configuration. Weekly progress and the sent update are recorded in the
 [journal](../weekly_journal.md#october-30-team-update-and-submission-readiness).
 
 Before submission: incorporate teammate contributions/extension progress and
-setup/report feedback; record the reported TA check-in date and follow-up feedback; record/review the
-final demo and update its public link; refresh and visually check the single PDF.
+setup/report feedback; record the reported TA check-in date and follow-up feedback; review the
+linked demo and confirm sign-off; refresh and visually check the single PDF.
 Retain the known product limitations rather than treating unimplemented automatic
 behavior or real inbox delivery as completed. The selected human-review scope uses Bryan's judgments. Broader performance
 testing remains a separate evidence improvement.
