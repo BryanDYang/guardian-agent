@@ -203,7 +203,8 @@ def test_upload_processes_and_saves_results(client, project_id, member):
         "JOIN tasks k ON k.id = e.task_id "
         "JOIN meeting_transcripts t "
         "ON t.meeting_id = k.meeting_id AND t.turn_key = e.turn_key "
-        "WHERE k.title = 'Share the recording' ORDER BY e.position",
+        "WHERE k.title = 'Share the recording' AND k.meeting_id=%s ORDER BY e.position",
+        meeting_id,
     )
     assert [(e["position"], e["quote"]) for e in evidence] == [
         (0, "I will share"),
@@ -343,3 +344,183 @@ def test_only_members_can_upload(client, project_id, make_user, tmp_path):
     assert upload(client, project_id, outsider).status_code == 404
     assert upload(client, project_id, {}).status_code == 401
     assert not list(tmp_path.glob("*/meeting.json"))
+
+
+def test_session_archive_delete_restore(
+    client, project_id, member, make_user, embedder
+):
+    _, headers = member
+    _, outsider = make_user("Outside session project")
+    meeting = query(
+        "INSERT INTO meetings(project_id,name,meeting_date,status,consent_given) "
+        "VALUES (%s,'Recoverable session',current_date,'completed',true) RETURNING id",
+        project_id,
+    )[0]["id"]
+    task = query(
+        "INSERT INTO tasks(project_id,meeting_id,title,review_status) "
+        "VALUES (%s,%s,'Session task','approved') RETURNING id",
+        project_id,
+        meeting,
+    )[0]["id"]
+    query(
+        "INSERT INTO task_followup_emails(task_id,recipient_id,mode) "
+        "VALUES (%s,%s,'resend') RETURNING id",
+        task,
+        member[0],
+    )
+    from uuid import UUID
+
+    from labsync.db import rag
+
+    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        rag.index_meeting(conn, meeting, embedder)
+
+    def search_session():
+        with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+            return rag.search(
+                conn,
+                project_id=UUID(project_id),
+                meeting_id=None,
+                text="Session task",
+                vector=embedder.encode(["Session task"])[0],
+            )
+
+    assert search_session()
+    url = f"/api/v1/meetings/{meeting}/visibility"
+    assert (
+        client.post(url, headers=outsider, json={"action": "delete"}).status_code == 404
+    )
+    assert (
+        client.post(url, headers=headers, json={"action": "archive"}).status_code == 200
+    )
+    cards = client.get(
+        f"/api/v1/projects/{project_id}/meetings", headers=headers
+    ).json()
+    assert cards[0]["archived_at"] and cards[0]["deleted_at"] is None
+    assert client.get(f"/api/v1/meetings/{meeting}", headers=headers).status_code == 200
+    assert (
+        client.post(url, headers=headers, json={"action": "delete"}).status_code == 200
+    )
+    assert client.get(f"/api/v1/meetings/{meeting}", headers=headers).status_code == 404
+    assert not search_session()
+    assert (
+        query("SELECT state FROM task_followup_emails WHERE task_id=%s", task)[0][
+            "state"
+        ]
+        == "cancelled"
+    )
+    assert (
+        client.get(f"/api/meetings/{meeting}/audio", headers=headers).status_code == 404
+    )
+    from labsync.db import access, tasks
+
+    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        assert tasks.list_accepted_tasks(conn, project_id) == []
+        assert not access.can_see_task(conn, member[0], task)
+    assert (
+        client.post(url, headers=headers, json={"action": "restore"}).status_code == 200
+    )
+    assert search_session()
+    assert (
+        query("SELECT state FROM task_followup_emails WHERE task_id=%s", task)[0][
+            "state"
+        ]
+        == "cancelled"
+    )
+    assert query("SELECT archived_at FROM meetings WHERE id=%s", meeting)[0][
+        "archived_at"
+    ]
+    assert (
+        client.post(url, headers=headers, json={"action": "unarchive"}).status_code
+        == 200
+    )
+    with psycopg.connect(DATABASE_URL, row_factory=dict_row) as conn:
+        assert len(tasks.list_accepted_tasks(conn, project_id)) == 1
+        assert access.can_see_task(conn, member[0], task)
+    assert client.get(f"/api/v1/meetings/{meeting}", headers=headers).status_code == 200
+
+
+def test_session_recovery_expiry_and_processing_guard(client, project_id, member):
+    _, headers = member
+    meeting = query(
+        "INSERT INTO meetings(project_id,name,meeting_date,status,consent_given) "
+        "VALUES (%s,'Processing "
+        "session',current_date,'transcribing',true) RETURNING id",
+        project_id,
+    )[0]["id"]
+    url = f"/api/v1/meetings/{meeting}/visibility"
+    for action in ("archive", "delete"):
+        assert (
+            client.post(url, headers=headers, json={"action": action}).status_code
+            == 409
+        )
+    query(
+        "UPDATE meetings SET status='completed',deleted_at=now()-interval "
+        "'31 days' WHERE id=%s RETURNING id",
+        meeting,
+    )
+    assert (
+        client.post(url, headers=headers, json={"action": "restore"}).status_code == 410
+    )
+    assert (
+        client.get(f"/api/v1/projects/{project_id}/meetings", headers=headers).json()
+        == []
+    )
+    client.app.state.project_cleanup.run_once()
+    assert query("SELECT id FROM meetings WHERE id=%s", meeting) == []
+
+
+@pytest.mark.parametrize(
+    "deadline, expected",
+    [
+        ("by November 9, 2026", "2026-11-09"),
+        ("by November 20th", "2026-11-20"),
+    ],
+)
+def test_spoken_calendar_deadline_is_prefilled_and_survives_approval(
+    client, project_id, member, monkeypatch, deadline, expected
+):
+    """Exercise upload -> pipeline -> stored candidate -> accepted task."""
+    _, headers = member
+
+    def dated_pipeline(command, **kwargs):
+        result = fake_pipeline(command, **kwargs)
+        if "transcribe" in command:
+            work = Path(command[command.index("--output-dir") + 1])
+            path = work / "transcript.json"
+            transcript = json.loads(path.read_text())
+            transcript["turns"][0]["content"] = (
+                f"I will share the recording {deadline}."
+            )
+            path.write_text(json.dumps(transcript))
+        else:
+            path = Path(command[command.index("--output") + 1])
+            output = json.loads(path.read_text())
+            task = output["extraction"]["commitments"][0]
+            task["due_date_text"] = deadline
+            task["evidence"] = [
+                {
+                    "transcript_id": task["evidence"][0]["transcript_id"],
+                    "quote": f"I will share the recording {deadline}.",
+                }
+            ]
+            path.write_text(json.dumps(output))
+        return result
+
+    monkeypatch.setattr(labsync.server.subprocess, "run", dated_pipeline)
+    response = upload(client, project_id, headers)
+    assert response.status_code == 202
+    meeting_id = response.json()["job_id"]
+    wait_for(meeting_id, "completed")
+    detail = client.get(f"/api/v1/meetings/{meeting_id}", headers=headers).json()
+    task = next(t for t in detail["tasks"] if t["category"] == "commitment")
+    assert task["due_date_text"] == deadline
+    assert task["due_date"] == expected
+    accepted = client.patch(
+        f"/api/v1/tasks/{task['id']}/review",
+        headers=headers,
+        json={"action": "approve"},
+    )
+    assert accepted.status_code == 200
+    assert accepted.json()["task"]["due_date"] == expected
+    assert accepted.json()["eventkit"]["due_date"] == expected

@@ -40,6 +40,17 @@ def upload_form(ids):
 # Routes that act on one project's data. An outsider must get 404 from each.
 # Each entry: (method, route path exactly as declared, request options).
 PROJECT_ROUTES = [
+    (
+        "POST",
+        "/api/v1/tasks/{task_id}/return-for-review",
+        lambda ids: {"json": {"note": "Ownership changed"}},
+    ),
+    ("GET", "/api/v1/tasks/{task_id}/changes", lambda ids: {}),
+    (
+        "POST",
+        "/api/v1/tasks/{task_id}/visibility",
+        lambda ids: {"json": {"action": "delete"}},
+    ),
     ("DELETE", "/api/v1/projects/{project_id}/permanent", lambda ids: {}),
     ("POST", "/api/v1/projects/{project_id}/restore", lambda ids: {}),
     ("POST", "/api/v1/projects/{project_id}/leave", lambda ids: {}),
@@ -95,6 +106,11 @@ PROJECT_ROUTES = [
     ("GET", "/api/v1/projects/{project_id}/meetings", lambda ids: {}),
     ("DELETE", "/api/v1/projects/{project_id}", lambda ids: {}),
     ("GET", "/api/v1/meetings/{meeting_id}", lambda ids: {}),
+    (
+        "POST",
+        "/api/v1/meetings/{meeting_id}/visibility",
+        lambda ids: {"json": {"action": "delete"}},
+    ),
     ("GET", "/api/v1/meetings/{meeting_id}/speakers", lambda ids: {}),
     (
         "PUT",

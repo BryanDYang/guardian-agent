@@ -184,7 +184,7 @@ def test_confirmed_speaker_auto_approves_and_queues(flow):
             "AND action='AUTO_APPROVE'",
             (f["task"],),
         ).fetchone()
-        assert audit["new_value"]["policy"] == "explicit-self-commitment-v2"
+        assert audit["new_value"]["policy"] == "explicit-self-commitment-v4"
     assert len(logs(f)) == 1
     assert EmailWorker(f["app"].state.pool).process_one()
     assert logs(f)[0]["state"] == "captured"
@@ -523,3 +523,81 @@ def test_deleted_project_cancels_email_even_after_restore(flow):
             ).fetchone()["state"]
             == "cancelled"
         )
+
+
+def test_returned_task_requires_human_approval_and_cancels_email(flow):
+    f, c = flow, flow["client"]
+    configure(f)
+    confirmed = connect(f)
+    assert confirmed.status_code == 200
+    task_url = f"/api/v1/tasks/{f['task']}"
+    # Depending on the fixture settings, speaker confirmation may approve it.
+    with f["app"].state.pool.connection() as conn:
+        row = conn.execute(
+            "SELECT review_status FROM tasks WHERE id=%s", (f["task"],)
+        ).fetchone()
+    if row["review_status"] == "pending":
+        assert (
+            c.patch(task_url + "/review", json={"action": "approve"}).status_code == 200
+        )
+    returned = c.post(
+        task_url + "/return-for-review", json={"note": "Ownership changed by email."}
+    )
+    assert returned.status_code == 200
+    c.put(
+        f"/api/v1/projects/{f['project']}/followup",
+        json={"email_enabled": True, "auto_approve": True},
+    )
+    connect(f)
+    with f["app"].state.pool.connection() as conn:
+        assert (
+            conn.execute(
+                "SELECT review_status FROM tasks WHERE id=%s", (f["task"],)
+            ).fetchone()["review_status"]
+            == "pending"
+        )
+        assert (
+            conn.execute(
+                "SELECT state FROM task_followup_emails WHERE task_id=%s", (f["task"],)
+            ).fetchone()["state"]
+            == "cancelled"
+        )
+    assert not EmailWorker(f["app"].state.pool).process_one()
+
+
+@pytest.mark.parametrize(
+    "case", ["clear", "yearless", "wrong_date", "unquoted", "manual_only"]
+)
+def test_explicit_calendar_deadline_approval_and_email(flow, case):
+    f = flow
+    configure(f, auto=True)
+    deadline = "by November 9th" if case == "yearless" else "by November 9, 2026"
+    content = f"I will share the recording {deadline}."
+    with f["app"].state.pool.connection() as conn:
+        conn.execute(
+            "UPDATE tasks SET due_date_text=%s,due_date=%s WHERE id=%s",
+            (
+                None if case == "manual_only" else deadline,
+                "2026-11-10" if case == "wrong_date" else "2026-11-09",
+                f["task"],
+            ),
+        )
+        conn.execute(
+            "UPDATE meeting_transcripts SET content=%s WHERE meeting_id=%s",
+            (content, f["meeting"]),
+        )
+        if case != "unquoted":
+            conn.execute(
+                "UPDATE item_evidence SET quote=%s WHERE task_id=%s",
+                (content, f["task"]),
+            )
+    response = connect(f)
+    assert response.status_code == 200
+    assert response.json()["auto_approved_tasks"] == (
+        1 if case in {"clear", "yearless"} else 0
+    )
+    if case in {"clear", "yearless"}:
+        assert EmailWorker(f["app"].state.pool).process_one()
+        assert "Due: 2026-11-09" in logs(f)[0]["preview"]
+    else:
+        assert not logs(f)

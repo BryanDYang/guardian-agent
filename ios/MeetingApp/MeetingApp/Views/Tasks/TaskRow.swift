@@ -9,6 +9,8 @@ struct TaskRow: View {
     let onToggleComplete: () -> Void
     var onEdit: () -> Void = {}
     let onDelete: () -> Void
+    var onReturnForReview: () -> Void = {}
+    var onViewChanges: () -> Void = {}
 
     private static let avatarSize: CGFloat = 40
     private static let spacing: CGFloat = 12
@@ -83,6 +85,10 @@ struct TaskRow: View {
 
                 Menu {
                     Button("Edit", systemImage: "pencil", action: onEdit)
+                    if isServerID(task.id) {
+                        Button("Return for review", systemImage: "arrow.uturn.backward", action: onReturnForReview)
+                        Button("View changes", systemImage: "clock.arrow.circlepath", action: onViewChanges)
+                    }
                     Button("Move to Trash", systemImage: "trash", role: .destructive, action: onDelete)
                 } label: {
                     Image(systemName: "ellipsis")

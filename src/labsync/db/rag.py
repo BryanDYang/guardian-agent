@@ -164,6 +164,7 @@ def search(
         WITH candidates AS MATERIALIZED (
             SELECT c.id, c.embedding, c.tsv
             FROM rag_chunks c
+            JOIN meetings cm ON cm.id=c.meeting_id AND cm.deleted_at IS NULL
             LEFT JOIN tasks t ON c.kind = 'task' AND t.id = c.source_id
             WHERE c.project_id = %(project_id)s
             AND (%(meeting_id)s::uuid IS NULL OR c.meeting_id = %(meeting_id)s::uuid)

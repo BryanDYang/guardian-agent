@@ -49,7 +49,7 @@ struct MeetingAppApp: App {
                     )
                 case .unavailable(let message):
                     ContentUnavailableView {
-                        Label("Can't reach Meeting Memory", systemImage: "wifi.exclamationmark")
+                        Label("Can't reach LabSync", systemImage: "wifi.exclamationmark")
                     } description: {
                         Text(message)
                     } actions: {

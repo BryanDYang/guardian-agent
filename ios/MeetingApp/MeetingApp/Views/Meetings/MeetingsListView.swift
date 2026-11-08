@@ -8,9 +8,13 @@ struct MeetingsListView: View {
     @Query(sort: \Project.createdAt) private var projects: [Project]
     @Query(sort: \Meeting.date, order: .reverse) private var meetings: [Meeting]
 
+    @Environment(MeetingNavigator.self) private var navigator
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
+    @State private var sessionFilter = "Active"
+    @State private var pendingSessionDeletion: Meeting?
+    @State private var updatingSessionID: String?
     @State private var isSelecting = false
     @State private var isReordering = false
     @State private var showingArchived = false
@@ -28,7 +32,7 @@ struct MeetingsListView: View {
     var body: some View {
         Group {
             if let project {
-                ScrollView { sessionStream(for: project) }
+                sessionStream(for: project)
             } else {
                 projectsList
             }
@@ -138,7 +142,18 @@ struct MeetingsListView: View {
                  ? "You will lose access to this project. An owner can invite you back."
                  : "You can restore this project and its content within 30 days. Follow-through emails will stop for everyone.")
         }
-        .alert("Couldn’t update projects", isPresented: Binding(
+        .confirmationDialog("Delete this session?", isPresented: Binding(
+            get: { pendingSessionDeletion != nil },
+            set: { if !$0 { pendingSessionDeletion = nil } }
+        ), titleVisibility: .visible) {
+            Button("Delete Session", role: .destructive) {
+                if let meeting = pendingSessionDeletion { updateSession(meeting, action: "delete") }
+                pendingSessionDeletion = nil
+            }
+        } message: {
+            Text("This moves the session and its content to Recently Deleted for 30 days. Its tasks will be hidden and queued emails will stop for everyone in this project.")
+        }
+        .alert("Couldn’t update", isPresented: Binding(
             get: { errorMessage != nil },
             set: { if !$0 { errorMessage = nil } }
         )) {
@@ -429,31 +444,135 @@ struct MeetingsListView: View {
     // MARK: Session stream
 
     private func sessionStream(for project: Project) -> some View {
-        let projectMeetings = meetings.filter { $0.project?.id == project.id }
+        let projectMeetings = meetings.filter {
+            guard $0.project?.id == project.id else { return false }
+            if sessionFilter == "Recently Deleted" {
+                return $0.deletedAt.map { $0 > Date().addingTimeInterval(-30 * 86400) } ?? false
+            }
+            return $0.deletedAt == nil && ($0.archivedAt != nil) == (sessionFilter == "Archived")
+        }
 
-        return LazyVStack(alignment: .leading, spacing: 12) {
+        return List {
             HStack {
                 Text("SESSION STREAM")
                     .font(.caption.weight(.semibold))
                     .kerning(0.5)
+                    .foregroundStyle(.secondary)
                 Spacer()
-                Label("Date", systemImage: "line.3.horizontal.decrease")
-                    .font(.caption)
-            }
-            .foregroundStyle(.secondary)
-
-            if projectMeetings.isEmpty {
-                emptyState
-            } else {
-                ForEach(projectMeetings) { meeting in
-                    NavigationLink(value: MeetingsRoute.meeting(meeting.id)) {
-                        meetingRow(meeting)
+                Menu {
+                    Picker("Sessions", selection: $sessionFilter) {
+                        Text("Active").tag("Active")
+                        Text("Archived").tag("Archived")
+                        Text("Recently Deleted").tag("Recently Deleted")
                     }
-                    .buttonStyle(.plain)
+                } label: {
+                    Label(sessionFilter, systemImage: "line.3.horizontal.decrease")
+                        .font(.subheadline)
                 }
+                .accessibilityLabel("Session filter: \(sessionFilter)")
+            }
+            .listRowBackground(Color.clear)
+            .listRowSeparator(.hidden)
+
+            if sessionFilter != "Active" {
+                Text(sessionFilter == "Recently Deleted"
+                     ? "Deleted sessions can be restored for 30 days. Restoring keeps their previous archive status."
+                     : "Archived sessions keep their tasks and remain available in Chat. Restore brings them back to the active stream.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
+            if projectMeetings.isEmpty {
+                ContentUnavailableView(
+                    sessionFilter == "Active" ? "No sessions yet" : "No \(sessionFilter.lowercased()) sessions",
+                    systemImage: sessionFilter == "Recently Deleted" ? "trash" : "waveform",
+                    description: Text(sessionFilter == "Active" ? "Tap + to record or import a meeting." : "Sessions you move here will appear here.")
+                )
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
+            }
+            ForEach(projectMeetings) { meeting in
+                VStack(spacing: 0) {
+                    if sessionFilter == "Recently Deleted" {
+                        VStack(alignment: .leading, spacing: 8) {
+                            meetingRow(meeting)
+                            HStack {
+                                if let deleted = meeting.deletedAt {
+                                    let days = max(1, Int(ceil(deleted.addingTimeInterval(30 * 86400).timeIntervalSinceNow / 86400)))
+                                    Text("\(days) days left")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Button("Restore") { updateSession(meeting, action: "restore") }
+                                    .buttonStyle(.borderless)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                        }
+                    } else {
+                        HStack(spacing: 0) {
+                            meetingRow(meeting)
+                            Image(systemName: "chevron.right")
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(.tertiary)
+                                .padding(.trailing, 16)
+                        }
+                        .contentShape(Rectangle())
+                        .onTapGesture { navigator.open(meetingID: meeting.id) }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityAddTraits(.isButton)
+                        .accessibilityAction { navigator.open(meetingID: meeting.id) }
+                    }
+                }
+                .background(card)
+                .disabled(updatingSessionID != nil)
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    if sessionFilter == "Recently Deleted" {
+                        Button("Restore", systemImage: "arrow.uturn.backward") {
+                            updateSession(meeting, action: "restore")
+                        }.tint(.indigo)
+                    } else {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            pendingSessionDeletion = meeting
+                        }
+                        Button(sessionFilter == "Archived" ? "Restore" : "Archive",
+                               systemImage: sessionFilter == "Archived" ? "arrow.uturn.backward" : "archivebox") {
+                            updateSession(meeting, action: sessionFilter == "Archived" ? "unarchive" : "archive")
+                        }.tint(.indigo)
+                    }
+                }
+                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                .listRowBackground(Color.clear)
+                .listRowSeparator(.hidden)
             }
         }
-        .padding(16)
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .refreshable { await refreshMeetings() }
+        .id(sessionFilter)
+    }
+
+    private func updateSession(_ meeting: Meeting, action: String) {
+        guard updatingSessionID == nil else { return }
+        updatingSessionID = meeting.id
+        Task { @MainActor in
+            defer { updatingSessionID = nil }
+            do {
+                if isServerID(meeting.id) {
+                    try await MeetingAPIClient.shared.setSessionVisibility(meeting.id, action: action)
+                }
+                switch action {
+                case "archive": meeting.archivedAt = .now
+                case "unarchive": meeting.archivedAt = nil
+                case "delete": meeting.deletedAt = .now
+                default: meeting.deletedAt = nil
+                }
+                try context.save()
+                await refreshMeetings()
+            } catch { errorMessage = error.localizedDescription }
+        }
     }
 
     private func meetingRow(_ meeting: Meeting) -> some View {
@@ -484,7 +603,6 @@ struct MeetingsListView: View {
             )
         }
         .padding(16)
-        .background(card)
         .contentShape(Rectangle())
     }
 
@@ -515,6 +633,7 @@ struct MeetingsListView: View {
     NavigationStack {
         MeetingsListView(projectID: nil)
     }
+    .environment(MeetingNavigator())
     .modelContainer(PreviewContainer.shared)
 }
 
@@ -522,5 +641,6 @@ struct MeetingsListView: View {
     NavigationStack {
         MeetingsListView(projectID: "p1")
     }
+    .environment(MeetingNavigator())
     .modelContainer(PreviewContainer.shared)
 }

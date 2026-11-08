@@ -23,7 +23,7 @@ struct InviteLinkSheet: View {
                 .font(.title2.bold())
 
             Text(joinedProject == nil
-                 ? "You were invited to a project on Meeting Memory. Accept to see its meetings, tasks, and chats."
+                 ? "You were invited to a project on LabSync. Accept to see its meetings, tasks, and chats."
                  : "It's now in your Projects list.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)

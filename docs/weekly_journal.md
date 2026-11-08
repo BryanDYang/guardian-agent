@@ -643,6 +643,18 @@ not silently promoted into new course requirements. The report remains a draft.
 
 # Week 11 (November 2-8, 2026)
 
+Did: I red-teamed LabSync's extraction and automatic follow-through, then rehearsed the research demo with my own recordings. I also added recovery controls and fixed failures exposed by those rehearsals.
+Blocked on: Ambiguous deadlines still need review, and our synthetic development checks do not establish reliability on real research meetings.
+Next: Complete one uninterrupted recording-to-inbox demo on the release candidate before distributing it through TestFlight.
+
+The worst failure was an ordinary commitment: “I will prepare 20 evaluation questions from public research papers by November 9, 2026.” The transcript and extracted evidence contained the deadline, but the task's calendar date was empty. I had to enter it manually. This matters because a researcher could trust the summary while their task never appears on the expected calendar day. The model recognizing the words was insufficient; the application had lost their operational meaning.
+
+I fixed explicit-date conversion, then discovered that “by November 20th” also failed without a year. Dates now use the recorded meeting day as context, including year rollover. I also corrected uploads that formatted an evening's local date as the next UTC day. The resulting 395 passing backend tests are regression evidence, not a measure of AI accuracy.
+
+I decided not to resolve “next Friday” automatically. Two reasonable interpretations can produce different weeks, so keeping it in review is more defensible than silently choosing one.
+
+Red-teaming changed the limitations I would put in the System Card: valid quotations do not guarantee correct dates or ownership; automatic approval depends on confirmed identity and duplicate checks; synthetic attack results do not prove production safety; and provider acceptance does not establish inbox receipt. The rehearsal made those distinctions concrete rather than theoretical.
+
 ## November 1-2 speaker storylines
 
 Will implemented per-speaker storylines. The initial schema, the meeting detail
@@ -775,3 +787,56 @@ the script establishes no new product acceptance or human judgment.
   and restoration passed. Removed the empty UI test fixture afterwards.
 - Security advisor reported no errors and two existing warnings concerning the
   transcript search trigger's search path and the vector extension schema.
+
+### November 7 - Task recovery, review handoff, and demo usability
+
+- Completed tasks gained native left-swipe Archive and Delete, Archived Tasks,
+  and Recently Deleted with 30-day Restore. Visibility is shared within projects.
+  Applied `20261107004147_completed_task_recovery`; 356 backend tests passed at
+  that checkpoint. Verified archive, deletion, and restoration in the simulator.
+- Return for review preserves the task and meeting evidence, requires a reason,
+  cancels queued mail, and requires manual reapproval. Optional change notes and
+  View changes expose the existing audit history. All 359 tests passed; a
+  temporary UI fixture verified the handoff and note history before cleanup.
+- Renamed the visible app to LabSync. Signed simulator builds passed. Opened
+  Gmail in simulator Safari for Bryan's own sign-in; authentication and inbox
+  verification remained user-controlled. Simplified the research demo script
+  around explicit AI features, automatic follow-through, and a short dry run.
+- Session stream rows gained left-swipe Archive and Delete, Active/Archived/
+  Recently Deleted filtering, and 30-day recovery. Delete hides linked tasks and
+  search sources and cancels queued mail. Applied `20261108003016_session_recovery`.
+  All 361 tests passed. Replaced plain NavigationLink tap handling after physical
+  drags incorrectly opened details; verified the actual swipe reveals both buttons.
+  Restored the original demo sessions after recovery tests.
+- Reproduced a false Connection lost banner during tab switching. URLSession
+  cancellation (-999) is now normalized; cancelled or superseded task refreshes
+  cannot prune the cache. Verified the same navigation sequence without the
+  warning. Six direct cancellation-classification checks and the signed build
+  passed. Added XCTest regression cases, but the existing scheme has no test action.
+- Reproduced a quoted full deadline being saved only as raw text. Added explicit
+  calendar-date conversion and evidence checks for dated automatic approval.
+  All 383 tests passed. A temporary simulator candidate showed Due Nov 9 before
+  any edit; removed that fixture afterwards and preserved existing manual dates.
+- The earlier recovery security checks found no errors and two pre-existing
+  warnings: transcript trigger search path and the vector extension's public schema.
+
+### November 7 - Resolve deadlines from the recorded meeting date
+
+- Located Bryan's Next lab check-in task with quoted `by November 20th` and no
+  calendar date. Deadline resolution now accepts a stored meeting date: yearless
+  English month/day dates use the next occurrence on or after that meeting day,
+  including year rollover and leap days. Today, tomorrow, and the day after
+  tomorrow anchor to the same recorded day. Ambiguous numeric dates and weekday
+  expressions remain in review. Automatic approval policy v4 uses this context.
+- Audio upload now uses LabSyncDate's selected local calendar day instead of UTC
+  ISO formatting, which had shifted evening recordings into the following day.
+- All 395 Python tests, lint, formatting, whitespace checks and signed simulator
+  build passed. Tests cover recorded-date anchoring, year rollover, leap days,
+  upload-to-calendar behavior, automatic approval and captured email.
+- Filled the existing November 20 task from its recorded meeting date, recorded
+  the resolution note, and reran normal approval checks. It automatically approved
+  and its email reached provider-accepted `sent` state. Inbox receipt was not
+  independently verified. No user-entered date was overwritten.
+- Installed the signed build and restarted the idle backend. A final visual check
+  was blocked because the Mac was locked; database state and test evidence above
+  were verified independently.

@@ -7,10 +7,7 @@ simulate research progress, with the actual recording dates shown in the app.
 
 ## The user story
 
-> I'm Bryan, a researcher studying whether retrieval helps an AI assistant
-> answer questions accurately. Across lab meetings, I need to remember the
-> experiment plan, follow through on my commitments and recover why we made
-> a particular research decision.
+> I'm Bryan, and for today, I want to be a researcher studying whether retrieval helps an AI assistant answer questions accurately. Across lab meetings, I need to remember the experiment plan, follow through on my commitments and recover why we made a particular research decision.
 
 ## Get ready
 
@@ -25,7 +22,10 @@ simulate research progress, with the actual recording dates shown in the app.
    Open **Review speaker names**, connect your speaker label to your Bryan
    member account, and tap **Confirm name**. Check that the clear task is
    automatically approved and its email arrives at **bryandyang@gmail.com**.
-4. Keep that first task and email ready to show. Have Gmail open beside Device Hub.
+4. In the simulator's **Safari**, open **mail.google.com** and sign in to
+   **bryandyang@gmail.com** before recording. Keep the first task email ready.
+   Switch between **LabSync** and **Safari** on the virtual iPhone to show the
+   app and its real inbox email in the same recording.
 
 Use **+**, enter the meeting name, confirm recording permission, then tap
 **Record Audio > Start Recording**. When finished, tap **Stop Recording >
@@ -38,7 +38,7 @@ Name it **Lab planning** and read this paragraph.
 > We're studying whether retrieval helps an AI research assistant answer
 > questions accurately. We decided to keep the same model and the same questions
 > across conditions so the comparison is fair. I'm Bryan Yang. I will prepare
-> twenty evaluation questions from public research papers.
+> twenty evaluation questions from public research papers by Nov (x)th.
 
 ## 1. Tell the audience what you need
 
@@ -131,7 +131,7 @@ Say aloud
 > I mark the question preparation complete. My next action is running the
 > experiment, and that new commitment has its own follow-up email.
 
-Switch to Gmail and open the baseline-experiment email. Show the task and quote.
+Switch to **Safari > Gmail** on the virtual iPhone and open the baseline-experiment email. Show the task and quote.
 If it is still arriving, do the chat step and return to Gmail before closing.
 
 Optional video label **Completed preparation → next experiment → email follow-through**

@@ -35,6 +35,18 @@ class ProjectCleanup:
 
     def run_once(self):
         with self.pool.connection() as conn:
+            conn.execute(
+                "DELETE FROM tasks WHERE deleted_at <= now() - interval '30 days'"
+            )
+        with self.pool.connection() as conn:
+            expired_sessions = conn.execute(
+                "SELECT id FROM meetings WHERE deleted_at <= now() - interval '30 "
+                "days' FOR UPDATE"
+            ).fetchall()
+            for session in expired_sessions:
+                conn.execute("DELETE FROM tasks WHERE meeting_id=%s", (session["id"],))
+                conn.execute("DELETE FROM meetings WHERE id=%s", (session["id"],))
+        with self.pool.connection() as conn:
             expired = conn.execute(
                 "SELECT id FROM projects WHERE deleted_at <= now() - interval '30 days'"
             ).fetchall()

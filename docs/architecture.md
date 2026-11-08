@@ -107,6 +107,11 @@ in order or inspect a migrated disposable database when reviewing the data model
 6. Shared audio is private. The backend checks membership before producing a
    short-lived signed audio URL. Privileged storage credentials stay server-side.
 
+Task refresh treats URLSession cancellation as cancellation rather than a
+connection failure. It only applies a complete response for the latest requested
+project scope; cancelled or superseded refreshes do not prune the cache. Initial
+loading stays distinct from an empty accepted-task list.
+
 Cloudflare exposes the API; it does not replace application authentication.
 Owners can move a project into Recently Deleted for 30 days. Content remains
 in PostgreSQL, while normal project, meeting, task, invitation and chat access
@@ -114,6 +119,30 @@ excludes deleted projects. Deletion cancels queued task emails and waits for any
 in-flight delivery before completing. Restore preserves each member's archive
 preference, which is stored in `project_members.archived_at`. Non-owners leave a
 project through the existing membership removal path.
+
+Accepted meeting tasks offer Return for review with a required reason. This
+preserves the task identity and meeting evidence, resets it to pending/open,
+cancels queued follow-up mail, and excludes it from automatic approval from then
+on. A person must approve it again through the meeting's Tasks review cards.
+Edits and review edits accept optional change notes stored with the actor and
+time in the existing task audit log. View changes exposes that history, and a
+returned review card shows the latest return reason.
+
+Completed tasks support left-swipe Archive and Delete. The Tasks filter menu
+opens Archived Tasks and Recently Deleted. Task visibility is shared within its
+project. Archive keeps completion intact. Delete retains the task for 30 days,
+and Restore preserves its prior completion and archive state. Ordinary lifecycle
+mutations cannot reopen a deleted task. The same daily cleanup expires deleted
+tasks. Existing removal of open tasks through lifecycle `dropped` is separate.
+
+Session stream rows support left-swipe Archive and Delete. The session filter
+opens Active, Archived, and Recently Deleted. Session visibility applies to the
+whole project. Archive only hides the row from the active stream; tasks and Chat
+search remain available. Delete retains all session content for 30 days, hides
+its tasks and Chat sources, and cancels queued emails after waiting for in-flight
+delivery. Restore keeps the previous archive state and does not resend cancelled
+emails. Processing sessions cannot be moved. Expiry removes linked tasks and
+recordings through the existing durable recording cleanup queues.
 
 `project_cleanup.ProjectCleanup` runs at backend startup and daily, permanently
 removing expired projects. Restoration is blocked at the 30-day deadline even
@@ -219,6 +248,15 @@ flowchart TD
 - Reconciliation is a reviewed update to an existing task, not a new accepted
   copy. Similarity suggests a relationship but does not authorize a deadline
   change or completion. Completion-only proposal extraction is still unfinished.
+- `deadlines.explicit_deadline` converts quoted calendar dates with an explicit
+  year (ISO, English month/day/year, or day/month/year) into the task's date when
+  pipeline results are saved. Yearless month/day dates use the next occurrence
+  on or after the stored meeting day, including year rollover. Today, tomorrow,
+  and the day after tomorrow also anchor to that meeting day. Uploads preserve
+  the selected local calendar day instead of formatting it in UTC. Ambiguous
+  numeric dates and weekday expressions remain unresolved. Automatic approval permits
+  a date only when it exactly matches that conversion and the original deadline
+  text is present in cited evidence; manual-only or mismatched dates stay pending.
 - `api/meetings.confirm_speaker` can evaluate automatic approval after confirming
   a speaker/account. Saving project automation settings can also evaluate existing
   completed-meeting candidates. It is not a calibrated model-confidence score.
@@ -302,7 +340,7 @@ explicit text-only fixtures are handled separately.
 | Extraction/indexing fails | Provider CLI/API credentials, contract/evidence failure, embedding key/model | `providers.py`, `extraction.py`, `embeddings.py` |
 | Speaker stays anonymous | Diarization is not identity; inspect voice-match metadata and explicit reviews | `voice.py`, `speaker_names.py`, `api/meetings.py` |
 | Calendar empty | Is task approved and dated? Check To-do for undated accepted work | `api/tasks.py`, `TaskSync.swift` |
-| Due date absent/wrong | Raw deadline text, selected meeting date, manual edit; automatic relative resolution is unfinished | `extraction.py`, task edit sheets |
+| Due date absent/wrong | Raw deadline text, explicit calendar conversion, manual edit; ambiguous weekday resolution remains unfinished | `deadlines.py`, `extraction.py`, task edit sheets |
 | Chat refuses or cites wrong material | Project/meeting scope, chunks, ranked sources, prompt, quote support | `db/rag.py`, `chat.py`, `api/chat.py` |
 | Task not auto-approved | Project flag, current identity mapping, source wording, deadline, duplicates, embeddings | `followup.auto_approve` |
 | No email in real inbox | Capture versus live mode, project setting, assignee, opt-out, queue state, provider ID/error | `api/followup.py`, `followup.py` |

@@ -52,7 +52,7 @@ struct MeetingAPIClient {
         body.appendFormField(name: "project_id", value: projectID, boundary: boundary)
         body.appendFormField(
             name: "meeting_date",
-            value: date.formatted(.iso8601.year().month().day()),
+            value: LabSyncDate.string(from: date),
             boundary: boundary
         )
         body.appendFormField(name: "consent_confirmed", value: "true", boundary: boundary)
@@ -84,10 +84,23 @@ struct MeetingAPIClient {
     }
 
     func meetings(projectID: String) async throws -> [RemoteMeetingCard] {
-        let request = URLRequest(
-            url: baseURL.appending(path: "api/v1/projects/\(projectID)/meetings")
-        )
-        return try await send(request)
+        var result: [RemoteMeetingCard] = []
+        while true {
+            let url = baseURL.appending(path: "api/v1/projects/\(projectID)/meetings")
+                .appending(queryItems: [URLQueryItem(name: "limit", value: "100"),
+                                       URLQueryItem(name: "offset", value: String(result.count))])
+            let page: [RemoteMeetingCard] = try await send(URLRequest(url: url))
+            result.append(contentsOf: page)
+            if page.count < 100 { return result }
+        }
+    }
+
+    func setSessionVisibility(_ id: String, action: String) async throws {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/meetings/\(id)/visibility"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: ["action": action])
+        let _: RemoteSessionVisibility = try await send(request)
     }
 
     func meeting(id: String) async throws -> RemoteMeeting {
@@ -140,6 +153,14 @@ struct MeetingAPIClient {
         for try await line in bytes.lines where line.hasPrefix("data:") {
             await onChange()
         }
+    }
+
+    func changeTaskVisibility(id: String, action: String) async throws -> TaskMutationResponse {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/visibility"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["action": action])
+        return try await send(request)
     }
 
     func deleteProject(_ projectID: String) async throws {
@@ -274,7 +295,8 @@ struct MeetingAPIClient {
         action: String,
         title: String? = nil,
         dueDate: Date? = nil,
-        assignee: AssigneeChoice?? = nil
+        assignee: AssigneeChoice?? = nil,
+        changeNote: String? = nil
     ) async throws -> TaskMutationResponse {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/review"))
         request.httpMethod = "PATCH"
@@ -284,18 +306,32 @@ struct MeetingAPIClient {
                 action: action,
                 title: title,
                 dueDate: dueDate.map(LabSyncDate.string(from:)),
-                assignee: assignee
+                assignee: assignee,
+                changeNote: changeNote
             )
         )
         return try await send(request)
     }
 
     /// Edits an approved task. nil assignee unassigns it.
+    func returnTaskForReview(id: String, note: String) async throws -> TaskMutationResponse {
+        var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/return-for-review"))
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["note": note])
+        return try await send(request)
+    }
+
+    func taskChanges(id: String) async throws -> [RemoteTaskChange] {
+        try await send(URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)/changes")))
+    }
+
     func editTask(
         id: String,
         title: String,
         dueDate: Date?,
-        assignee: AssigneeChoice?
+        assignee: AssigneeChoice?,
+        changeNote: String? = nil
     ) async throws -> TaskMutationResponse {
         var request = URLRequest(url: baseURL.appending(path: "api/v1/tasks/\(id)"))
         request.httpMethod = "PATCH"
@@ -304,7 +340,8 @@ struct MeetingAPIClient {
             TaskEditBody(
                 title: title,
                 dueDate: dueDate.map(LabSyncDate.string(from:)),
-                assignee: assignee
+                assignee: assignee,
+                changeNote: changeNote
             )
         )
         return try await send(request)
@@ -532,7 +569,17 @@ struct MeetingAPIClient {
         var request = request
         let token = try await accessToken()
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        let (data, response) = try await session.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            if Task.isCancelled || MeetingAPIError.isCancellation(error) {
+                throw CancellationError()
+            }
+            throw error
+        }
+        try Task.checkCancellation()
         guard let response = response as? HTTPURLResponse else {
             throw MeetingAPIError.invalidResponse
         }
@@ -581,6 +628,13 @@ struct MeetingAPIClient {
 }
 
 enum MeetingAPIError: LocalizedError {
+    /// URLSession reports Swift task cancellation as NSURLErrorCancelled.
+    static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        let error = error as NSError
+        return error.domain == NSURLErrorDomain && error.code == NSURLErrorCancelled
+    }
+
     case invalidResponse
     /// The backend returned 401 and the app has already signed out locally.
     case sessionEnded
@@ -602,17 +656,23 @@ enum MeetingAPIError: LocalizedError {
     }
 }
 
+struct RemoteSessionVisibility: Decodable { let id: String }
+
 struct RemoteMeetingCard: Decodable {
     let id: String
     let name: String
     let meetingDate: String
     let status: String
     let sourceKind: String?
+    let archivedAt: String?
+    let deletedAt: String?
 
     enum CodingKeys: String, CodingKey {
         case id, name, status
         case meetingDate = "meeting_date"
         case sourceKind = "source_kind"
+        case archivedAt = "archived_at"
+        case deletedAt = "deleted_at"
     }
 }
 
@@ -821,6 +881,8 @@ struct RemoteEvidence: Decodable {
 }
 
 struct RemoteTask: Decodable {
+    let archivedAt: String?
+    let deletedAt: String?
     let updatedAt: String?
     let id: String
     let projectID: String
@@ -839,6 +901,8 @@ struct RemoteTask: Decodable {
     let timestampMilliseconds: Int?
 
     enum CodingKeys: String, CodingKey {
+        case archivedAt = "archived_at"
+        case deletedAt = "deleted_at"
         case updatedAt = "updated_at"
         case id, title, quote
         case projectID = "project_id"
@@ -877,6 +941,7 @@ struct EventKitPayload: Decodable {
 }
 
 struct RemoteStoredTask: Decodable {
+    let returnNote: String?
     let id: String
     let title: String
     let ownerLabel: String?
@@ -889,6 +954,7 @@ struct RemoteStoredTask: Decodable {
     let matchesTask: RemoteTaskMatch?
 
     enum CodingKeys: String, CodingKey {
+        case returnNote = "return_note"
         case id, title, evidence
         case ownerLabel = "owner_label"
         case assigneeUserID = "assignee_user_id"
@@ -1083,9 +1149,11 @@ private struct ReviewBody: Encodable {
     let dueDate: String?
     /// nil leaves the stored assignee alone; .some(nil) unassigns.
     let assignee: AssigneeChoice??
+    let changeNote: String?
 
     enum CodingKeys: String, CodingKey {
         case action, title
+        case changeNote = "change_note"
         case dueDate = "due_date"
         case assigneeUserID = "assignee_user_id"
         case ownerLabel = "owner_label"
@@ -1093,6 +1161,7 @@ private struct ReviewBody: Encodable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(changeNote, forKey: .changeNote)
         try container.encode(action, forKey: .action)
         try container.encodeIfPresent(title, forKey: .title)
         // Null clears the due date. Omitting the key would leave the stored date in place.
@@ -1109,9 +1178,11 @@ private struct TaskEditBody: Encodable {
     let title: String
     let dueDate: String?
     let assignee: AssigneeChoice?
+    let changeNote: String?
 
     enum CodingKeys: String, CodingKey {
         case title
+        case changeNote = "change_note"
         case dueDate = "due_date"
         case assigneeUserID = "assignee_user_id"
         case ownerLabel = "owner_label"
@@ -1119,6 +1190,7 @@ private struct TaskEditBody: Encodable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(changeNote, forKey: .changeNote)
         try container.encode(title, forKey: .title)
         try container.encode(dueDate, forKey: .dueDate)
         // Always sent, so a nil assignee unassigns the task.
@@ -1244,6 +1316,32 @@ struct RemoteFollowupEmail: Decodable, Identifiable {
         case "cancelled": "Cancelled"
         case "failed": "Needs attention"
         default: "Queued"
+        }
+    }
+}
+
+
+struct RemoteTaskChange: Decodable, Identifiable {
+    let id: String
+    let action: String
+    let note: String?
+    let actorName: String?
+    let createdAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, action, note
+        case actorName = "actor_name"
+        case createdAt = "created_at"
+    }
+
+    var title: String {
+        switch action {
+        case "RETURN_FOR_REVIEW": "Returned for review"
+        case "DETAILS_EDIT": "Task updated"
+        case "REVIEW_APPROVE": "Approved"
+        case "REVIEW_EDIT": "Review updated"
+        case "AUTO_APPROVE": "Automatically approved"
+        default: "Task changed"
         }
     }
 }

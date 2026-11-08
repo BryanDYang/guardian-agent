@@ -14,6 +14,7 @@ struct EditCandidateTaskSheet: View {
     @State private var dueDate: Date
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var changeNote = ""
 
     init(candidate: CandidateTask, meeting: Meeting) {
         self.candidate = candidate
@@ -35,6 +36,10 @@ struct EditCandidateTaskSheet: View {
                         .lineLimit(2...6)
                 }
 
+                Section("Change note (optional)") {
+                    TextField("Why is this changing?", text: $changeNote, axis: .vertical)
+                        .lineLimit(2...5)
+                }
                 Section("Assignee") {
                     AssigneePicker(
                         selection: $assignee,
@@ -114,7 +119,8 @@ struct EditCandidateTaskSheet: View {
                     action: "edit",
                     title: trimmedDescription,
                     dueDate: hasDueDate ? dueDate : nil,
-                    assignee: .some(assignee)
+                    assignee: .some(assignee),
+                    changeNote: changeNote.trimmingCharacters(in: .whitespacesAndNewlines)
                 )
                 candidate.taskDescription = response.task.title
                 candidate.dueDate = response.task.dueDate.flatMap(LabSyncDate.day(from:))

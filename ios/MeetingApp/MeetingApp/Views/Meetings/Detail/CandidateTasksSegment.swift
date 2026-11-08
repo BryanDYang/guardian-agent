@@ -17,6 +17,7 @@ struct CandidateTasksSegment: View {
     @Query private var meetings: [Meeting]
 
     @State private var reconcilingCandidate: CandidateTask?
+    @State private var historyCandidate: CandidateTask?
     @State private var editingCandidate: CandidateTask?
     @State private var workingID: String?
     @State private var actionError: String?
@@ -69,6 +70,9 @@ struct CandidateTasksSegment: View {
                 } catch { actionError = error.localizedDescription }
             }
         }
+        .sheet(item: $historyCandidate) { candidate in
+            TaskChangesSheet(taskID: candidate.id)
+        }
         .sheet(item: $editingCandidate) { candidate in
             EditCandidateTaskSheet(candidate: candidate, meeting: meeting)
         }
@@ -80,6 +84,18 @@ struct CandidateTasksSegment: View {
 
     private func card(for candidate: CandidateTask) -> some View {
         VStack(alignment: .leading, spacing: 16) {
+            if let note = candidate.returnNote {
+                VStack(alignment: .leading, spacing: 6) {
+                    Label("Returned for review", systemImage: "arrow.uturn.backward")
+                        .font(.subheadline.weight(.semibold))
+                    Text(note).font(.subheadline)
+                    Button("View changes") { historyCandidate = candidate }
+                        .font(.caption)
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.1), in: RoundedRectangle(cornerRadius: 8))
+            }
             if let matchedTitle = matchedTitle(of: candidate) {
                 HStack(alignment: .top, spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")

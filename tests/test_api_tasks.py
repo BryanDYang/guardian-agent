@@ -408,3 +408,129 @@ def test_edit_audit_preserves_old_deadline_and_blocks_unsafe_undo(client, seeded
     assert (
         client.post(f"/api/v1/tasks/revert/{audit['revert_token']}").status_code == 409
     )
+
+
+def test_completed_task_archive_delete_and_restore(client, seeded):
+    task_id = seeded["Share the recording"]
+    url = f"/api/v1/tasks/{task_id}"
+    visibility = url + "/visibility"
+    assert client.post(visibility, json={"action": "archive"}).status_code == 409
+    approve(client, task_id)
+    assert client.post(visibility, json={"action": "delete"}).status_code == 409
+    assert client.post(url + "/state", json={"state": "done"}).status_code == 200
+    assert (
+        client.post(
+            visibility, json={"action": "archive"}, headers=seeded["outsider"]
+        ).status_code
+        == 404
+    )
+    archived = client.post(visibility, json={"action": "archive"}).json()["task"]
+    assert archived["archived_at"] and archived["lifecycle_status"] == "done"
+    deleted = client.post(visibility, json={"action": "delete"}).json()["task"]
+    assert deleted["deleted_at"] and deleted["archived_at"] == archived["archived_at"]
+    assert client.post(url + "/state", json={"state": "open"}).status_code == 404
+    assert (
+        client.post(
+            visibility, json={"action": "restore"}, headers=seeded["outsider"]
+        ).status_code
+        == 404
+    )
+    restored = client.post(visibility, json={"action": "restore"}).json()["task"]
+    assert restored["deleted_at"] is None and restored["lifecycle_status"] == "done"
+    assert restored["archived_at"] == archived["archived_at"]
+    unarchived = client.post(visibility, json={"action": "unarchive"}).json()["task"]
+    assert unarchived["archived_at"] is None
+    assert unarchived["lifecycle_status"] == "done"
+
+
+def test_task_recovery_expires_and_cleanup_removes_it(client, seeded, tmp_path):
+    from labsync.project_cleanup import ProjectCleanup
+
+    task_id = seeded["Share the recording"]
+    approve(client, task_id)
+    url = f"/api/v1/tasks/{task_id}"
+    client.post(url + "/state", json={"state": "done"})
+    assert (
+        client.post(url + "/visibility", json={"action": "delete"}).status_code == 200
+    )
+    with psycopg.connect(DATABASE_URL) as conn:
+        conn.execute(
+            "UPDATE tasks SET deleted_at=now()-interval '30 days' WHERE id=%s",
+            (task_id,),
+        )
+    assert (
+        client.post(url + "/visibility", json={"action": "restore"}).status_code == 410
+    )
+    ProjectCleanup(
+        client.app.state.pool, tmp_path, client.app.state.project_events
+    ).run_once()
+    with psycopg.connect(DATABASE_URL) as conn:
+        assert (
+            conn.execute("SELECT id FROM tasks WHERE id=%s", (task_id,)).fetchone()
+            is None
+        )
+
+
+def test_return_for_review_keeps_source_and_records_note(client, seeded):
+    task_id = seeded["Share the recording"]
+    url = f"/api/v1/tasks/{task_id}"
+    approve(client, task_id)
+    assert (
+        client.post(
+            url + "/return-for-review",
+            json={"note": "Changed in Slack"},
+            headers=seeded["outsider"],
+        ).status_code
+        == 404
+    )
+    assert (
+        client.post(url + "/return-for-review", json={"note": "   "}).status_code == 400
+    )
+    returned = client.post(
+        url + "/return-for-review",
+        json={"note": "Owner changed after our Slack discussion."},
+    )
+    assert returned.status_code == 200
+    task = returned.json()["task"]
+    assert task["review_status"] == "pending"
+    assert task["lifecycle_status"] == "open"
+    assert task["quote"]
+    assert task["meeting_id"]
+    assert task_id not in [
+        t["id"]
+        for t in client.get(
+            "/api/v1/tasks/accepted", params={"project_id": seeded["project_id"]}
+        ).json()
+    ]
+    detail = client.get(f"/api/v1/meetings/{task['meeting_id']}").json()
+    candidate = next(t for t in detail["tasks"] if t["id"] == task_id)
+    assert candidate["return_note"] == "Owner changed after our Slack discussion."
+    changes = client.get(url + "/changes").json()
+    assert changes[0]["action"] == "RETURN_FOR_REVIEW"
+    assert changes[0]["note"] == candidate["return_note"]
+    assert changes[0]["actor_name"] == "Member"
+    assert client.get(url + "/changes", headers=seeded["outsider"]).status_code == 404
+    assert (
+        client.post(url + "/return-for-review", json={"note": "Again"}).status_code
+        == 409
+    )
+    approved = review(client, task_id, action="approve").json()["task"]
+    assert approved["id"] == task_id and approved["review_status"] == "approved"
+
+
+def test_task_edits_preserve_change_notes(client, seeded):
+    task_id = seeded["Share the recording"]
+    approve(client, task_id)
+    url = f"/api/v1/tasks/{task_id}"
+    changed = client.patch(
+        url,
+        json={
+            "title": "Share the research recording",
+            "change_note": "Updated wording after email discussion.",
+        },
+    )
+    assert changed.status_code == 200
+    history = client.get(url + "/changes").json()
+    assert history[0]["note"] == "Updated wording after email discussion."
+    assert history[0]["action"] == "DETAILS_EDIT"
+    assert history[0]["actor_name"] == "Member"

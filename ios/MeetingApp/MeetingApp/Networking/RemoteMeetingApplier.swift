@@ -154,6 +154,7 @@ enum RemoteMeetingApplier {
             )
             context.insert(candidate)
             candidate.meeting = meeting
+            candidate.returnNote = task.returnNote
             candidate.assigneeUserID = task.assigneeUserID
             candidate.assigneeName = task.assigneeName
             if task.assigneeUserID == nil {

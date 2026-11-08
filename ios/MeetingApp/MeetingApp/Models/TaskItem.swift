@@ -24,6 +24,8 @@ final class TaskItem {
     /// Persists TasksView's `completedTaskIds` set. Separate from `state`, as in the TS,
     /// so Undo restores the original state.
     var isCompleted: Bool = false
+    var archivedAt: Date? = nil
+    var deletedAt: Date? = nil
     /// Raw diarizer owner when the task has no linked attendee yet.
     var ownerLabel: String = ""
     /// Project member the task is assigned to, from the server. Wins over ownerLabel.

@@ -18,6 +18,8 @@ enum TaskSync {
             task.revertToken = nil
             task.serverUpdatedAt = revision
         }
+        task.archivedAt = RemoteProject.timestamp(remote.archivedAt)
+        task.deletedAt = RemoteProject.timestamp(remote.deletedAt)
         task.title = remote.title
         task.dueDate = remote.dueDate.flatMap(LabSyncDate.day(from:))
         // The server decides the assignee. The local speaker below only adds an avatar.

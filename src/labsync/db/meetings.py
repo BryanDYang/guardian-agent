@@ -6,6 +6,7 @@ from uuid import UUID
 from psycopg import Connection
 from psycopg.types.json import Jsonb
 
+from ..deadlines import explicit_deadline
 from ..extraction import Evidence, Extraction, Transcript
 
 # A pending task matches an open task when their title embeddings are at
@@ -28,10 +29,11 @@ def list_meetings(
     return conn.execute(
         """
         SELECT id, project_id, name, meeting_date, status, duration_seconds,
-               audio_file_path, created_at,
+               audio_file_path, created_at, archived_at, deleted_at,
                model_metadata->'transcription'->>'input_kind' AS source_kind
         FROM meetings
         WHERE project_id = %s
+          AND (deleted_at IS NULL OR deleted_at > now() - interval '30 days')
         ORDER BY meeting_date DESC, created_at DESC
         LIMIT %s OFFSET %s
         """,
@@ -87,6 +89,9 @@ def get_meeting_detail(conn: Connection, meeting_id: UUID) -> dict | None:
                (SELECT p.display_name FROM profiles p
                 WHERE p.id = t.assignee_user_id) AS assignee_name,
                t.due_date, t.due_date_text, t.review_status, t.category,
+               (SELECT a.new_value->>'note' FROM task_audit_log a
+                WHERE a.task_id=t.id AND a.action='RETURN_FOR_REVIEW'
+                ORDER BY a.created_at DESC LIMIT 1) AS return_note,
                match.id AS match_id, match.title AS match_title
         FROM tasks t
         LEFT JOIN LATERAL (
@@ -197,7 +202,8 @@ def save_results(
     names, and its evidence must already have passed Extraction.check_evidence.
     """
     row = conn.execute(
-        "SELECT project_id, model_metadata FROM meetings WHERE id = %s", (meeting_id,)
+        "SELECT project_id, model_metadata, meeting_date FROM meetings WHERE id = %s",
+        (meeting_id,),
     )
     meeting = row.fetchone()
     if meeting is None:
@@ -321,8 +327,8 @@ def save_results(
         task_id = conn.execute(
             """
             INSERT INTO tasks (project_id, meeting_id, owner_label, assignee_user_id,
-                               title, due_date_text, category)
-            VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+                               title, due_date_text, due_date, category)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
             """,
             (
                 meeting["project_id"],
@@ -331,6 +337,7 @@ def save_results(
                 assignee,
                 title,
                 due_date_text,
+                explicit_deadline(due_date_text, meeting["meeting_date"]),
                 category,
             ),
         ).fetchone()["id"]

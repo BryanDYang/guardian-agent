@@ -1,7 +1,7 @@
 """/api/v1 meeting reads. The upload route lives in server.py (see phase 2)."""
 
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -180,3 +180,66 @@ def confirm_speaker(
 
     approved = auto_approve(conn, meeting_id)
     return {"label": label, **review, "auto_approved_tasks": approved}
+
+
+class SessionVisibility(BaseModel):
+    action: Literal["archive", "unarchive", "delete", "restore"]
+
+
+@router.post("/meetings/{meeting_id}/visibility")
+def session_visibility(
+    meeting_id: UUID, body: SessionVisibility, user: User, conn: Conn
+) -> dict:
+    from ..db import projects
+
+    source = conn.execute(
+        "SELECT project_id FROM meetings WHERE id=%s", (meeting_id,)
+    ).fetchone()
+    if not source:
+        raise HTTPException(404, "Session not found")
+    require_member(conn, user, source["project_id"])
+    # Serialize deletion with email delivery and processing claims.
+    projects.lock_delivery(conn, source["project_id"])
+    conn.execute(
+        "SELECT id FROM projects WHERE id=%s FOR UPDATE", (source["project_id"],)
+    )
+    meeting = conn.execute(
+        "SELECT *, deleted_at <= now() - interval '30 days' AS expired "
+        "FROM meetings WHERE id=%s FOR UPDATE",
+        (meeting_id,),
+    ).fetchone()
+    if body.action == "restore":
+        if meeting["expired"]:
+            raise HTTPException(410, "The 30-day recovery period has ended")
+        conn.execute(
+            "UPDATE meetings SET deleted_at=NULL,updated_at=now() WHERE id=%s",
+            (meeting_id,),
+        )
+    else:
+        if meeting["deleted_at"]:
+            raise HTTPException(404, "Session is in Recently Deleted")
+        if meeting["status"] not in ("completed", "failed"):
+            raise HTTPException(
+                409, "Wait for processing to finish before moving this session"
+            )
+        if body.action == "delete":
+            conn.execute(
+                "UPDATE meetings SET deleted_at=now(),updated_at=now() WHERE id=%s",
+                (meeting_id,),
+            )
+            conn.execute(
+                "UPDATE task_followup_emails SET state='cancelled',updated_at=now(),"
+                "last_error='Source session deleted' WHERE task_id IN "
+                "(SELECT id FROM tasks WHERE meeting_id=%s) AND state IN "
+                "('queued','sending')",
+                (meeting_id,),
+            )
+        else:
+            conn.execute(
+                "UPDATE meetings SET archived_at=CASE WHEN %s THEN now() ELSE NULL END,"
+                "updated_at=now() WHERE id=%s",
+                (body.action == "archive", meeting_id),
+            )
+    return conn.execute(
+        "SELECT id,archived_at,deleted_at FROM meetings WHERE id=%s", (meeting_id,)
+    ).fetchone()

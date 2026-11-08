@@ -42,7 +42,7 @@ struct ChatView: View {
 
     private var searchableMeetings: [Meeting] {
         (selectedProject?.meetings ?? [])
-            .filter { isServerID($0.id) && $0.processingStatus == "completed" }
+            .filter { $0.deletedAt == nil && isServerID($0.id) && $0.processingStatus == "completed" }
             .sorted { $0.date > $1.date }
     }
 
@@ -177,7 +177,7 @@ struct ChatView: View {
                     }
                 }
                 .disabled(selectedProject == nil)
-                ForEach((selectedProject?.meetings ?? []).filter { isServerID($0.id) }
+                ForEach((selectedProject?.meetings ?? []).filter { $0.deletedAt == nil && isServerID($0.id) }
                     .sorted { $0.date > $1.date }) { meeting in
                     Button {
                         guard meeting.processingStatus == "completed" else { return }
@@ -300,7 +300,7 @@ struct ChatView: View {
             meetingsError = nil
             if let selectedMeetingID,
                !project.meetings.contains(where: {
-                   $0.id == selectedMeetingID && $0.processingStatus == "completed"
+                   $0.deletedAt == nil && $0.id == selectedMeetingID && $0.processingStatus == "completed"
                }) {
                 self.selectedMeetingID = nil
                 newChat()

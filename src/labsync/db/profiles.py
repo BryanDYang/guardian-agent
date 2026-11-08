@@ -56,6 +56,8 @@ def task_summary(conn: Connection, user_id: UUID) -> dict:
         JOIN projects p ON p.id=t.project_id
         WHERE t.assignee_user_id = %s AND t.review_status = 'approved'
             AND p.deleted_at IS NULL
+            AND NOT EXISTS (SELECT 1 FROM meetings m
+                WHERE m.id=t.meeting_id AND m.deleted_at IS NOT NULL)
         """,
         (user_id, user_id),
     ).fetchone()

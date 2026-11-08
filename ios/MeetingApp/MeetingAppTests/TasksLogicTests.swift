@@ -24,6 +24,17 @@ final class TasksLogicTests: XCTestCase {
         try context.fetch(FetchDescriptor<TaskItem>(sortBy: [SortDescriptor(\.id)]))
     }
 
+    func testRequestCancellationIsNotAConnectionFailure() {
+        XCTAssertTrue(MeetingAPIError.isCancellation(CancellationError()))
+        XCTAssertTrue(MeetingAPIError.isCancellation(URLError(.cancelled)))
+        XCTAssertTrue(MeetingAPIError.isCancellation(
+            NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)))
+        XCTAssertFalse(MeetingAPIError.isCancellation(URLError(.notConnectedToInternet)))
+        XCTAssertFalse(MeetingAPIError.isCancellation(URLError(.timedOut)))
+        XCTAssertFalse(MeetingAPIError.isCancellation(
+            NSError(domain: NSCocoaErrorDomain, code: NSURLErrorCancelled)))
+    }
+
     // MARK: MonthGrid
 
     /// September 2026 has 30 days and starts on a Tuesday, so two blank cells lead.

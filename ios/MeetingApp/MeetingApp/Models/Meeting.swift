@@ -20,6 +20,8 @@ final class Meeting {
     var audioFileName: String?
     var processingStatus: String?
     var processingError: String?
+    var archivedAt: Date?
+    var deletedAt: Date?
 
     var isZoomSummary: Bool { audioFileName == "zoom-summary:no-audio" }
 

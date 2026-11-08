@@ -13,9 +13,10 @@ from uuid import uuid4
 from psycopg.types.json import Jsonb
 
 from .db import tasks
+from .deadlines import explicit_deadline
 
 logger = logging.getLogger(__name__)
-POLICY = "explicit-self-commitment-v2"
+POLICY = "explicit-self-commitment-v4"
 
 
 def delivery_mode():
@@ -35,12 +36,16 @@ def enqueue(conn, task, mode=None):
         "JOIN projects p ON p.id=pm.project_id "
         "WHERE p.id=%s AND pm.user_id=%s AND p.followup_email_enabled "
         "AND p.deleted_at IS NULL "
+        "AND NOT EXISTS (SELECT 1 FROM tasks st JOIN meetings sm ON "
+        "sm.id=st.meeting_id "
+        "WHERE st.id=%s AND sm.deleted_at IS NOT NULL) "
         "AND pm.followup_email_enabled ON CONFLICT DO NOTHING",
         (
             task["id"],
             mode or delivery_mode(),
             task["project_id"],
             task["assignee_user_id"],
+            task["id"],
         ),
     )
 
@@ -69,7 +74,7 @@ def auto_approve(conn, meeting_id):
     """
     meeting = conn.execute(
         "SELECT m.*,p.auto_approve_tasks FROM meetings m JOIN projects p "
-        "ON p.id=m.project_id WHERE m.id=%s FOR UPDATE OF p",
+        "ON p.id=m.project_id WHERE m.id=%s AND m.deleted_at IS NULL FOR UPDATE OF p",
         (meeting_id,),
     ).fetchone()
     if not meeting or not meeting["auto_approve_tasks"]:
@@ -81,17 +86,21 @@ def auto_approve(conn, meeting_id):
     reviews = (meeting["model_metadata"] or {}).get("speaker_name_reviews", {})
     candidates = conn.execute(
         "SELECT id FROM tasks WHERE meeting_id=%s AND review_status='pending' "
+        "AND NOT EXISTS (SELECT 1 FROM task_audit_log a WHERE a.task_id=tasks.id "
+        "AND a.action='RETURN_FOR_REVIEW') "
         "ORDER BY id FOR UPDATE",
         (meeting_id,),
     ).fetchall()
     approved = 0
     for row in candidates:
         task = tasks.lock_task(conn, row["id"])
-        if (
-            task["category"] != "commitment"
-            or not task["assignee_user_id"]
-            or task["due_date_text"]
-            or task["due_date"]
+        if task["category"] != "commitment" or not task["assignee_user_id"]:
+            continue
+        if (task["due_date_text"] or task["due_date"]) and (
+            not task["due_date_text"]
+            or explicit_deadline(task["due_date_text"], meeting["meeting_date"])
+            != task["due_date"]
+            or task["due_date"] is None
         ):
             continue
         # Require an actual current account mapping, not a guessed name.
@@ -116,6 +125,10 @@ def auto_approve(conn, meeting_id):
             "ON t.meeting_id=%s AND t.turn_key=e.turn_key WHERE e.task_id=%s",
             (meeting_id, task["id"]),
         ).fetchall()
+        if task["due_date_text"] and not any(
+            task["due_date_text"] in e["quote"] for e in evidence
+        ):
+            continue
         if not evidence or any(
             e["speaker_label"] not in labels
             or not explicit_self_commitment(e["content"], e["quote"])
@@ -272,7 +285,8 @@ class EmailWorker:
                 return False
             recipient = conn.execute(
                 "SELECT pr.email,pm.followup_email_enabled AS opted_in,"
-                "(p.followup_email_enabled AND p.deleted_at IS NULL) AS enabled,"
+                "(p.followup_email_enabled AND p.deleted_at IS NULL AND "
+                "m.deleted_at IS NULL) AS enabled,"
                 "m.name AS meeting_name, "
                 "m.model_metadata->'transcription'->>'input_kind' AS source_kind "
                 "FROM tasks t JOIN project_members pm ON pm.project_id=t.project_id "

@@ -75,7 +75,7 @@ struct InviteMembersSheet: View {
     }
 
     private func shareMessage(for invitation: RemoteInvitation) -> String {
-        "Join \(invitation.projectName) on Meeting Memory. Open this link on your iPhone, "
+        "Join \(invitation.projectName) on LabSync. Open this link on your iPhone, "
             + "or sign in as \(invitation.email) and go to Profile > Workspaces."
     }
 

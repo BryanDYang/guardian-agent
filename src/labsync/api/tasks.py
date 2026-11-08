@@ -25,6 +25,7 @@ class Review(BaseModel):
     """Fields left out keep their current value."""
 
     action: Literal["approve", "edit", "dismiss"]
+    change_note: str | None = Field(default=None, max_length=1000)
     title: Title | None = None
     due_date: date | None = None
     assignee_user_id: UUID | None = None
@@ -38,6 +39,7 @@ class TaskEdit(BaseModel):
     due_date: date | None = None
     assignee_user_id: UUID | None = None
     owner_label: SpeakerLabel | None = None
+    change_note: str | None = Field(default=None, max_length=1000)
 
 
 class Reconciliation(BaseModel):
@@ -128,7 +130,9 @@ def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
         due_date=due_date,
         approved_by=user.id if body.action == "approve" else None,
     )
-    tasks.audit_details(conn, previous, task, "REVIEW_" + body.action.upper(), user.id)
+    tasks.audit_details(
+        conn, previous, task, "REVIEW_" + body.action.upper(), user.id, body.change_note
+    )
     if body.action == "approve":
         followup.enqueue(conn, task)
     if body.action != "approve" or due_date is None:
@@ -157,7 +161,7 @@ def edit_task(task_id: UUID, body: TaskEdit, user: User, conn: Conn) -> dict:
             body.due_date if "due_date" in body.model_fields_set else task["due_date"]
         ),
     )
-    tasks.audit_details(conn, previous, task, "DETAILS_EDIT", user.id)
+    tasks.audit_details(conn, previous, task, "DETAILS_EDIT", user.id, body.change_note)
     followup.enqueue(conn, task)
     return {"task": task}
 
@@ -278,3 +282,111 @@ def revert(revert_token: UUID, user: User, conn: Conn) -> dict:
         user.id,
     )
     return {"task": task, "revert_token": token}
+
+
+class VisibilityChange(BaseModel):
+    action: Literal["archive", "unarchive", "delete", "restore"]
+
+
+@router.post("/{task_id}/visibility")
+def change_visibility(task_id: UUID, body: VisibilityChange, user: User, conn: Conn):
+    # Recovery needs access to a deleted task, while normal mutations exclude it.
+    source = conn.execute(
+        "SELECT project_id FROM tasks t WHERE id=%s AND NOT EXISTS "
+        "(SELECT 1 FROM meetings m WHERE m.id=t.meeting_id AND "
+        "m.deleted_at IS NOT NULL)",
+        (task_id,),
+    ).fetchone()
+    if not source:
+        raise HTTPException(404, "Task not found")
+    require_member(conn, user, source["project_id"])
+    task = locked(conn, task_id)
+    if task["review_status"] != "approved" or task["lifecycle_status"] != "done":
+        raise HTTPException(409, "Only completed tasks can be archived or deleted")
+    if body.action == "restore":
+        if task["deleted_at"] is None:
+            raise HTTPException(409, "Task is not in Recently Deleted")
+        if conn.execute(
+            "SELECT deleted_at <= now() - interval '30 days' AS expired "
+            "FROM tasks WHERE id=%s",
+            (task_id,),
+        ).fetchone()["expired"]:
+            raise HTTPException(410, "The 30-day recovery period has ended")
+        conn.execute(
+            "UPDATE tasks SET deleted_at=NULL,updated_at=now() WHERE id=%s", (task_id,)
+        )
+    elif task["deleted_at"] is not None:
+        if body.action != "delete":
+            raise HTTPException(409, "Restore the deleted task first")
+    elif body.action == "delete":
+        conn.execute(
+            "UPDATE tasks SET deleted_at=now(),updated_at=now() WHERE id=%s", (task_id,)
+        )
+    else:
+        conn.execute(
+            "UPDATE tasks SET archived_at=CASE WHEN %s THEN now() ELSE NULL END, "
+            "updated_at=now() WHERE id=%s",
+            (body.action == "archive", task_id),
+        )
+    return {"task": tasks.lock_task(conn, task_id)}
+
+
+class ReturnForReview(BaseModel):
+    note: str = Field(min_length=1, max_length=1000)
+
+
+@router.post("/{task_id}/return-for-review")
+def return_for_review(task_id: UUID, body: ReturnForReview, user: User, conn: Conn):
+    require_task(conn, user, task_id)
+    note = body.note.strip()
+    if not note:
+        raise HTTPException(400, "Explain why the task needs review")
+    source = conn.execute(
+        "SELECT project_id FROM tasks t WHERE id=%s AND NOT EXISTS "
+        "(SELECT 1 FROM meetings m WHERE m.id=t.meeting_id AND "
+        "m.deleted_at IS NOT NULL)",
+        (task_id,),
+    ).fetchone()
+    if not source:
+        raise HTTPException(404, "Task not found")
+    # Match the project-before-task locking order used by automatic approval.
+    from ..db import projects
+
+    projects.lock_delivery(conn, source["project_id"])
+    conn.execute(
+        "SELECT id FROM projects WHERE id=%s FOR UPDATE", (source["project_id"],)
+    )
+    previous = locked(conn, task_id)
+    if previous["deleted_at"] is not None:
+        raise HTTPException(404, "Task not found")
+    if previous["review_status"] != "approved" or not previous["meeting_id"]:
+        raise HTTPException(
+            409, "Only accepted meeting tasks can be returned for review"
+        )
+    conn.execute(
+        "UPDATE tasks SET review_status='pending',lifecycle_status='open',"
+        "approved_by=NULL,approved_at=NULL,archived_at=NULL,updated_at=now() "
+        "WHERE id=%s",
+        (task_id,),
+    )
+    task = tasks.lock_task(conn, task_id)
+    tasks.audit_details(conn, previous, task, "RETURN_FOR_REVIEW", user.id, note)
+    conn.execute(
+        "UPDATE task_followup_emails SET state='cancelled',updated_at=now(),"
+        "last_error='Task returned for review' WHERE task_id=%s "
+        "AND state IN ('queued','sending')",
+        (task_id,),
+    )
+    return {"task": task}
+
+
+@router.get("/{task_id}/changes")
+def task_changes(task_id: UUID, user: User, conn: Conn):
+    require_task(conn, user, task_id)
+    return conn.execute(
+        "SELECT a.id,a.action,a.new_value->>'note' AS note,a.created_at,"
+        "p.display_name AS actor_name FROM task_audit_log a "
+        "LEFT JOIN profiles p ON p.id=a.actor_id WHERE a.task_id=%s "
+        "ORDER BY a.created_at DESC,a.id DESC",
+        (task_id,),
+    ).fetchall()

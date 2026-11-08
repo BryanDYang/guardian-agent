@@ -25,7 +25,7 @@ def list_projects(
             COALESCE(max(m.created_at), p.created_at) AS last_activity_at
         FROM projects p
         JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = %s
-        LEFT JOIN meetings m ON m.project_id = p.id
+        LEFT JOIN meetings m ON m.project_id = p.id AND m.deleted_at IS NULL
         WHERE (p.deleted_at IS NOT NULL) = %s
             AND (p.deleted_at IS NULL OR (pm.role = 'owner'
                 AND p.deleted_at > now() - interval '30 days'))

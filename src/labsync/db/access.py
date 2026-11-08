@@ -24,7 +24,8 @@ def can_see_meeting(conn: Connection, user_id: UUID, meeting_id: UUID) -> bool:
         SELECT 1 FROM meetings m
         JOIN project_members pm ON pm.project_id = m.project_id
         JOIN projects p ON p.id=m.project_id
-        WHERE m.id = %s AND pm.user_id = %s AND p.deleted_at IS NULL
+        WHERE m.id = %s AND pm.user_id = %s
+            AND p.deleted_at IS NULL AND m.deleted_at IS NULL
         """,
         (meeting_id, user_id),
     ).fetchone()
@@ -39,6 +40,9 @@ def can_see_task(conn: Connection, user_id: UUID, task_id: UUID) -> bool:
         JOIN project_members pm ON pm.project_id = t.project_id
         JOIN projects p ON p.id=t.project_id
         WHERE t.id = %s AND pm.user_id = %s AND p.deleted_at IS NULL
+            AND t.deleted_at IS NULL
+            AND NOT EXISTS (SELECT 1 FROM meetings m
+                WHERE m.id=t.meeting_id AND m.deleted_at IS NOT NULL)
         """,
         (task_id, user_id),
     ).fetchone()

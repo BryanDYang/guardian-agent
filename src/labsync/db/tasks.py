@@ -12,7 +12,7 @@ from psycopg.types.json import Jsonb
 COLUMNS = """
     t.id, t.project_id, t.meeting_id, t.title, t.category, t.owner_label,
     t.attendee_id, t.assignee_user_id, t.due_date, t.due_date_text,
-    t.review_status, t.lifecycle_status, t.updated_at,
+    t.review_status, t.lifecycle_status, t.updated_at, t.archived_at, t.deleted_at,
     (SELECT p.display_name FROM profiles p WHERE p.id = t.assignee_user_id)
         AS assignee_name,
     (SELECT m.name FROM meetings m WHERE m.id = t.meeting_id) AS meeting_name,
@@ -32,7 +32,10 @@ def list_calendar_tasks(
         f"""
         SELECT {COLUMNS} FROM tasks t
         WHERE t.project_id = %s AND t.review_status = 'approved'
+          AND NOT EXISTS (SELECT 1 FROM meetings m
+              WHERE m.id=t.meeting_id AND m.deleted_at IS NOT NULL)
           AND t.due_date BETWEEN %s AND %s
+          AND t.archived_at IS NULL AND t.deleted_at IS NULL
         ORDER BY t.due_date, t.created_at
         """,
         (project_id, start, end),
@@ -44,6 +47,8 @@ def list_accepted_tasks(conn: Connection, project_id: UUID) -> list[dict]:
         f"""
         SELECT {COLUMNS} FROM tasks t
         WHERE t.project_id = %s AND t.review_status = 'approved'
+          AND NOT EXISTS (SELECT 1 FROM meetings m
+              WHERE m.id=t.meeting_id AND m.deleted_at IS NOT NULL)
         ORDER BY t.due_date NULLS LAST, t.created_at, t.id
         """,
         (project_id,),
@@ -136,11 +141,12 @@ def set_lifecycle(
     """Change lifecycle_status and append the audit row that can undo it."""
     task = conn.execute(
         f"""
-        UPDATE tasks t SET lifecycle_status = %s, updated_at = now()
+        UPDATE tasks t SET lifecycle_status = %s, updated_at = now(),
+            archived_at = CASE WHEN %s = 'done' THEN archived_at ELSE NULL END
         WHERE t.id = %s
         RETURNING {COLUMNS}
         """,
-        (new, task_id),
+        (new, new, task_id),
     ).fetchone()
     token = conn.execute(
         """
@@ -160,7 +166,12 @@ def set_lifecycle(
 
 
 def audit_details(
-    conn: Connection, old: dict, new: dict, action: str, actor_id: UUID
+    conn: Connection,
+    old: dict,
+    new: dict,
+    action: str,
+    actor_id: UUID,
+    note: str | None = None,
 ) -> None:
     """Keep human review/edit history alongside meeting reconciliation evidence."""
     keys = ("title", "due_date", "assignee_user_id", "owner_label", "review_status")
@@ -168,10 +179,13 @@ def audit_details(
     def snapshot(task):
         return {key: str(task[key]) if task[key] is not None else None for key in keys}
 
+    updated = snapshot(new)
+    if note and note.strip():
+        updated["note"] = note.strip()
     conn.execute(
         "INSERT INTO task_audit_log (task_id, action, old_value, new_value, actor_id) "
         "VALUES (%s, %s, %s, %s, %s)",
-        (new["id"], action, Jsonb(snapshot(old)), Jsonb(snapshot(new)), actor_id),
+        (new["id"], action, Jsonb(snapshot(old)), Jsonb(updated), actor_id),
     )
 
 

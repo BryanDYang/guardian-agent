@@ -16,13 +16,17 @@ VISIBLE = """
         SELECT 1 FROM project_members pm JOIN projects p ON p.id=pm.project_id
         WHERE pm.project_id = c.project_id AND pm.user_id = %(user_id)s
         AND p.deleted_at IS NULL
-    )
+    ) AND (c.meeting_id IS NULL OR EXISTS (
+        SELECT 1 FROM meetings visible_meeting WHERE visible_meeting.id=c.meeting_id
+        AND visible_meeting.deleted_at IS NULL
+    ))
 """
 
 
 def meeting_in_project(conn: Connection, meeting_id: UUID, project_id: UUID) -> bool:
     row = conn.execute(
-        "SELECT 1 FROM meetings WHERE id = %s AND project_id = %s",
+        "SELECT 1 FROM meetings WHERE id = %s AND project_id = %s AND "
+        "deleted_at IS NULL",
         (meeting_id, project_id),
     ).fetchone()
     return row is not None

@@ -180,6 +180,7 @@ struct MeetingDetailView: View {
         defer { loadingTasks = false }
         do {
         let detail = try await MeetingAPIClient.shared.storedDetail(meetingID: meeting.id)
+        try Task.checkCancellation()
         if detail.source?.inputKind == "zoom_summary" {
             meeting.audioFileName = "zoom-summary:no-audio"
             meeting.duration = detail.source?.isSample == true ? "Test summary" : "Summary import"
@@ -195,7 +196,10 @@ struct MeetingDetailView: View {
         } catch is CancellationError {
             return
         } catch {
-            taskLoadError = "Connection lost. Tap to reconnect."
+            guard !Task.isCancelled, !MeetingAPIError.isCancellation(error) else { return }
+            taskLoadError = error is URLError
+                ? "Couldn’t connect. Tap to retry."
+                : "Couldn’t refresh tasks. Tap to retry."
         }
     }
 

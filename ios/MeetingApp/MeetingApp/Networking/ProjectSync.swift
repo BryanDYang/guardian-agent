@@ -83,6 +83,11 @@ enum ProjectSync {
         let remote = try await api.meetings(projectID: project.id)
         try Task.checkCancellation()
         let existing = try context.fetch(FetchDescriptor<Meeting>())
+        let remoteIDs = Set(remote.map(\.id))
+        for meeting in existing where meeting.project?.id == project.id &&
+            isServerID(meeting.id) && !remoteIDs.contains(meeting.id) {
+            context.delete(meeting)
+        }
         for item in remote {
             let meeting: Meeting
             if let cached = existing.first(where: { $0.id == item.id }) {
@@ -104,6 +109,8 @@ enum ProjectSync {
                 meeting.audioFileName = "zoom-summary:no-audio"
                 meeting.duration = "Summary import"
             }
+            meeting.archivedAt = RemoteProject.timestamp(item.archivedAt)
+            meeting.deletedAt = RemoteProject.timestamp(item.deletedAt)
             meeting.project = project
         }
         try context.save()

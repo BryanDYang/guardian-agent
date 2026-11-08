@@ -10,6 +10,7 @@ final class CandidateTask {
     var quote: String
     var timestamp: String
     var dueDate: Date?
+    var returnNote: String? = nil
 
     // Relationships — set after insert.
     var assignee: Attendee?

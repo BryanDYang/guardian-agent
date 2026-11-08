@@ -17,6 +17,10 @@ struct TasksView: View {
     /// One card is open at a time; opening another closes it.
     @State private var expandedTaskID: String?
     @State private var editingTask: TaskItem?
+    @State private var returningTask: TaskItem?
+    @State private var historyTask: TaskItem?
+    @State private var completedCollection: CompletedTaskCollection?
+    @State private var refreshID: UUID?
     @State private var loadError: String?
     @State private var actionError: String?
 
@@ -72,6 +76,22 @@ struct TasksView: View {
         .task(id: calendarRequestID) {
             await refreshCalendar()
         }
+        .sheet(item: $completedCollection) { collection in
+            CompletedTaskCollectionView(
+                collection: collection, projectID: selectedProjectID,
+                busyTaskID: pendingTaskID, error: actionError,
+                refresh: refreshCalendar, change: changeVisibility
+            )
+        }
+        .sheet(item: $returningTask) { task in
+            ReturnTaskForReviewSheet(taskID: task.id, title: task.title, meetingName: task.sourceMeetingTitle) {
+                context.delete(task)
+                do { try context.save() } catch { actionError = error.localizedDescription }
+            }
+        }
+        .sheet(item: $historyTask) { task in
+            TaskChangesSheet(taskID: task.id)
+        }
         .sheet(item: $editingTask) { task in
             EditTaskSheet(task: task, onSaved: applyEdit)
         }
@@ -109,6 +129,13 @@ struct TasksView: View {
                         Text(project.title).tag(String?.some(project.id))
                     }
                 }
+                Divider()
+                Button("Archived Tasks", systemImage: "archivebox") {
+                    completedCollection = .archived
+                }
+                Button("Recently Deleted", systemImage: "trash") {
+                    completedCollection = .deleted
+                }
             } label: {
                 Image(systemName: "line.3.horizontal.decrease")
             }
@@ -144,13 +171,19 @@ struct TasksView: View {
     // MARK: Task list
 
     private var taskList: some View {
-        ScrollView {
-            VStack(spacing: 12) {
+        List {
+            Group {
                 if pendingTasks.isEmpty && completedTasks.isEmpty {
-                    Text(showCalendar ? "No tasks due on this date." : "No accepted tasks yet. Review a meeting’s suggested tasks to get started.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .padding(.top, 40)
+                    if refreshID != nil {
+                        ProgressView("Loading tasks…")
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 40)
+                    } else {
+                        Text(showCalendar ? "No tasks due on this date." : "No accepted tasks yet. Review a meeting’s suggested tasks to get started.")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                            .padding(.top, 40)
+                    }
                 }
 
                 ForEach(pendingTasks) { task in
@@ -160,7 +193,9 @@ struct TasksView: View {
                         onTap: { toggleExpanded(task) },
                         onToggleComplete: { Task { await markDone(task) } },
                         onEdit: { editingTask = task },
-                        onDelete: { Task { await drop(task) } }
+                        onDelete: { Task { await drop(task) } },
+                        onReturnForReview: { returningTask = task },
+                        onViewChanges: { historyTask = task }
                     )
                     .disabled(pendingTaskID == task.id)
                 }
@@ -184,22 +219,35 @@ struct TasksView: View {
                             onDelete: { }
                         )
                         .disabled(pendingTaskID == task.id)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) {
+                                Task { await changeVisibility(task, "delete") }
+                            } label: { Label("Delete", systemImage: "trash") }
+                            Button {
+                                Task { await changeVisibility(task, "archive") }
+                            } label: { Label("Archive", systemImage: "archivebox") }
+                            .tint(.indigo)
+                        }
                     }
                 }
             }
-            .padding(16)
+            .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+            .listRowSeparator(.hidden)
+            .listRowBackground(Color.clear)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
     }
 
     // MARK: Filtering
 
     private var tasksForSelectedProject: [TaskItem] {
-        allTasks.filter { $0.state != .dropped }.inProject(selectedProjectID)
+        allTasks.filter { $0.sourceMeeting?.deletedAt == nil && $0.state != .dropped && $0.archivedAt == nil && $0.deletedAt == nil }.inProject(selectedProjectID)
     }
 
     private var calendarRequestID: String {
         let month = Self.isoFormatter.string(from: displayedMonth)
-        return "\(selectedProjectID ?? "all")|\(month)|\(showCalendar)"
+        return "\(selectedProjectID ?? "all")|\(month)|\(showCalendar)|\(serverProjectIDs.sorted().joined(separator: ","))"
     }
 
     private var serverProjectIDs: [String] {
@@ -239,16 +287,28 @@ struct TasksView: View {
         )
     }
 
+    @MainActor
     private func refreshCalendar() async {
-        guard !serverProjectIDs.isEmpty else {
-            loadError = nil
-            return
-        }
+        let projectIDs = serverProjectIDs
+        let scope = calendarRequestID
+        let requestID = UUID()
+        refreshID = requestID
+        loadError = nil
+        defer { if refreshID == requestID { refreshID = nil } }
+        guard !projectIDs.isEmpty else { return }
         do {
             var loaded: [RemoteTask] = []
-            for projectID in serverProjectIDs {
+            for projectID in projectIDs {
                 let page = try await MeetingAPIClient.shared.acceptedTasks(projectID: projectID)
                 loaded.append(contentsOf: page)
+            }
+            try Task.checkCancellation()
+            guard refreshID == requestID, calendarRequestID == scope else { return }
+            let loadedIDs = Set(loaded.map(\.id))
+            for task in allTasks where isServerID(task.id)
+                && projectIDs.contains(task.project?.id ?? "")
+                && !loadedIDs.contains(task.id) {
+                context.delete(task)
             }
             for remote in loaded {
                 try TaskSync.upsert(
@@ -263,7 +323,11 @@ struct TasksView: View {
         } catch is CancellationError {
             return
         } catch {
-            loadError = "Connection lost. Tap to reconnect."
+            guard !Task.isCancelled, !MeetingAPIError.isCancellation(error),
+                  refreshID == requestID, calendarRequestID == scope else { return }
+            loadError = error is URLError
+                ? "Couldn’t connect. Tap to retry."
+                : "Couldn’t refresh tasks. Tap to retry."
         }
     }
 
@@ -280,6 +344,23 @@ struct TasksView: View {
             actionError = nil
         } catch {
             actionError = error.localizedDescription
+        }
+    }
+
+    @MainActor
+    private func changeVisibility(_ task: TaskItem, _ action: String) async {
+        guard isServerID(task.id) else {
+            switch action {
+            case "archive": task.archivedAt = .now
+            case "delete": task.deletedAt = .now
+            case "unarchive": task.archivedAt = nil
+            default: task.deletedAt = nil
+            }
+            do { try context.save() } catch { actionError = error.localizedDescription }
+            return
+        }
+        await mutate(task) {
+            try await MeetingAPIClient.shared.changeTaskVisibility(id: task.id, action: action)
         }
     }
 
@@ -360,6 +441,7 @@ private struct EditTaskSheet: View {
     @State private var members: [RemoteMember] = []
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var changeNote = ""
 
     init(task: TaskItem, onSaved: @escaping (RemoteTask) -> Void) {
         self.task = task
@@ -390,6 +472,10 @@ private struct EditTaskSheet: View {
                     )
                 }
 
+                Section("Change note (optional)") {
+                    TextField("Why is this changing?", text: $changeNote, axis: .vertical)
+                        .lineLimit(2...5)
+                }
                 Section("Due Date") {
                     Toggle("Has a deadline", isOn: $hasDueDate)
                     if hasDueDate { DatePicker("Date", selection: $dueDate, displayedComponents: .date) }
@@ -448,7 +534,8 @@ private struct EditTaskSheet: View {
                 id: task.id,
                 title: trimmedTitle,
                 dueDate: hasDueDate ? dueDate : nil,
-                assignee: assignee
+                assignee: assignee,
+                changeNote: changeNote.trimmingCharacters(in: .whitespacesAndNewlines)
             )
             onSaved(response.task)
             dismiss()

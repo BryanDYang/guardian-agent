@@ -384,7 +384,7 @@ struct VoiceEnrollmentView: View {
 /// wording changes; the server keeps which version each user agreed to (FR-VOICE-1).
 enum VoiceConsent {
     static let version = "2026-10"
-    static let text = "I agree to let Meeting Memory create a voiceprint from these recordings to label me in my projects' meetings. The recordings are deleted once it's made, and I can delete the voiceprint anytime in Profile."
+    static let text = "I agree to let LabSync create a voiceprint from these recordings to label me in my projects' meetings. The recordings are deleted once it's made, and I can delete the voiceprint anytime in Profile."
 }
 
 /// Records one clip at a time as AAC, with a live input level for the halo.
