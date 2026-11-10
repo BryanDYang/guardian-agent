@@ -12,6 +12,10 @@ The [journal](weekly_journal.md) records progress and the
 [walkthrough](evidence/demo_walkthrough.md) records observed execution.
 Each document below has one responsibility.
 
+For the group recording workflow, use the
+[three-person meeting dialogue](milestone_4/group_meeting_script.md), then the
+[group tell-show-tell demo and dry run](milestone_4/group_demo_script.md).
+
 | Question | Authoritative document |
 | --- | --- |
 | How do I run the app? | [Root README](../README.md) |
