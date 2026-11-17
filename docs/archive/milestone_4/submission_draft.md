@@ -57,7 +57,7 @@ with pgvector. Transcription-only acceptance uses explicit `--no-diarize`.
 Speaker identification and diarization need separate model/access verification.
 The iOS client requires Xcode and a signed simulator/device build.
 
-The [architecture](../architecture.md#1-system-shape) owns the component diagram,
+The [architecture](../../architecture.md#1-system-shape) owns the component diagram,
 data flow and interfaces. In brief: iOS sends authenticated requests to FastAPI;
 a processing worker invokes local audio inference and text extraction; PostgreSQL
 stores meeting/task evidence; scoped retrieval supplies chat context; a separate
@@ -94,7 +94,7 @@ tests use an isolated Docker database; that is not application containerization.
 - [ ] Run lint/format and the full test suite with an isolated local database.
 - [ ] Run the versioned evidence procedures with fresh output paths and inspect
   statuses, usage and exact outputs; model outputs can vary between runs.
-- [ ] Execute the [native acceptance procedure](../archive/milestone_3/follow_through.md#clean-app-journey-screen-recording)
+- [ ] Execute the [native acceptance procedure](../milestone_3/follow_through.md#clean-app-journey-screen-recording)
   in a fresh M4 project with automatic approval off and Test inbox delivery.
 - [x] Bryan completed all 28 answer/citation/refusal judgments on October 30.
 - [ ] Complete the [dry run](demo_script.md#your-dry-run), confirm demo sign-off and send Derrick the recording.
@@ -111,7 +111,7 @@ uv run --no-sync labsync extract artifacts/m4-reviewer/audio-new/transcript.json
 
 Each output must be new. These commands send only the selected transcript to the
 configured text provider. The AMI excerpt is CC BY 4.0, AMI Consortium / Edinburgh
-CSTR; [attribution and source](../../tests/fixtures/ami/README.md).
+CSTR; [attribution and source](../../../tests/fixtures/ami/README.md).
 
 ## Native acceptance checkpoint
 
@@ -124,7 +124,7 @@ appeared in Tasks and Calendar; completion and Undo worked. Supported chat
 answered the checklist question with a citation opening the transcript at 00:08;
 the absent Wi-Fi-password question refused. After app termination/relaunch, the
 accepted task and both conversation answers remained available. The uncut local
-screen recording is retained with the [run ledger](../evidence/demo_walkthrough.md#october-26-native-acceptance).
+screen recording is retained with the [run ledger](../../evidence/demo_walkthrough.md#october-26-native-acceptance).
 
 This is assistant-run synthetic upload acceptance. It does not test microphone
 capture, real speaker recognition, natural-meeting quality or actual inbox
@@ -171,7 +171,7 @@ Production retrieval remains hybrid; this small development sample does not
 justify changing it. Historical ASR/extraction baselines remain separate results.
 
 Raw outputs, source snapshot hash, prompt hashes, usage and timings are in
-[the answer evidence](../evidence/m4_2026-10-26/rag_answers.json). Reviewers can
+[the answer evidence](../../evidence/m4_2026-10-26/rag_answers.json). Reviewers can
 compare every output with the sources in the linked October 21 packet using
 [the completed answer review](human_review.md). Personal-case review and
 adjudication remain separate from RAG quality.
@@ -198,7 +198,7 @@ two actions, and emits two task records for a joint obligation. Deadline mismatc
 include different valid spans such as “by Friday” versus “Friday”; they do not
 measure calendar-date accuracy. Rules still create false tasks from negation and
 quoted examples. Exact outputs, source hashes, counts and per-case errors are in
-[the current extraction report](../evidence/ai_2026-11-05/extraction/report.md).
+[the current extraction report](../../evidence/ai_2026-11-05/extraction/report.md).
 
 Reproduce with the existing `python -m labsync.evaluation run` and `score` commands,
 using `--method codex --model gpt-5.6-sol` or `--method rules`, and a new
@@ -226,8 +226,8 @@ This is a hypothetical standard API comparison, **not actual subscription-backed
 CLI billing or total system cost**. It excludes cache writes, tier/regional
 uplifts, embeddings, database/storage, network, hardware/electricity and
 subscription allocation. Whisper runs locally; local inference is not cost-free.
-[Per-run usage/timings](../evidence/m4_2026-10-26/workloads.json) and
-[computed summary/assumptions](../evidence/m4_2026-10-26/summary.json) support the table.
+[Per-run usage/timings](../../evidence/m4_2026-10-26/workloads.json) and
+[computed summary/assumptions](../../evidence/m4_2026-10-26/summary.json) support the table.
 
 ## Red-teaming, mitigations and system card
 
@@ -249,7 +249,7 @@ review, not an autonomous source of obligations or high-stakes decisions.
 | Disabled diarization on upload | HTTP processing test exposed missing negative flag; pipeline now passes either mode explicitly |
 | Outsider access and unintended follow-up | Existing route inventory, auth, task-approval, opt-out, cancellation and deduplication tests passed against isolated PostgreSQL |
 
-[Actual adversarial inputs/outputs](../evidence/m4_2026-10-26/redteam.json) are
+[Actual adversarial inputs/outputs](../../evidence/m4_2026-10-26/redteam.json) are
 synthetic. This five-call exercise is not a comprehensive safety benchmark.
 The API regressions use controlled model responses and real local persistence;
 they test enforcement, not whether a live model will always resist an attack.
@@ -278,7 +278,7 @@ budget, secret and action requests. The full integration suite passed 342 tests
 with zero skips. A repeated compromised-chat test retained pending task state
 and queued no delivery. These checks preserve separate scopes from Bryan's human
 judgments. Exact outputs are in the
-[November 5 red-team packet](../evidence/ai_2026-11-05/redteam.json).
+[November 5 red-team packet](../../evidence/ai_2026-11-05/redteam.json).
 
 Both `smoke` and `ai-regression` passed in the pushed GitHub CI run for be83d03.
 The full database-backed job and frozen extraction gate execute on PRs. The
@@ -351,7 +351,7 @@ plans must be supplied or confirmed by the team before filling that report
 section. TestFlight distribution is on hold at Bryan's request as of November 8.
 Resuming requires an enrolled Apple Developer team, signing access and reachable
 backend configuration. Weekly progress and the sent update are recorded in the
-[journal](../weekly_journal.md#october-30-team-update-and-submission-readiness).
+[journal](../../weekly_journal.md#october-30-team-update-and-submission-readiness).
 
 Before submission: incorporate teammate contributions/extension progress and
 setup/report feedback; record the reported TA check-in date and follow-up feedback; review the

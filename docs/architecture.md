@@ -3,7 +3,7 @@
 Updated October 17, 2026. This describes the current code, including immediate
 follow-up email. It is a navigation and troubleshooting guide, not evidence that
 every path has passed native or model-quality acceptance. See the
-[Milestone 4 roadmap](milestone_4/roadmap.md) for remaining validation.
+[final submission roadmap](milestone_5/roadmap.md) for remaining validation.
 
 ## 1. System shape
 

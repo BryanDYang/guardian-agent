@@ -29,8 +29,8 @@ that support from narrower quote previews and literal quote-format errors.
 The review concerns the final user-facing answer; a supported raw answer does
 not make an incorrect final refusal acceptable.
 
-[Exact model outputs and usage](../evidence/m4_2026-10-26/rag_answers.json) and
-[full retrieved sources](../evidence/rag_2026-10-21.json) retain the evidence trail
+[Exact model outputs and usage](../../evidence/m4_2026-10-26/rag_answers.json) and
+[full retrieved sources](../../evidence/rag_2026-10-21.json) retain the evidence trail
 without duplicating the transcript extracts here. These are public AMI development
 derivatives, not independently annotated gold or a held-out evaluation.
 

@@ -1,32 +1,34 @@
 # Start here
 
-**Your next step:** use the [Milestone 4 roadmap](milestone_4/roadmap.md)
-to define and validate the release candidate. Milestone 3 documents are archived;
-their unfinished acceptance and evaluation work carries forward explicitly.
+Use the [final submission roadmap](milestone_5/roadmap.md) to finish the release
+and the [final report draft](milestone_5/submission_draft.md) to assemble the report.
+Milestone 4 is archived with the [submitted PDF](archive/milestone_4/milestone4_submission.pdf).
+The final assignment and deadline await confirmation.
 
 For the final presentation, use Bryan's human-review judgments only. His eight
 personal-case judgments and 28 RAG judgments retain separate scopes and counts.
-Historical teammate reviews remain in the archive. The current presenter guide
-contains one user story, a simple 3-5 minute script, AI callouts and a short dry run.
+Historical teammate reviews remain in the archive. The group presenter guide
+assigns separate speaking sections to Will, Guadalupe, and Bryan.
 The [journal](weekly_journal.md) records progress and the
 [walkthrough](evidence/demo_walkthrough.md) records observed execution.
 Each document below has one responsibility.
 
 For the group recording workflow, use the
-[three-person meeting dialogue](milestone_4/group_meeting_script.md), then the
-[group tell-show-tell demo and dry run](milestone_4/group_demo_script.md).
+[three-person meeting dialogue](archive/milestone_4/group_meeting_script.md), then the
+[group tell-show-tell demo and dry run](archive/milestone_4/group_demo_script.md).
 
 | Question | Authoritative document |
 | --- | --- |
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
-| Where do we review model outputs? | [M4 answer review](milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
-| How do I rehearse and record the 3-5 minute demo? | [User story, tell-show-tell script and dry run](milestone_4/demo_script.md) |
-| What remains for Milestone 4? | [Release scope, gap assessment, and acceptance](milestone_4/roadmap.md) |
+| Where do we review model outputs? | [M4 answer review](archive/milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
+| How do we divide and record the final team demo? | [Will, Guadalupe, and Bryan sections and dry run](archive/milestone_4/group_demo_script.md) |
+| What remains for the final submission? | [Final scope and acceptance](milestone_5/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
 | What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |
-| What will we submit for Milestone 4? | [Report and TA packet draft](milestone_4/submission_draft.md) |
+| What will we submit for the final milestone? | [Final report draft](milestone_5/submission_draft.md) |
+| What did we submit for Milestone 4? | [Submitted report](archive/milestone_4/milestone4_submission.pdf) |
 | What did we prepare for Milestone 3? | [Milestone 3 report draft](archive/milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
 | How do I operate/recover the backend? | [Shared-backend guide](reference/shared_backend.md) |
 | How do I contribute/run checks? | [Contributing](../CONTRIBUTING.md) and [CI](../.github/workflows/ci.yml) |

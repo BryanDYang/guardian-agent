@@ -2,7 +2,7 @@
 
 Updated October 21, 2026. Target submission: October 26; Canvas remains the
 source of truth for the exact deadline. Proposed owners need team agreement; the course rubric
-remains authoritative. This is the archived Milestone 3 planning document. Use [Milestone 4](../../milestone_4/roadmap.md) for current planning. Use the
+remains authoritative. This is the archived Milestone 3 planning document. Use [Milestone 4](../milestone_4/roadmap.md) for current planning. Use the
 [weekly journal](../../weekly_journal.md#week-8-october-12-18-2026) for progress history,
 [native walkthrough](../../evidence/demo_walkthrough.md) for observed evidence,
 [follow-through guide](follow_through.md) for setup and recording scripts, and

@@ -1,9 +1,9 @@
 # Milestone 4 release scope and acceptance
 
 Prepared October 26, updated November 6, 2026. Track: **AI Engineering**. This document owns current
-milestone scope and acceptance. Record progress in the [journal](../weekly_journal.md)
-and observed runs in the [walkthrough](../evidence/demo_walkthrough.md).
-The [Milestone 3 roadmap](../archive/milestone_3/roadmap.md) is historical.
+milestone scope and acceptance. Record progress in the [journal](../../weekly_journal.md)
+and observed runs in the [walkthrough](../../evidence/demo_walkthrough.md).
+The [Milestone 3 roadmap](../milestone_3/roadmap.md) is historical.
 
 ## Requirements and current evidence
 
@@ -55,8 +55,8 @@ application deployment is optional; a publicly accessible demo video is required
   recurring reminders and two-host recovery lack completed acceptance evidence.
 - Existing demo preparation does not establish a recorded clean journey.
 
-See the [dated RAG evidence](../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
-and [review update](../weekly_journal.md#october-22-23-human-review-and-demo-preparation).
+See the [dated RAG evidence](../../evidence/demo_walkthrough.md#october-21-ami-retrieval-comparison-and-partial-live-answer-run)
+and [review update](../../weekly_journal.md#october-22-23-human-review-and-demo-preparation).
 
 ## Presenter entry point
 
@@ -107,7 +107,7 @@ accepted time. Do not treat that request as a confirmed Milestone 4 check-in.
 
 ## October 26 execution checkpoint
 
-The [execution evidence](../evidence/demo_walkthrough.md#october-26-milestone-4-release-checkpoint)
+The [execution evidence](../../evidence/demo_walkthrough.md#october-26-milestone-4-release-checkpoint)
 records the fresh-install audio check, signed simulator build, full database tests,
 frozen-source answer rerun, workload measurements and bounded red-team pass.
 The backend now passes disabled diarization explicitly; citation verification
@@ -137,5 +137,5 @@ demo. Replies, task owners and the TA time remain unconfirmed. The current publi
 video is a reference for that recording. Bryan requested TestFlight preparation
 on November 5; signing, app identity and backend configuration remain release
 prerequisites recorded in the journal.
-See the [dated journal entry](../weekly_journal.md#october-30-team-update-and-submission-readiness)
+See the [dated journal entry](../../weekly_journal.md#october-30-team-update-and-submission-readiness)
 for this user-reported coordination; no messages were sent by the assistant.

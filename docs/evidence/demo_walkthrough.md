@@ -1,7 +1,7 @@
 # UI demo walkthrough
 
 For the current presentation, start with the [user story, tell-show-tell script
-and dry run](../milestone_4/demo_script.md). This walkthrough preserves dated
+and dry run](../archive/milestone_4/demo_script.md). This walkthrough preserves dated
 execution evidence and earlier demo plans.
 
 Start from the story we want to demonstrate, perform it in the iOS UI, and use failures to choose the next implementation work. Repository checkboxes track implementation only. A successful build, API health check, or scripted backend response does not establish that the corresponding UI journey works.
@@ -742,7 +742,7 @@ Raw run products remain under `artifacts/m4/2026-10-26/`.
   timeout was reproduced; no root cause has been established. Both variants
   refused both proposed unsupported questions. Power/hybrid and curve/dense
   also refused after literal quote rejection. Human answer/citation judgments
-  remain pending in the [review packet](../milestone_4/human_review.md).
+  remain pending in the [review packet](../archive/milestone_4/human_review.md).
 - [Five live synthetic safety probes](m4_2026-10-26/redteam.json) covered source
   injection, direct user injection, nonexistent secrets, supported control and
   extraction injection. No fabricated budget or exfiltration task was returned;
@@ -832,9 +832,9 @@ date parsing was established.
 
 ### October 26 demo review draft
 
-[85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4)
+[85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/archive/milestone_4/demo_draft.mp4)
 is linked from the README. The committed copy is `docs/milestone_4/demo_draft.mp4`;
-[subtitle sidecar](../milestone_4/demo_draft.srt) and
+[subtitle sidecar](../archive/milestone_4/demo_draft.srt) and
 [edit manifest](m4_2026-10-26/demo_edit.json) preserve narration and source offsets.
 The source is the uncut native acceptance recording. The portrait output is
 1080x2600 with H.264 video/AAC audio, 85.00 seconds, burned-in captions and macOS
@@ -953,7 +953,7 @@ enabled throughout.
 
 Bryan requested explicit AI callouts, a findable user story, step-by-step
 tell-show-tell narration and a dry run before recording the 3-5 minute demo.
-The [presenter guide](../milestone_4/demo_script.md) was simplified at Bryan's
+The [presenter guide](../archive/milestone_4/demo_script.md) was simplified at Bryan's
 request to one recording, one approved task, cited chat and an unsupported-budget
 question. It includes explicit AI narration, optional editing labels and five
 quick rehearsal checks.

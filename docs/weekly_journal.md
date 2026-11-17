@@ -459,7 +459,7 @@ Draft only; not sent.
 
 Updated October 26 after the Milestone 4 execution checkpoint. **Milestone 4 is
 due November 16, 2026**, confirmed by Bryan from Canvas. Derrick's TA check-in
-time is still unconfirmed. Use the [Milestone 4 roadmap](milestone_4/roadmap.md)
+time is still unconfirmed. Use the [Milestone 4 roadmap](archive/milestone_4/roadmap.md)
 for current scope and acceptance; Milestone 3 documents are archived.
 
 ## Starting point
@@ -477,7 +477,7 @@ October 26 runs below.
 ### October 26 Milestone 4 kickoff assessment
 
 - Read both Milestone 4 references and established the
-  [release scope and acceptance gates](milestone_4/roadmap.md). Selected a flow
+  [release scope and acceptance gates](archive/milestone_4/roadmap.md). Selected a flow
   with human task review, manual assignment/date correction and captured email.
 - Preserved the Milestone 3 archive move, repaired affected documentation links
   and updated entry points to Milestone 4. Corrected the current review status:
@@ -515,13 +515,13 @@ records the actual source quotes, answers and persistence checks.
 
 ### Report, demo and delivery
 
-- Prepared the [report/TA packet draft](milestone_4/submission_draft.md), including
+- Prepared the [report/TA packet draft](archive/milestone_4/submission_draft.md), including
   architecture, reviewer checklist, run instructions, evaluation/error tables,
   latency/cost assumptions, red-team findings and residual risks. Exported and
-  visually checked the [five-page PDF](milestone_4/submission_draft.pdf).
-- Prepared the [28-answer human-review packet](milestone_4/human_review.md),
+  visually checked the [five-page PDF](archive/milestone_4/submission_draft.pdf).
+- Prepared the [28-answer human-review packet](archive/milestone_4/human_review.md),
   retaining actual answers and cited source text with judgments left pending.
-- Created an [85-second captioned demo draft](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_4/demo_draft.mp4)
+- Created an [85-second captioned demo draft](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/archive/milestone_4/demo_draft.mp4)
   at 1080x2600 with synthetic narration, burned-in captions and explicit labels
   for synthetic input, removed waits, manual date entry and capture-only email.
   Sampled all eight sections visually and verified a complete error-free decode.
@@ -578,7 +578,7 @@ records the actual source quotes, answers and persistence checks.
 Bryan confirmed the price/dense correctness and citation judgments as Supported,
 with refusal marked Not applicable - answered. Both €25 and the €12.50 maximum
 appear explicitly in the provided source. The assistant transcribed the confirmed
-review into the [answer worksheet](milestone_4/human_review.md#price--dense),
+review into the [answer worksheet](archive/milestone_4/human_review.md#price--dense),
 preserving Bryan's initial “Passed” entry in the provenance note. Bryan saw the
 assistant-proposed labels/rationale before confirmation, so this is not a blinded
 or independent review. The remaining 27 entries and adjudication remain pending;
@@ -588,7 +588,7 @@ this does not complete the human quality evaluation.
 
 At Bryan's request, prepared proposed correctness, citation-entailment and refusal
 judgments with case-specific rationales for all 28 entries in the
-[Milestone 4 review worksheet](milestone_4/human_review.md). Each proposal is
+[Milestone 4 review worksheet](archive/milestone_4/human_review.md). Each proposal is
 explicitly assistant-authored and awaits human validation. Preserved Bryan's
 confirmed price/dense review and existing price/hybrid edits. Added the actual raw
 citation quotes and the retrieved source sets for the four negative-question
@@ -750,7 +750,7 @@ The report and review entry points now use his eight personal-case judgments and
 28 RAG judgments as separate evidence sets. Historical teammate reviews remain
 archived. Cross-reviewer adjudication is outside this selected presentation scope.
 
-Simplified the [presenter guide](milestone_4/demo_script.md) at Bryan's request.
+Simplified the [presenter guide](archive/milestone_4/demo_script.md) at Bryan's request.
 It now uses one interview-study recording, one manually approved task, cited chat
 and an unsupported-budget question. The 3-5 minute tell-show-tell script includes
 explicit AI narration, optional editing labels and five quick dry-run checks.
