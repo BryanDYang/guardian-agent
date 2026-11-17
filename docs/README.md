@@ -3,7 +3,8 @@
 Use the [final submission roadmap](milestone_5/roadmap.md) to finish the release
 and the [final report draft](milestone_5/submission_draft.md) to assemble the report.
 Milestone 4 is archived with the [submitted PDF](archive/milestone_4/milestone4_submission.pdf).
-The three final assignment PDFs are in `milestone_5`. Exact Canvas deadlines
+The final assignment references are local files in `contexts/milestone_5/`.
+That directory is Git-ignored. Exact Canvas deadlines
 and the showcase session date await confirmation.
 
 For the final presentation, use Bryan's human-review judgments only. His eight

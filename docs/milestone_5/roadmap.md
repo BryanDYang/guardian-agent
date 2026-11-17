@@ -1,7 +1,8 @@
 # Final submission scope and acceptance
 
 Prepared November 17, 2026 for CIS-5980 AI Engineering. This document owns the
-remaining work for Milestone 5 or the final submission. The three course PDFs in this directory establish the final deliverables.
+remaining work for Milestone 5 or the final submission. The three course PDFs stored locally in `contexts/milestone_5/` establish the
+final deliverables.
 Canvas owns the exact submission dates. The showcase session date and timezone
 are still needed to calculate its advance deadlines.
 
@@ -61,9 +62,10 @@ Include final Model and System Cards if created in earlier milestones. For
 withheld components, provide a clear stub explaining what is withheld and why,
 plus runnable components where possible.
 
-Assignment sources are [presentation and showcase](Milestone%205%20-%20Final%20Presentation%20and%20Showcase.pdf),
-[repository and documentation](Milestone%205%20-%20Public%20Repository%20and%20Documentation.pdf),
-and [technical report](Milestone%205%20-%20Technical%20_%20Research%20Report.docx.pdf).
+Assignment sources are the presentation/showcase, repository/documentation, and
+technical-report PDFs in `contexts/milestone_5/`. This Git-ignored directory holds
+local course references. A fresh checkout requires obtaining those references
+separately. The confirmed requirements above remain available in this roadmap.
 
 Start with the [final report draft](submission_draft.md). Preserve the
 [submitted Milestone 4 PDF](../archive/milestone_4/milestone4_submission.pdf) as
