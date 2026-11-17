@@ -5,7 +5,7 @@ and Guadalupe each use their own voice. This is a staged research scenario with
 asynchronously recorded dialogue. The actions and results described below belong
 to the scenario. They are not evaluation results for LabSync.
 
-Use the [group presenter script and dry run](group_demo_script.md) when showing
+Use the [group presenter script and dry run](../../milestone_5/group_demo_script.md) when showing
 the processed recordings. The [solo demo](demo_script.md) remains available.
 
 ## The shared story

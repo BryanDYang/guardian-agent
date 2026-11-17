@@ -1,9 +1,22 @@
 # Three presenter demo script and dry run
 
-Aim for 4-5 minutes total. Each teammate records one presenter clip. Combine
-Will, Guadalupe, then Bryan. Scroll down to your name for your exact narration
-and screen actions. One person can operate the app while teammates record
-voice-overs, or each person can capture their section separately.
+Use this 4-5 minute app demo as a segment of the longer recorded final
+presentation. The live showcase uses a separate spoken talk and one static
+slide under the final assignment rules. See the
+[final deliverables](roadmap.md#confirmed-course-deliverables).
+
+Record together on Zoom for the final presentation. One person operates the app
+and shares the simulator and email window, while Will, Guadalupe, and Bryan
+speak in that order. Scroll down to your name for narration and handoffs.
+Rehearse once, then capture a continuous take. Retake individual sections if
+needed and edit them into the final video. Use headphones to reduce echo and
+verify that the recording contains all three voices and the shared screen.
+
+If scheduling prevents a shared session, record the three sections separately
+using the clip names below, with one consistent app capture and matching audio
+levels. The section times cover the app-demo segment. Add the problem,
+architecture, evaluation, limitations, and future work for the complete final
+presentation. The live one-slide showcase requires its own rehearsal.
 
 This demo follows **Script #1** and **Script #2** in the shared
 [project drafts document](https://docs.google.com/document/d/1lAQ9qjxQD6AXb4aP3PBdIQMv7ctDbD47Re_STAPht28/edit).
@@ -193,4 +206,4 @@ Save your clip as `demo-03-bryan.mp4`.
 
 The recording-based rehearsal is pending the team's audio. The transcript-level
 checks and People simulator verification are recorded in the
-[walkthrough](../../evidence/demo_walkthrough.md).
+[walkthrough](../evidence/demo_walkthrough.md).

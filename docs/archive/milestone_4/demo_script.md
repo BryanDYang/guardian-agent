@@ -2,7 +2,7 @@
 
 For three speakers and imported, asynchronously assembled meetings, use the
 [group recording script](group_meeting_script.md) and
-[group presenter script and dry run](group_demo_script.md).
+[group presenter script and dry run](../../milestone_5/group_demo_script.md).
 
 Aim for 3-5 minutes. Start at the top and scroll down as you go.
 Use two short lab check-ins to show the research moving forward.

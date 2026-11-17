@@ -4,7 +4,7 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Milestone 4 review demo:** [85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/archive/milestone_4/demo_draft.mp4). Synthetic audio/narration, manual assignment/date entry, captured follow-up, and edited processing waits.
 
-**Rehearse the team demo** with the [Will, Guadalupe, and Bryan presenter sections and dry run](docs/archive/milestone_4/group_demo_script.md).
+**Rehearse the team demo** with the [Will, Guadalupe, and Bryan presenter sections and dry run](docs/milestone_5/group_demo_script.md).
 
 **Repository:** https://github.com/BryanDYang/guardian-agent
 

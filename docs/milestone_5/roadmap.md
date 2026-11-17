@@ -1,11 +1,69 @@
 # Final submission scope and acceptance
 
 Prepared November 17, 2026 for CIS-5980 AI Engineering. This document owns the
-remaining work for Milestone 5 or the final submission. The final assignment,
-Canvas deadline, presentation length, required files, and any final check-in
-requirements await confirmation from the course page. The work below is our
-proposed release plan based on the submitted Milestone 4 report and current
-implementation.
+remaining work for Milestone 5 or the final submission. The three course PDFs in this directory establish the final deliverables.
+Canvas owns the exact submission dates. The showcase session date and timezone
+are still needed to calculate its advance deadlines.
+
+## Confirmed course deliverables
+
+The presentation/showcase is 150 points, the technical report is 40 points,
+and repository/documentation is 10 points.
+
+### Recorded presentation and public demo
+
+Prepare the longer Final Capstone Presentation recording for submission three
+days before the showcase session. The presentation rubric rewards a 9-10 minute
+presentation. Include the problem, user capabilities, architecture, development
+choices, evaluation/results, safety/limitations, and future work. Demonstrate an
+end-to-end path with one strength and one known limitation. Slides are submitted
+as PDF. Link a short, publicly accessible demo video from the README or project
+page. The existing three-person 4-5 minute app demo can be a segment of this
+presentation, with the remaining time covering the other required topics.
+
+### Live showcase
+
+The showcase guidelines specify a live Zoom talk with camera on and a hard stop
+at 10 minutes per group. At least one team member attends live. Use one static
+slide, with spoken delivery. The showcase rules prohibit video, audio, animations,
+additional media, and props. Prepare a separate talk around the slide.
+
+Three days before the session, post a title of at most 120 characters, a 50-word
+plain-language summary, and a one-sentence headline result on EdDiscussion.
+Forty-eight hours before the session, upload the single-slide PDF to Canvas,
+named `Lastname_Firstname_ShortTitle`, and include image alt-text as a note.
+Join 10 minutes early for the AV check. The slide guidance prefers 16:9,
+recommends at most 20 words, and asks for readable text of at least 28 points.
+
+The document contains both general live-demo wording and the specific single-slide
+showcase rules, and explicitly distinguishes the longer presentation recording.
+Follow the separate showcase restrictions and confirm any session-specific
+instructions or recording-duration clarification with the instructor.
+
+### Final technical report
+
+Submit one PDF with accessible repository, demo, and evidence URLs. Required
+sections are title information, abstract with one or two quantified headline
+results, introduction/problem framing, system overview with a diagram, data and
+inputs, methodology/configuration, development since Milestone 3 with a decision
+log, evaluation setup and reproduction, results/baseline comparisons, robustness
+and safety, latency/cost, error analysis/limitations, conclusion/future work, and
+references. Include at least one targeted comparison supporting a design choice.
+
+### Repository and documentation
+
+Provide an accessible repository link. Public is encouraged, and private is
+accepted with teaching-staff access. Include README capabilities/demo link,
+end-to-end quick-start, commands reproducing the main evaluation results,
+configuration/parameter documentation, readable code, and final supporting
+artifacts for evaluation, red-teaming, latency, cost, and reproducibility.
+Include final Model and System Cards if created in earlier milestones. For
+withheld components, provide a clear stub explaining what is withheld and why,
+plus runnable components where possible.
+
+Assignment sources are [presentation and showcase](Milestone%205%20-%20Final%20Presentation%20and%20Showcase.pdf),
+[repository and documentation](Milestone%205%20-%20Public%20Repository%20and%20Documentation.pdf),
+and [technical report](Milestone%205%20-%20Technical%20_%20Research%20Report.docx.pdf).
 
 Start with the [final report draft](submission_draft.md). Preserve the
 [submitted Milestone 4 PDF](../archive/milestone_4/milestone4_submission.pdf) as
@@ -30,10 +88,10 @@ question whose answer is absent and inspect the actual response. Record manual
 corrections and failures. The November 17 text extraction runs do not establish
 audio transcription or diarization quality.
 
-Use the [three-presenter demo and dry run](../archive/milestone_4/group_demo_script.md).
+Use the [three-presenter demo and dry run](group_demo_script.md).
 Will presents the team and capture, Guadalupe presents task review and changes,
 and Bryan presents email and cited answers. The proposed video is 4-5 minutes.
-Confirm the final course duration before exporting. Keep the existing public
+Use it as the app-demo segment within the longer presentation recording. Keep the existing public
 Milestone 4 video available while preparing the new team video.
 
 ### Verify the release after the latest changes
@@ -41,8 +99,10 @@ Milestone 4 video available while preparing the new team video.
 Freeze a commit and record the app, backend, model, and configuration used.
 November 17 checks reported a successful signed simulator build, lint passing,
 219 Python tests passing, and 196 database-dependent tests skipped because the
-local database was unavailable. Run the database-backed suite against disposable
-Postgres and preserve the result before describing the final suite as complete.
+local database was unavailable. The subsequent CI fix in `2479b1e` passed all 415 tests against disposable
+Postgres, plus the frozen extraction baseline and smoke checks. Preserve the
+[successful CI run](https://github.com/BryanDYang/guardian-agent/actions/runs/44005877745)
+as the latest software acceptance checkpoint.
 Rehearse the normal upload/review/email flow on that revision.
 
 The date parser now supports spoken weekdays and calendar dates. The approval
@@ -109,11 +169,16 @@ course deadlines determine the work schedule.
 
 ## Final submission checklist
 
-- Confirm the official rubric, deadline/timezone, format, duration, and check-in.
+- Confirm Canvas deadlines and the showcase session date/timezone.
+- Prepare the longer presentation recording, the one-slide live talk, and the
+  EdDiscussion title, summary, and headline result with their advance deadlines.
 - Complete and record the fresh-project two-meeting acceptance run.
-- Run the full software checks with the disposable database available.
+- Verify full software checks at the final frozen revision. The current
+  `2479b1e` checkpoint has 415 passing database-backed tests.
 - Finish the independent setup check and packaging explanation.
-- Finalize the report, architecture/deployment links, limitations, and contributions.
+- Finalize the required report sections and architecture diagram, deployment
+  links, targeted comparison, limitations, references, and contributions.
+- Finalize the existing Model and System Cards and evaluation reproduction commands.
 - Export the team demo, verify audio/captions and readability, and test its public
   link while signed out.
 - Link the final demo and fixed release revision from the repository.

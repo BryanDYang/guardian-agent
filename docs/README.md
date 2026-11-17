@@ -3,7 +3,8 @@
 Use the [final submission roadmap](milestone_5/roadmap.md) to finish the release
 and the [final report draft](milestone_5/submission_draft.md) to assemble the report.
 Milestone 4 is archived with the [submitted PDF](archive/milestone_4/milestone4_submission.pdf).
-The final assignment and deadline await confirmation.
+The three final assignment PDFs are in `milestone_5`. Exact Canvas deadlines
+and the showcase session date await confirmation.
 
 For the final presentation, use Bryan's human-review judgments only. His eight
 personal-case judgments and 28 RAG judgments retain separate scopes and counts.
@@ -15,14 +16,14 @@ Each document below has one responsibility.
 
 For the group recording workflow, use the
 [three-person meeting dialogue](archive/milestone_4/group_meeting_script.md), then the
-[group tell-show-tell demo and dry run](archive/milestone_4/group_demo_script.md).
+[group tell-show-tell demo and dry run](milestone_5/group_demo_script.md).
 
 | Question | Authoritative document |
 | --- | --- |
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
 | Where do we review model outputs? | [M4 answer review](archive/milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
-| How do we divide and record the final team demo? | [Will, Guadalupe, and Bryan sections and dry run](archive/milestone_4/group_demo_script.md) |
+| How do we divide and record the final team demo? | [Will, Guadalupe, and Bryan sections and dry run](milestone_5/group_demo_script.md) |
 | What remains for the final submission? | [Final scope and acceptance](milestone_5/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
