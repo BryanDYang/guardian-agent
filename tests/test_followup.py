@@ -184,7 +184,7 @@ def test_confirmed_speaker_auto_approves_and_queues(flow):
             "AND action='AUTO_APPROVE'",
             (f["task"],),
         ).fetchone()
-        assert audit["new_value"]["policy"] == "explicit-self-commitment-v4"
+        assert audit["new_value"]["policy"] == "explicit-self-commitment-v5"
     assert len(logs(f)) == 1
     assert EmailWorker(f["app"].state.pool).process_one()
     assert logs(f)[0]["state"] == "captured"
