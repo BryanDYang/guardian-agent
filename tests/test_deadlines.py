@@ -59,5 +59,26 @@ def test_meeting_day_anchors_missing_year_and_relative_days(text, anchor, expect
 
 
 def test_ambiguous_dates_stay_unresolved_with_context():
-    for text in ("next Friday", "11/20", "November 31", "maybe November 20"):
+    for text in ("next week", "11/20", "November 31", "maybe November 20"):
         assert explicit_deadline(text, date(2026, 11, 7)) is None
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("tomorrow afternoon", date(2026, 11, 25)),
+        ("tonight before 9", date(2026, 11, 24)),
+        ("Friday", date(2026, 11, 27)),
+        ("next Wednesday", date(2026, 12, 2)),
+        ("Friday, November 27th", date(2026, 11, 27)),
+        ("by Friday, November 27, 2026", date(2026, 11, 27)),
+        ("Friday the 27th", date(2026, 11, 27)),
+        ("Monday the 30th, before noon", date(2026, 11, 30)),
+        ("tomorrow, Wednesday the 25th", date(2026, 11, 25)),
+        ("tomorrow, Thursday the 26th", None),
+        ("Friday, November 26, 2026", None),
+        ("next week", None),
+    ],
+)
+def test_spoken_deadlines(text, expected):
+    assert explicit_deadline(text, date(2026, 11, 24)) == expected

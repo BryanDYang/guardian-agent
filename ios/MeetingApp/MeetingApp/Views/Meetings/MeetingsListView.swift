@@ -27,6 +27,7 @@ struct MeetingsListView: View {
     @State private var showAddProject = false
     @State private var showAddMeeting = false
     @State private var inviteProject: Project?
+    @State private var peopleProject: Project?
     @State private var followupProject: Project?
 
     var body: some View {
@@ -67,6 +68,9 @@ struct MeetingsListView: View {
                         if isServerID(project.id) {
                             Button("Follow-through", systemImage: "envelope") {
                                 followupProject = project
+                            }
+                            Button("People", systemImage: "person.2") {
+                                peopleProject = project
                             }
                             Button("Invite People", systemImage: "person.badge.plus") {
                                 inviteProject = project
@@ -122,6 +126,9 @@ struct MeetingsListView: View {
             if let project {
                 AddMeetingSheet(project: project)
             }
+        }
+        .sheet(item: $peopleProject) { project in
+            ProjectPeopleSheet(project: project)
         }
         .sheet(item: $inviteProject) { project in
             InviteMembersSheet(project: project)
@@ -277,6 +284,9 @@ struct MeetingsListView: View {
                                 if isServerID(project.id) {
                                     Button("Follow-through", systemImage: "envelope") {
                                         followupProject = project
+                                    }
+                                    Button("People", systemImage: "person.2") {
+                                        peopleProject = project
                                     }
                                     Button("Invite People", systemImage: "person.badge.plus") {
                                         inviteProject = project

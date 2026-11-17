@@ -252,9 +252,13 @@ flowchart TD
   year (ISO, English month/day/year, or day/month/year) into the task's date when
   pipeline results are saved. Yearless month/day dates use the next occurrence
   on or after the stored meeting day, including year rollover. Today, tomorrow,
-  and the day after tomorrow also anchor to that meeting day. Uploads preserve
+  tonight, and the day after tomorrow also anchor to that meeting day. Weekdays
+  use the upcoming occurrence, including the meeting day. Next-week weekdays use
+  the following calendar week. Spoken weekday/date combinations must agree, and
+  time qualifiers resolve to a calendar day. Uploads preserve
   the selected local calendar day instead of formatting it in UTC. Ambiguous
-  numeric dates and weekday expressions remain unresolved. Automatic approval permits
+  numeric dates, bare next week, and contextual references remain unresolved.
+  Automatic approval permits
   a date only when it exactly matches that conversion and the original deadline
   text is present in cited evidence; manual-only or mismatched dates stay pending.
 - `api/meetings.confirm_speaker` can evaluate automatic approval after confirming

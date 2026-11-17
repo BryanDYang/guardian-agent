@@ -16,7 +16,7 @@ from .db import tasks
 from .deadlines import explicit_deadline
 
 logger = logging.getLogger(__name__)
-POLICY = "explicit-self-commitment-v4"
+POLICY = "explicit-self-commitment-v5"
 
 
 def delivery_mode():
@@ -51,6 +51,8 @@ def enqueue(conn, task, mode=None):
 
 
 def explicit_self_commitment(content, quote):
+    content = content.replace("’", "'").replace("‘", "'")
+    quote = quote.replace("’", "'").replace("‘", "'")
     if quote not in content or re.search(
         r"\b(if|maybe|might|could|try|unless|not|never|still|already)\b|\?",
         content,
@@ -60,7 +62,12 @@ def explicit_self_commitment(content, quote):
     # A diarized turn can contain an introduction before the actual promise.
     # The cited words must belong to the self-commitment, not another sentence.
     return any(
-        re.match(r"^\s*I(?: will|'ll)\s+\w", sentence, re.I)
+        re.match(
+            r"^\s*(?:(?:yeah|yes|okay|ok|sure|right),?\s+)?"
+            r"(?:so\s+)?I(?: will|'ll)\s+\w",
+            sentence,
+            re.I,
+        )
         and (quote in sentence or sentence in quote)
         for sentence in re.split(r"(?<=[.!?])\s+|\n+", content)
     )

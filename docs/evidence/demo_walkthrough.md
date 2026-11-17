@@ -965,3 +965,73 @@ presentation's human-review scope. Historical teammate reviews are preserved.
 
 Read-only GitHub verification confirmed both smoke and ai-regression succeeded
 for be83d03. [Observed CI run](https://github.com/BryanDYang/guardian-agent/actions/runs/42289142043)
+
+
+## November 17, 2026 - Current Chrome scripts before date revision
+
+Bryan requested a dry run before editing the team scripts and selected November
+24, 2026 as the future Script #1 meeting date. With explicit permission, both
+current Google Docs scripts were exported and submitted to the configured
+Codex/OpenAI extractor through `labsync.providers.extract`. Source dates were
+retained for this baseline check, November 11 and November 18 respectively.
+Each written speaker paragraph became a transcript turn with synthetic timestamps.
+
+Script #1 contained 184 turns and produced 21 commitments. Script #2 contained
+72 turns and produced 13 commitments. In each output, only one extracted deadline
+phrase resolved through the current `explicit_deadline` function. Both were
+`tomorrow`. All 34 candidates failed the current `explicit_self_commitment`
+wording check against their quoted source turns. Typographic apostrophes,
+introductory wording, and tentative phrases affect that strict check. Account,
+embedding, and duplicate gates would impose additional requirements.
+
+The extractor captured Script #1's final Tuesday transcript-evidence deadline
+and Thursday error-analysis deadline. Script #2 assigned the Google login fix
+to Bryan, reflecting the spoken handoff. This demonstrates extraction of the
+changed information. Applying it to an accepted earlier task requires the
+reviewer-confirmed reconciliation/edit workflow.
+
+The simulator's shared-project menu displayed Follow-through, Invite People,
+Archive Project, and Leave Project. Source inspection confirmed member names
+are available in the task-assignee picker, while the invitation sheet displays
+invitation controls and pending invites. A dedicated member roster is absent.
+
+Raw inputs and outputs are kept locally under
+`artifacts/group-script-dryrun-2026-11-17/` (ignored artifacts). These checks
+exercise the real extraction provider and local date/wording rules. Audio upload,
+transcription, diarization, database persistence, reconciliation UI, and email
+delivery still require a recording-based end-to-end rehearsal. The exported
+Markdown retains formatting escapes, so evidence strings should also be checked
+against the eventual audio transcript. The Chrome scripts were read without edits.
+
+### Follow-up implementation and simulator check
+
+Added People to the project-row and session-stream menus, reusing the authenticated
+project-members API. Installed a signed Debug simulator build and opened People
+for Guardian Agent Group Project. Verified Bryan Yang (Me) as Member and Will Liu
+as Owner, with their account emails. The sheet includes loading, empty, retry,
+and pull-to-refresh states.
+
+Expanded date parsing for weekdays, next-calendar-week weekdays, weekday-plus-date
+phrases, day-of-month references, and time-of-day qualifiers. Dates remain stored
+as calendar days. Weekday/date disagreements remain unresolved. Bare next week
+and contextual before then remain review cases. Approval policy v5 normalizes
+curly apostrophes and accepts common introductory acknowledgments before an
+explicit self-commitment. Tentative/conditional wording and all other approval
+gates continue to require review.
+
+Replayed the saved live-model outputs against these functions. Script #1 resolved
+19 of 21 deadline strings and Script #2 resolved all 12 stated deadline strings.
+Seven of 34 candidates passed the wording gate alone. These counts do not establish
+full automatic approval, which also checks confirmed accounts, evidence, title
+grounding, embeddings, and duplicates.
+
+Updated and verified both shared Google Docs script tabs. Script #1 opens Tuesday,
+November 24, 2026 and Script #2 opens Wednesday, December 2, 2026. Shifted the
+explicit deadlines and recaps, corrected the API/upload references to November 25,
+and clarified the revised Tuesday transcript-evidence deadline. Optional meeting
+three is December 6, practice demo December 7, and report drafts December 8.
+These are staged scenario dates. Both script tabs reported Saved to Drive.
+
+Validation reported 219 Python tests passed, 196 database tests skipped, and a
+successful signed simulator build. Docker was unavailable. Audio-based rehearsal
+and database/email acceptance remain pending.
