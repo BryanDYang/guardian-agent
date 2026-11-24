@@ -6,6 +6,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from zipfile import ZipFile
@@ -100,11 +101,13 @@ def test_repair_drops_unverifiable_evidence(transcript, prediction):
 
 def test_repair_clears_a_reworded_deadline(transcript, prediction):
     prediction["commitments"][0]["due_date_text"] = "by this Friday"
+    prediction["commitments"][0]["due_date"] = "2026-09-25"
     extraction, repairs = Extraction.model_validate(prediction).repair_evidence(
         transcript
     )
     extraction.check_evidence(transcript)
     assert extraction.commitments[0].due_date_text is None
+    assert extraction.commitments[0].due_date is None
     assert extraction.commitments[0].title == prediction["commitments"][0]["title"]
     assert repairs == ["commitments[0]: cleared unquoted deadline 'by this Friday'"]
 
@@ -534,6 +537,18 @@ def test_storylines_are_required_in_schema_but_optional_in_old_results(predictio
     assert "storylines" in schema["required"]
     assert "default" not in schema["properties"]["storylines"]
     assert Extraction.model_validate(prediction).storylines == []
+
+
+def test_due_date_is_required_in_schema_but_optional_in_old_results(prediction):
+    commitment = Extraction.model_json_schema()["$defs"]["Commitment"]
+    assert "due_date" in commitment["required"]
+    assert "default" not in commitment["properties"]["due_date"]
+    assert Extraction.model_validate(prediction).commitments[0].due_date is None
+
+
+def test_prompt_states_the_meeting_date(transcript):
+    assert "MEETING DATE: 2026-09-22\n" in build_prompt(transcript, date(2026, 9, 22))
+    assert "MEETING DATE: unknown\n" in build_prompt(transcript)
 
 
 def test_repair_keeps_one_storyline_per_known_speaker(prediction, transcript):

@@ -2,6 +2,7 @@
 
 import os
 import shutil
+from datetime import date
 from pathlib import Path
 
 from .extraction import Transcript
@@ -37,6 +38,7 @@ def extract(
     model: str | None = None,
     timeout: int,
     rejected: Path | None = None,
+    meeting_date: date | None = None,
 ) -> dict:
     if provider == "codex":
         from .codex_client import extract as run
@@ -49,6 +51,7 @@ def extract(
         model=model or DEFAULT_MODELS[provider],
         timeout=timeout,
         rejected=rejected,
+        meeting_date=meeting_date,
     )
 
 

@@ -471,20 +471,23 @@ def test_session_recovery_expiry_and_processing_guard(client, project_id, member
 
 
 @pytest.mark.parametrize(
-    "deadline, expected",
+    "deadline, proposed, expected",
     [
-        ("by November 9, 2026", "2026-11-09"),
-        ("by November 20th", "2026-11-20"),
+        ("by November 9, 2026", None, "2026-11-09"),
+        ("by November 20th", None, "2026-11-20"),
+        ("in two weeks", "2026-10-09", "2026-10-09"),
     ],
 )
 def test_spoken_calendar_deadline_is_prefilled_and_survives_approval(
-    client, project_id, member, monkeypatch, deadline, expected
+    client, project_id, member, monkeypatch, deadline, proposed, expected
 ):
     """Exercise upload -> pipeline -> stored candidate -> accepted task."""
     _, headers = member
 
     def dated_pipeline(command, **kwargs):
         result = fake_pipeline(command, **kwargs)
+        if "extract" in command:
+            assert command[command.index("--meeting-date") + 1] == "2026-09-25"
         if "transcribe" in command:
             work = Path(command[command.index("--output-dir") + 1])
             path = work / "transcript.json"
@@ -498,6 +501,7 @@ def test_spoken_calendar_deadline_is_prefilled_and_survives_approval(
             output = json.loads(path.read_text())
             task = output["extraction"]["commitments"][0]
             task["due_date_text"] = deadline
+            task["due_date"] = proposed
             task["evidence"] = [
                 {
                     "transcript_id": task["evidence"][0]["transcript_id"],

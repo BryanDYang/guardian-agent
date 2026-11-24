@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from labsync.deadlines import explicit_deadline
+from labsync.deadlines import explicit_deadline, suggested_deadline
 
 
 @pytest.mark.parametrize(
@@ -82,3 +82,19 @@ def test_ambiguous_dates_stay_unresolved_with_context():
 )
 def test_spoken_deadlines(text, expected):
     assert explicit_deadline(text, date(2026, 11, 24)) == expected
+
+
+@pytest.mark.parametrize(
+    "text, proposed, expected",
+    [
+        ("end of the week", "2026-11-27", date(2026, 11, 27)),
+        ("in two weeks", "2026-12-08", date(2026, 12, 8)),
+        ("Friday", "2026-12-04", date(2026, 11, 27)),
+        ("end of the week", None, None),
+        (None, "2026-11-27", None),
+        ("end of the week", "not a date", None),
+        ("end of the week", "2026-11-20", None),
+    ],
+)
+def test_model_date_fills_only_what_the_parser_cannot(text, proposed, expected):
+    assert suggested_deadline(text, proposed, date(2026, 11, 24)) == expected

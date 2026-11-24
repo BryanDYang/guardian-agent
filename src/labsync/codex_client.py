@@ -5,6 +5,7 @@ import logging
 import subprocess
 import tempfile
 import time
+from datetime import date
 from hashlib import sha256
 from pathlib import Path
 from uuid import uuid4
@@ -27,11 +28,12 @@ def extract(
     model: str,
     timeout: int = 180,
     rejected: Path | None = None,
+    meeting_date: date | None = None,
 ) -> dict:
     """Run one independent meeting; never read or copy Codex credentials."""
     if timeout <= 0:
         raise ValueError("timeout must be positive")
-    prompt = build_prompt(transcript)
+    prompt = build_prompt(transcript, meeting_date)
     started = time.monotonic()
     raw, usage = run(
         prompt,

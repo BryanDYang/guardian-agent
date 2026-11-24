@@ -120,3 +120,23 @@ def explicit_deadline(
         except ValueError:
             continue
     return None
+
+
+def suggested_deadline(
+    text: str | None, proposed: str | None, meeting_date: date | None = None
+) -> date | None:
+    """The parsed deadline, else the model's reading of the same quoted words.
+
+    A model date needs spoken deadline text and cannot precede the meeting.
+    It is a pending suggestion that a reviewer confirms or changes."""
+    if parsed := explicit_deadline(text, meeting_date):
+        return parsed
+    if not text or not proposed:
+        return None
+    try:
+        day = date.fromisoformat(proposed)
+    except ValueError:
+        return None
+    if isinstance(meeting_date, datetime):
+        meeting_date = meeting_date.date()
+    return None if meeting_date and day < meeting_date else day

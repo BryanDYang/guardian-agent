@@ -4,6 +4,7 @@ import argparse
 import json
 import logging
 import os
+from datetime import date
 from importlib.metadata import version
 from pathlib import Path
 from subprocess import SubprocessError
@@ -54,6 +55,11 @@ def main(argv: list[str] | None = None) -> int:
     add_provider_options(extraction)
     extraction.add_argument("--output", required=True, type=Path)
     extraction.add_argument("--timeout", type=int, default=180)
+    extraction.add_argument(
+        "--meeting-date",
+        type=date.fromisoformat,
+        help="Meeting day (YYYY-MM-DD) for resolving spoken deadlines",
+    )
     ami = commands.add_parser(
         "import-ami", help="Import AMI manual transcript segments"
     )
@@ -281,6 +287,7 @@ def main(argv: list[str] | None = None) -> int:
                 model=args.model,
                 timeout=args.timeout,
                 rejected=args.output.with_name("extraction-rejected.json"),
+                meeting_date=args.meeting_date,
             )
             args.output.parent.mkdir(parents=True, exist_ok=True)
             with args.output.open("x", encoding="utf-8") as destination:

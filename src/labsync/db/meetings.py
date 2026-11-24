@@ -6,7 +6,7 @@ from uuid import UUID
 from psycopg import Connection
 from psycopg.types.json import Jsonb
 
-from ..deadlines import explicit_deadline
+from ..deadlines import suggested_deadline
 from ..extraction import Evidence, Extraction, Transcript
 
 # A pending task matches an open task when their title embeddings are at
@@ -316,13 +316,20 @@ def save_results(
     # A commitment owned by a recognized member is assigned to them (FR-SPK-5).
     members = {s["display"]: s["user_id"] for s in speakers.values() if s["user_id"]}
     tasks = [
-        (item.title, item.owner, item.due_date_text, "commitment", item.evidence)
+        (
+            item.title,
+            item.owner,
+            item.due_date_text,
+            item.due_date,
+            "commitment",
+            item.evidence,
+        )
         for item in extraction.commitments
     ] + [
-        (item.statement, None, None, "advisor_suggestion", item.evidence)
+        (item.statement, None, None, None, "advisor_suggestion", item.evidence)
         for item in extraction.suggestions
     ]
-    for title, owner, due_date_text, category, evidence in tasks:
+    for title, owner, due_date_text, proposed_date, category, evidence in tasks:
         assignee = members.get(owner)
         task_id = conn.execute(
             """
@@ -337,7 +344,9 @@ def save_results(
                 assignee,
                 title,
                 due_date_text,
-                explicit_deadline(due_date_text, meeting["meeting_date"]),
+                suggested_deadline(
+                    due_date_text, proposed_date, meeting["meeting_date"]
+                ),
                 category,
             ),
         ).fetchone()["id"]

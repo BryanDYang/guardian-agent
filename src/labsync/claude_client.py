@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from datetime import date
 from hashlib import sha256
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -29,6 +30,7 @@ def extract(
     model: str,
     timeout: int = 180,
     rejected: Path | None = None,
+    meeting_date: date | None = None,
 ) -> dict:
     """Run one independent meeting; the key is read from ANTHROPIC_API_KEY only."""
     if timeout <= 0:
@@ -36,7 +38,7 @@ def extract(
     key = os.environ.get("ANTHROPIC_API_KEY")
     if not key:
         raise RuntimeError("Set ANTHROPIC_API_KEY to use the Claude provider.")
-    prompt = build_prompt(transcript)
+    prompt = build_prompt(transcript, meeting_date)
     started = time.monotonic()
     raw, message = call_tool(
         prompt,

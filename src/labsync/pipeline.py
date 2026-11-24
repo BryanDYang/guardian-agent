@@ -39,22 +39,25 @@ def run_pipeline(record, directory, work, source, settings, identify, stage, run
         labeled = work / "labeled-transcript.json"
         labeled.write_text(named.model_dump_json(indent=2) + "\n")
         stage("extracting")
+        command = [
+            sys.executable,
+            "-m",
+            "labsync",
+            "extract",
+            str(labeled),
+            "--provider",
+            settings["provider"],
+            "--model",
+            settings["model"],
+            "--output",
+            str(work / "extraction.json"),
+            "--timeout",
+            "300",
+        ]
+        if record.get("date"):
+            command += ["--meeting-date", record["date"]]
         run(
-            [
-                sys.executable,
-                "-m",
-                "labsync",
-                "extract",
-                str(labeled),
-                "--provider",
-                settings["provider"],
-                "--model",
-                settings["model"],
-                "--output",
-                str(work / "extraction.json"),
-                "--timeout",
-                "300",
-            ],
+            command,
             check=True,
             stdout=log,
             stderr=log,
