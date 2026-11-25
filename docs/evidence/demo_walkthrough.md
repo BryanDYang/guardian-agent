@@ -1035,3 +1035,39 @@ These are staged scenario dates. Both script tabs reported Saved to Drive.
 Validation reported 219 Python tests passed, 196 database tests skipped, and a
 successful signed simulator build. Docker was unavailable. Audio-based rehearsal
 and database/email acceptance remain pending.
+
+
+## November 24, 2026 - Recorded team deadline repair
+
+Started the local backend and simulator, opened Guardian Agent Group Project,
+and reproduced missing dates in Team meeting #3 through the normal Tasks view.
+Stored processing metadata showed the recordings were processed on a teammate's
+Mac using MLX Whisper base, pyannote, and Claude extraction. Recording file paths
+pointed to that machine, so playback returned HTTP 404 from the local backend.
+The recording files must be accessible from the backend used for playback.
+
+The stored deadline phrases included tomorrow at 10 a.m., Friday the fourth,
+seven tonight, and Thursday December 10th. Existing phrases such as Friday and
+tonight also lacked dates in stored results. Correcting the local parser does
+not retroactively update persisted tasks or a teammate's running backend.
+
+Added support for punctuated AM/PM, spoken ordinal dates, and hour-before-tonight
+phrases, retaining calendar-day precision. Ambiguous or corrupted phrases such
+as tomorrow morning at night and competing time references remain review cases.
+Ran 49 deadline tests successfully. The local full suite reported 229 passed
+and 196 database-dependent tests skipped. Ruff and diff checks passed.
+
+Repaired 34 pending, undated tasks across the three exact team meetings using
+the existing quoted deadline and stored meeting date. Each correction has an
+audit entry and an ignored local backup under artifacts. A repeat preview
+reported zero additional repair candidates. A bare weekday equal to the meeting
+day was excluded from the repair for human review. Review status remained pending.
+Reloaded meeting #3 in the simulator and verified Due Dec 3 for seven tonight
+and Due Dec 4 for tomorrow at 10 a.m. and tomorrow at 9 a.m.
+
+The first meeting is stored as November 23, whereas earlier script preparation
+used November 24. Dates above use each stored meeting day. Check the actual
+recording's opening date before correcting that meeting date or its relative
+deadlines. Speaker-identification errors in meeting #3 remain a documented
+limitation, with human speaker review available. Per Bryan's scope clarification,
+broader speaker improvements and the proposed future-work items were deferred.

@@ -98,3 +98,22 @@ def test_spoken_deadlines(text, expected):
 )
 def test_model_date_fills_only_what_the_parser_cannot(text, proposed, expected):
     assert suggested_deadline(text, proposed, date(2026, 11, 24)) == expected
+
+
+@pytest.mark.parametrize(
+    "text, expected",
+    [
+        ("tomorrow at 10 a.m.", date(2026, 12, 4)),
+        ("tomorrow at 9 a.m.", date(2026, 12, 4)),
+        ("Friday the fourth", date(2026, 12, 4)),
+        ("this Friday, the fourth", date(2026, 12, 4)),
+        ("Thursday December tenth", date(2026, 12, 10)),
+        ("seven tonight", date(2026, 12, 3)),
+        ("10 tonight", date(2026, 12, 3)),
+        ("tomorrow morning at night", None),
+        ("tonight. Let's say around nine", None),
+        ("tomorrow at 10 a.m. at 11 a.m.", None),
+    ],
+)
+def test_recorded_team_deadlines(text, expected):
+    assert explicit_deadline(text, date(2026, 12, 3)) == expected

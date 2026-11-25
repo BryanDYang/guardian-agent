@@ -11,6 +11,56 @@ def explicit_deadline(
         return None
     value = re.sub(r"^(?:by|on|due(?:\s+(?:by|on))?)\s+", "", text.strip(), flags=re.I)
     value = value.rstrip(".").strip()
+    # Whisper commonly writes spoken ordinals as words and AM/PM with periods.
+    ordinals = {
+        "first": "1",
+        "second": "2",
+        "third": "3",
+        "fourth": "4",
+        "fifth": "5",
+        "sixth": "6",
+        "seventh": "7",
+        "eighth": "8",
+        "ninth": "9",
+        "tenth": "10",
+        "eleventh": "11",
+        "twelfth": "12",
+        "thirteenth": "13",
+        "fourteenth": "14",
+        "fifteenth": "15",
+        "sixteenth": "16",
+        "seventeenth": "17",
+        "eighteenth": "18",
+        "nineteenth": "19",
+        "twentieth": "20",
+        "twenty-first": "21",
+        "twenty-second": "22",
+        "twenty-third": "23",
+        "twenty-fourth": "24",
+        "twenty-fifth": "25",
+        "twenty-sixth": "26",
+        "twenty-seventh": "27",
+        "twenty-eighth": "28",
+        "twenty-ninth": "29",
+        "thirtieth": "30",
+        "thirty-first": "31",
+    }
+    value = re.sub(
+        r"\b(?:" + "|".join(ordinals) + r")\b",
+        lambda match: ordinals[match[0].lower()],
+        value,
+        flags=re.I,
+    )
+    value = re.sub(r"\b([ap])\.m\.?", r"\1m", value, flags=re.I)
+    if meeting_date and re.fullmatch(
+        r"(?:[1-9]|1[0-2]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+tonight",
+        value,
+        re.I,
+    ):
+        return (
+            meeting_date.date() if isinstance(meeting_date, datetime) else meeting_date
+        )
+
     value = re.sub(
         r"\s+(?:before\s+(?:noon|midnight)|(?:at|before)\s+\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)$",
         "",
