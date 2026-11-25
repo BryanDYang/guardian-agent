@@ -1092,3 +1092,12 @@ shared backend returned HTTP 530. The simulator reproduced HTTP 404. Restoring
 the original recording locally or bringing its original backend online is needed
 before playback or a recording-based diarization rerun can be verified. This
 correction does not establish that automatic diarization now detects three voices.
+
+Later on November 25, Bryan supplied the recordings under
+`contexts/final_guardian_agent_audio`. The third recording's SHA-256 exactly
+matched meeting #3's original audio. Copied it into the existing local meeting
+folder and restored its local audio-serving record without reprocessing or
+changing shared tasks. In the simulator, Retry cleared HTTP 404 and playback
+advanced to 2:33 of 9:57 with enabled seek and pause controls. Paused playback
+after verification. This restores playback on Bryan's backend; other backends
+still need their own recording copy or shared audio storage.
