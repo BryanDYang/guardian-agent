@@ -108,15 +108,9 @@ def confirm_speaker(
     ).fetchall()
     if not turns or label.upper() == "UNKNOWN":
         raise HTTPException(404, "Speaker not found")
-    if conn.execute(
-        "SELECT 1 FROM meeting_transcripts WHERE meeting_id=%s AND speaker_label<>%s "
-        "AND lower(speaker_name)=lower(%s)",
-        (meeting_id, label, name),
-    ).fetchone():
-        raise HTTPException(
-            409,
-            "That name is used by another speaker. Review the speaker split first.",
-        )
+    # Diarization can split one participant into multiple acoustic clusters.
+    # Human confirmation may map those clusters to the same person. Preserve
+    # raw labels and review history so this correction remains traceable.
     if body.assignee_user_id:
         if not conn.execute(
             "SELECT 1 FROM project_members WHERE project_id=%s AND user_id=%s",

@@ -1071,3 +1071,24 @@ recording's opening date before correcting that meeting date or its relative
 deadlines. Speaker-identification errors in meeting #3 remain a documented
 limitation, with human speaker review available. Per Bryan's scope clarification,
 broader speaker improvements and the proposed future-work items were deferred.
+
+### November 25: meeting #3 split-speaker correction and audio blocker
+
+Bryan confirmed Speaker 1 as Bryan Yang and Speakers 2 and 3 as Will Liu.
+The extra acoustic cluster contained about 3.7 seconds of speech. The speaker
+review API previously rejected a name already used by another cluster, preventing
+this correction. It now allows human-confirmed clusters to share a participant
+name and project account while retaining raw labels and review history.
+
+Applied the correction through the existing speaker-review function. The stored
+transcript now has three participant names: Bryan Yang, Will Liu, and Guadalupe
+Cantera. No tasks were automatically approved by this correction. The focused
+speaker-review, name-suggestion, and follow-through tests passed: 45 tests using
+a fresh disposable database with repository migrations. Ruff checks passed.
+
+Playback remains blocked: the stored audio path points to Will's Mac, this
+backend has no recording or shared-audio job for meeting #3, and the documented
+shared backend returned HTTP 530. The simulator reproduced HTTP 404. Restoring
+the original recording locally or bringing its original backend online is needed
+before playback or a recording-based diarization rerun can be verified. This
+correction does not establish that automatic diarization now detects three voices.

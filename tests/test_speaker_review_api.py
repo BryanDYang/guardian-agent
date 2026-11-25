@@ -155,10 +155,10 @@ def test_speaker_review_checks_membership_and_processing_state(fixture):
     )
 
 
-def test_shared_snapshot_is_updated_and_duplicate_names_need_review(fixture):
+def test_shared_snapshot_is_updated_and_split_clusters_can_share_a_person(fixture):
     from psycopg.types.json import Jsonb
 
-    client, headers, _, _, _, meeting = fixture
+    client, headers, _, member, _, meeting = fixture
     query(
         "INSERT INTO meeting_jobs(meeting_id,object_key,state,record,settings) "
         "VALUES (%s,%s,'completed',%s,%s)",
@@ -185,15 +185,30 @@ def test_shared_snapshot_is_updated_and_duplicate_names_need_review(fixture):
         "(%s,'SPEAKER_01','Sam','other',5000,6000,'Hello.',1)",
         meeting,
     )
-    assert client.put(path, headers=headers, json={"name": "Sam"}).status_code == 409
+    body = {"name": "Sam", "assignee_user_id": str(member)}
+    assert (
+        client.put(
+            f"/api/v1/meetings/{meeting}/speakers/SPEAKER_01",
+            headers=headers,
+            json=body,
+        ).status_code
+        == 200
+    )
+    assert client.put(path, headers=headers, json=body).status_code == 200
     assert (
         query(
             "SELECT speaker_name FROM meeting_transcripts "
             "WHERE meeting_id=%s AND speaker_label='SPEAKER_00'",
             meeting,
         )[0]["speaker_name"]
-        == "Alex"
+        == "Sam"
     )
+    speakers = client.get(
+        f"/api/v1/meetings/{meeting}/speakers", headers=headers
+    ).json()
+    assert len(speakers) == 2  # Keep the original acoustic labels for evidence.
+    assert all(s["confirmed"] for s in speakers)
+    assert all(s["assignee_user_id"] == str(member) for s in speakers)
 
 
 def test_reprocessing_keeps_review_history_but_invalidates_cluster_mapping(fixture):
