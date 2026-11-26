@@ -1129,3 +1129,37 @@ Returned the app to meeting #3's Summary. This was a functional rehearsal, not
 a timed three-presenter recording or microphone check. Those remain the final
 recording setup checks. No automated diarization rerun or cross-meeting task
 reconciliation was demonstrated by this rehearsal.
+
+### November 26: final repository packaging and reproduction
+
+Finalized the Model Card, System Card, and evaluation reproduction guide under
+Milestone 5. Updated README links, the final report working draft, and the roadmap
+to distinguish the completed simulator rehearsal from unverified cross-meeting
+state updates and the unpublished final team video. The earlier demo remains
+explicitly labeled. Replaced the unused tracked root transcriber snapshot with
+an explanatory stub; the active separately supplied dependency is unchanged.
+Historical Git still contains the former copy, and upstream licensing remains
+unverified rather than represented as resolved.
+
+Reconstructed the October 26 extraction predictions into a fresh artifacts folder
+and ran the current scorer, retaining fixture/input hash checks. Reproduced
+Codex F1 26/29 = 0.897 and rules 22/31 = 0.710. Recomputed the 25/1/2 human-review
+counts, 8/8 bounded November 5 checks, and workload medians 8.326/4.431/4.541 seconds
+from saved evidence. This makes no new model-quality or current-price claim.
+
+Verified a clean local checkout of tracked files, with the final documentation
+and root stub applied, on the same Apple Silicon Mac with Python 3.12.13. Installed
+locked dev/server dependencies into a new virtual environment, without .env,
+private recordings, or contexts. The initial source export lacked Git metadata,
+which the evaluation runner requires for provenance; supplied normal clone
+metadata and repeated the checks. The representative rule run generated all
+24 outputs and F1 0.710. The full test suite passed 435 tests against disposable
+local PostgreSQL with repository migrations; two upstream deprecation warnings
+remained. Ruff lint/format and local documentation link-target checks passed.
+This verifies the credential-free setup, not cold speech-model downloads,
+independent teammate setup, or the full native audio installation.
+
+The repository submission PDF pins the reviewed source revision and provides
+clickable setup, cards, evaluation, evidence, and earlier-demo links. Canvas asks
+for one PDF for the group; the final technical report and presentation remain
+separate deliverables.

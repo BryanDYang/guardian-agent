@@ -25,6 +25,7 @@ For the group recording workflow, use the
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
 | Where do we review model outputs? | [M4 answer review](archive/milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
 | How do we divide and record the final team demo? | [Will, Guadalupe, and Bryan sections and dry run](milestone_5/group_demo_script.md) |
+| Where are the final cards and reproduction steps? | [Model Card](milestone_5/model_card.md), [System Card](milestone_5/system_card.md), and [evaluation reproduction](milestone_5/evaluation.md) |
 | What remains for the final submission? | [Final scope and acceptance](milestone_5/roadmap.md) |
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
@@ -59,9 +60,10 @@ has not been rewritten to change comments.
   external transcriber dependency. A fresh clone does not contain them.
 - `artifacts/`: ignored recordings, processing logs, and run outputs.
 - `.env`, `.venv/`, model caches: private configuration/generated dependencies.
-- Root `meeting_transcriber.py` is currently an untracked local copy; the normal
-  runtime source is `contexts/meeting_transcriber-master`. Preserve provenance
-  and check local use before deleting either.
+- Root `meeting_transcriber.py` is an explanatory dependency stub. The normal
+  runtime source is `contexts/meeting_transcriber-master`; its supplied snapshot
+  has unverified upstream revision/license. Historical Git contains a former copy.
+  See the [dependency notice](reference/ccb-transcriber.md).
 
 ## Maintaining documentation
 

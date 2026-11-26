@@ -2,7 +2,9 @@
 
 Turns meeting recordings into summaries, cited decisions, and action items.
 
-**Milestone 4 review demo:** [85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/archive/milestone_4/demo_draft.mp4). Synthetic audio/narration, manual assignment/date entry, captured follow-up, and edited processing waits.
+**Public demo:** [Milestone 4 walkthrough](https://www.youtube.com/watch?v=xgaeo0GTi1Y). This is the earlier demonstration; the final three-person recording is not yet published.
+
+**Milestone 4 review clip:** [85-second captioned video](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/archive/milestone_4/demo_draft.mp4). Synthetic audio/narration, manual assignment/date entry, captured follow-up, and edited processing waits.
 
 **Rehearse the team demo** with the [Will, Guadalupe, and Bryan presenter sections and dry run](docs/milestone_5/group_demo_script.md).
 
@@ -12,7 +14,30 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 **Understand the system:** [Current architecture, data flows, and troubleshooting](docs/architecture.md). For code ownership, design history, and a staged simplification plan, see the [documentation and repository map](docs/README.md). For remaining milestone work, see the [final submission roadmap](docs/milestone_5/roadmap.md).
 
-Pick one:
+## Final repository review
+
+**Track: AI Engineering.** Start with the [credential-free quick-start and final
+evaluation reproduction guide](docs/milestone_5/evaluation.md). It generates
+representative task outputs without model credentials or the external transcriber.
+The full native recording workflow is documented below.
+
+- [Final Model Card](docs/milestone_5/model_card.md) and
+  [Final System Card](docs/milestone_5/system_card.md).
+- [Saved evaluation, red-team, latency, and cost evidence](docs/evidence/m4_2026-10-26/README.md)
+  and the [November 5 evidence](docs/evidence/ai_2026-11-05/redteam.json).
+- [Observed native acceptance and failures](docs/evidence/demo_walkthrough.md#november-26-group-demo-simulator-rehearsal).
+- [Final report working draft](docs/milestone_5/submission_draft.md) and
+  [submission roadmap](docs/milestone_5/roadmap.md).
+
+The November 26 rehearsal verified meeting #3 playback, reviewed speaker
+identities, task dates, manual approval, To-do, actual inbox delivery, and cited
+chat navigation to source audio. It does not establish automatic diarization
+accuracy or all cross-meeting updates. The native pipeline needs a separately
+obtained transcriber; its upstream license/revision is unverified. The root
+`meeting_transcriber.py` is an explanatory notice, not the runtime dependency.
+See the [dependency notice](docs/reference/ccb-transcriber.md).
+
+Pick one for the native app:
 
 - **Option A:** use Will's backend. You only need Xcode.
 - **Option B:** run the whole pipeline on your own Mac.
@@ -222,8 +247,9 @@ and `python -m labsync.asr_evaluation` preparation, inference and scoring comman
 The audio run requires the separately supplied CCB source at
 `contexts/meeting_transcriber-master`; it is not bundled in a fresh checkout.
 Obtain it from the project team or course sponsor before attempting audio inference.
-The supplied archive has no verified upstream commit/license, so it has not been
-redistributed. Download AMI inputs using the protocol manifest. Raw audio run
+The supplied archive has no verified upstream commit/license. The current root
+copy is an explanatory stub; historical Git revisions contain the supplied copy.
+LabSync's MIT license does not establish redistribution rights for that dependency. Download AMI inputs using the protocol manifest. Raw audio run
 artifacts stay local. The rule-based extraction example below works without CCB,
 model credentials, or audio downloads. Use a fresh output directory for each run. Offline benchmark tests use the dev extra.
 

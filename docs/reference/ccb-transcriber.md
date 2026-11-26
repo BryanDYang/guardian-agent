@@ -3,7 +3,12 @@
 The supplied source is `contexts/meeting_transcriber-master`. Its README names
 `https://github.com/ccb/meeting_transcriber` as the upstream repository. The archive
 has no Git metadata or license file, so its upstream commit is unverified. We
-load it locally and do not copy or redistribute its code in the LabSync package.
+load it locally. The current root `meeting_transcriber.py` is an explanatory
+stub. A supplied copy was previously tracked and remains in historical Git; the
+application MIT license does not establish licensing rights for that snapshot.
+Do not represent the external dependency as cleared for redistribution. Obtain
+it from the team/course sponsor while its provenance/license is resolved. The
+[offline representative path](../milestone_5/evaluation.md) runs without it.
 
 Audited `meeting_transcriber.py` SHA-256:
 `c1f1a342ecf5924d9d92ee9791790ab90d98beef5a0a61377b552235ba1c0fa3`.

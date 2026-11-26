@@ -1,7 +1,7 @@
 # LabSync final report draft
 
 Course CIS-5980. Track AI Engineering. Team Will Liu, Guadalupe Cantera, and
-Bryan Yang. Prepared November 17, 2026. This is a working final-report draft.
+Bryan Yang. Updated November 26, 2026. This is a working final-report draft.
 Reviewed against the three final-deliverable assignment PDFs on November 17.
 The exact Canvas deadlines and showcase session date await confirmation.
 The [final roadmap](roadmap.md) owns outstanding work and acceptance gates.
@@ -16,7 +16,9 @@ extraction F1 was 0.897 compared with 0.710 for the rules baseline. A separate
 28-answer frozen-source evaluation completed without timeouts, and Bryan's
 review classified 25 answers as Supported, one as Partly Supported, and two as
 Unsupported. These bounded development results motivate further testing on real
-team recordings. The final group-audio acceptance run remains pending.
+team recordings. A November 26 functional simulator rehearsal passed task
+approval, actual inbox delivery, and chat citation-to-audio navigation; it is
+not a new accuracy benchmark or a complete cross-meeting reconciliation test.
 
 ## Project overview
 
@@ -27,11 +29,11 @@ tasks, and uses project-scoped chat to ask questions with source citations.
 Accepted tasks can generate immediate follow-up email. Users can correct owners
 and dates, complete tasks, and return work for review with change notes.
 
-Our final scenario follows Will, Guadalupe, and Bryan through two staged project
-meetings. The first assigns work and revises deadlines. The second reports
-progress, moves a deadline, and hands work to another teammate. The planned
-recording-based rehearsal will establish which outputs and review actions can
-be shown in the final video.
+Our final scenario uses three staged team recordings stored as November 23,
+December 2, and December 3, 2026. The rehearsed demo centers on meeting #3,
+showing reviewed identities, extracted tasks and dates, manual task approval,
+email arrival, and a decision recovered through cited chat. The recorded
+three-presenter video remains to be produced.
 
 ## System and release configuration
 
@@ -47,7 +49,10 @@ operational boundaries. The [README](../../README.md) and
 The current audio path uses Apple Silicon and MLX. The submitted Milestone 4
 report describes native-Mac reproducibility and a separately supplied transcriber.
 The final release needs an independently checked setup and confirmed packaging
-arrangement. Final tested commit, configuration, and artifact links are pending.
+arrangement. The [Model Card](model_card.md), [System Card](system_card.md),
+and [evaluation reproduction guide](evaluation.md) document configuration and
+measured scope; the [walkthrough](../evidence/demo_walkthrough.md) records
+revision-specific checks. The repository submission PDF pins its reviewed revision.
 
 ## Data and inputs
 
@@ -55,9 +60,10 @@ Inputs include public AMI Meeting Corpus audio, 24 synthetic extraction cases,
 14 frozen-source RAG questions evaluated with two retrieval variants, eight
 personal-case human judgments, and the team's staged meeting scripts. Describe
 selection and any splits for each reported result in the final evaluation
-section. Treat the synthetic suite as development data. The new team audio is
-pending recording and consent. Document dataset licenses, recording access,
-provider processing, and retention before finalizing this section. The external
+section. Treat the synthetic suite as development data. The team audio was supplied locally and processed in the shared project; it is
+not included in the public repository. The System Card documents provider
+processing and retention boundaries. Original consent and any further sharing
+permissions remain the team's responsibility. The external
 transcriber has unresolved provenance/redistribution arrangements described in
 the submitted Milestone 4 report.
 
@@ -93,8 +99,8 @@ The following changes extend that baseline.
 
 The November 17 work adds a People view to the project menus, with member names,
 account emails, and roles. Simulator verification showed Bryan as Member and
-Will as Owner in the shared project. The team should verify all three accounts
-before the recording session.
+Will as Owner in the shared project. The November 26 rehearsal also verified
+Guadalupe as Member and all three account names in People.
 
 Deadline parsing now supports weekday expressions, weekday/date combinations,
 short ordinal dates, and time-of-day qualifiers at calendar-day precision.
@@ -103,9 +109,15 @@ accepts typographic apostrophes and common introductory acknowledgments before
 explicit self-commitments. Tentative language and ambiguous dates need review.
 Other account, evidence, title-grounding, and duplicate gates also apply.
 
-The shared meeting scripts now use November 24 and December 2, 2026. The team
-presentation has separate sections for Will, Guadalupe, and Bryan. These changes
-have software and text-level checks. The full team-audio rehearsal is pending.
+The November 24 recording inspection exposed missing spoken/qualified dates.
+The parser was extended and 34 existing pending task dates were repaired with
+audit entries. Meeting #3 also split Will into two acoustic labels; human
+confirmation mapped both to Will while retaining raw labels and history.
+Its local playback was restored from the hash-matching original audio.
+The November 26 simulator rehearsal verified task approval, To-do visibility,
+actual email arrival, and chat citations at 04:39 and 05:05 opening the source
+transcript and audio. These are bounded functional checks, not fresh extraction
+or automatic diarization accuracy measurements.
 
 ## Evaluation methods and dated results
 
@@ -132,10 +144,11 @@ old wording gate. Replaying those saved outputs after the fixes resolved 19 of
 turns and synthetic timestamps. It does not measure transcription, diarization,
 full approval, or inbox delivery.
 
-The final PDF needs a consolidated results table with metric definitions, sample
-counts, baseline, and evidence URLs. The final report should add the actual group-audio acceptance results, correction
-counts, failures, and retests after recording. Preserve the scopes above when
-comparing the new evidence.
+The [evaluation guide](evaluation.md) maps these baselines to metric definitions,
+sample counts, saved predictions, and tested reproduction commands. Its historical
+aggregates were recomputed during final repository preparation. The final report
+PDF should retain these scopes and include the bounded simulator rehearsal
+separately from the scored model evaluations.
 
 ## Latency and cost
 
@@ -165,8 +178,11 @@ citation can still accompany an overreaching answer. The final evidence uses
 small development samples and selected human judgments, with production load,
 quotas, alerts, abuse controls, and broad speaker performance unverified.
 
-Revise this section with the worst observed group-recording failures and the
-justification for each unresolved issue before submission.
+Meeting #3 produced four acoustic clusters for three people and some mixed-voice
+turns. Human naming corrected the split, not every segment. Ambiguous ASR text
+such as “tomorrow morning at night” remains for review. Broader diarization and
+duplicate-task improvements were deferred to avoid unverified changes before the
+demo; these failures remain visible limitations.
 
 ## Verification and reproducibility
 
@@ -176,7 +192,12 @@ Milestone 4 checkpoint reported 395 passing tests with its own environment and
 revision. The subsequent CI run at `2479b1e` passed all 415 tests with the disposable
 database running, plus lint, formatting, and the extraction baseline. Its
 [run record](https://github.com/BryanDYang/guardian-agent/actions/runs/44005877745)
-is the current complete software checkpoint. Recheck the final frozen revision.
+is a historical complete software checkpoint, not the latest release result.
+Final repository preparation verified a clean local checkout with a new locked
+environment, the 24-output credential-free rule run, and 435 passing tests against
+disposable PostgreSQL. Two upstream deprecation warnings remained. Ruff and local
+documentation link checks passed. The walkthrough records the setup correction
+and boundaries; this did not test cold model downloads or full native setup.
 
 A teammate should reproduce setup and a representative recording from a fresh
 checkout and record missing prerequisites. Transcriber provenance/delivery,
@@ -199,7 +220,7 @@ backend/setup instructions appropriate to that method.
 
 LabSync provides a reviewable path from meeting recordings to tasks, follow-up,
 and cited project memory. The final report should summarize the completed
-recording-based acceptance run once available and tie each headline result to
+functional rehearsal and tie each headline result to
 its evaluation scope. Practical next work includes stronger speaker evaluation,
 completion-only update extraction, clearer ambiguous-date review, reproducible
 external dependency delivery, and broader operational testing.
@@ -226,8 +247,9 @@ and the [course-team repository](https://github.com/BryanDYang/ai-capstone) both
 appear in project materials. Confirm their final roles and the submitted release
 revision before finalizing the repository section.
 
-The exact Canvas deadlines, showcase date, final demo URL, release revision,
-and completed acceptance evidence are pending finalization. Submit the technical
+The exact Canvas deadlines, showcase date, and final demo URL
+remain pending finalization; completed rehearsal evidence is in the walkthrough.
+Submit the technical
 report as one PDF. Prepare the longer presentation recording, its PDF slides,
 and the separate single-static-slide live showcase package with the advance
 EdDiscussion and Canvas submissions specified in the assignment.

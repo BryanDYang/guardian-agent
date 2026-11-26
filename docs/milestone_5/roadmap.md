@@ -1,6 +1,6 @@
 # Final submission scope and acceptance
 
-Prepared November 17, 2026 for CIS-5980 AI Engineering. This document owns the
+Updated November 26, 2026 for CIS-5980 AI Engineering. This document owns the
 remaining work for Milestone 5 or the final submission. The three course PDFs stored locally in `contexts/milestone_5/` establish the
 final deliverables.
 Canvas owns the exact submission dates. The showcase session date and timezone
@@ -60,7 +60,9 @@ configuration/parameter documentation, readable code, and final supporting
 artifacts for evaluation, red-teaming, latency, cost, and reproducibility.
 Include final Model and System Cards if created in earlier milestones. For
 withheld components, provide a clear stub explaining what is withheld and why,
-plus runnable components where possible.
+plus runnable components where possible. Canvas requires a single PDF for this
+assignment; use the repository submission PDF with clickable code, setup, cards,
+evaluation, evidence, and demo links. One group upload covers all members.
 
 Assignment sources are the presentation/showcase, repository/documentation, and
 technical-report PDFs in `contexts/milestone_5/`. This Git-ignored directory holds
@@ -75,26 +77,22 @@ the historical submission. Record new run evidence in the
 
 ## First priority for the team
 
-### Record and verify the two meetings
+### Record the presentation using the completed rehearsal
 
-The team plans to record on November 24. The shared Google Docs scripts use
-November 24 and December 2, 2026 as staged meeting dates. Process two separate
-files in one fresh shared project, in chronological order. Confirm all three
-accounts in People, then confirm speaker mappings separately for each recording.
-Review and accept the relevant first-meeting tasks before processing meeting 2.
+Three staged recordings are in the shared project: November 23, December 2,
+and December 3, 2026. The November 26 simulator rehearsal centered on meeting #3
+and verified People, reviewed speaker accounts, task dates and evidence, manual
+approval, To-do, actual inbox arrival, and chat citations opening transcript/audio.
+The [walkthrough](../evidence/demo_walkthrough.md#november-26-group-demo-simulator-rehearsal)
+records the completed path and corrections. This was not a fresh-project two-meeting
+state-reconciliation run, a new scored benchmark, or a timed team presentation.
 
-The acceptance run should demonstrate three real voices, correct owner mappings,
-quoted evidence, dates, a reviewed deadline change, a reviewed reassignment,
-one actual Bryan inbox message, and a cited answer across meetings. Include a
-question whose answer is absent and inspect the actual response. Record manual
-corrections and failures. The November 17 text extraction runs do not establish
-audio transcription or diarization quality.
-
-Use the [three-presenter demo and dry run](group_demo_script.md).
-Will presents the team and capture, Guadalupe presents task review and changes,
-and Bryan presents email and cited answers. The proposed video is 4-5 minutes.
-Use it as the app-demo segment within the longer presentation recording. Keep the existing public
-Milestone 4 video available while preparing the new team video.
+Use the [three-presenter script](group_demo_script.md): Will presents capture,
+Guadalupe task evidence and review, Bryan email and cited chat. Keep the other
+meetings as timeline context. Record a short microphone check together, then the
+4-5 minute app segment within the longer presentation. Publish the final video
+and replace the README's clearly labeled earlier demo link. Cross-meeting changes
+or unsupported-question behavior should only be added after their own rehearsal.
 
 ### Verify the release after the latest changes
 
@@ -104,7 +102,7 @@ November 17 checks reported a successful signed simulator build, lint passing,
 local database was unavailable. The subsequent CI fix in `2479b1e` passed all 415 tests against disposable
 Postgres, plus the frozen extraction baseline and smoke checks. Preserve the
 [successful CI run](https://github.com/BryanDYang/guardian-agent/actions/runs/44005877745)
-as the latest software acceptance checkpoint.
+as a historical software acceptance checkpoint.
 Rehearse the normal upload/review/email flow on that revision.
 
 The date parser now supports spoken weekdays and calendar dates. The approval
@@ -114,13 +112,17 @@ must be reviewed before the demo claims successful approval.
 
 ## Documentation and release gaps
 
-- Have a teammate follow the setup from a fresh checkout. Record the exact
+- The credential-free path passed a clean local checkout/new environment check
+  with 435 database-backed tests on November 26. Have a teammate follow the full
+  native setup from a fresh checkout. Record the exact
   prerequisites, failures, and resulting output. The external transcriber still
   requires a verified delivery/provenance arrangement. The submitted report
   describes a cached-model setup test, so cold downloads remain unverified.
 - Confirm with the TA whether native Apple Silicon reproduction meets the course
   packaging expectation. Preserve the MLX/Mac dependency in deployment notes.
-- Update the final System Card limitations from the group rehearsal. Address
+- Final [Model Card](model_card.md), [System Card](system_card.md), and
+  [evaluation reproduction guide](evaluation.md) now exist. Keep their limits
+  aligned with new evidence. They address
   overlap/noise, speaker confusion, missed commitments, tentative language,
   unresolved dates, duplicate checks, reviewed cross-meeting changes, unsupported
   answers, and the selected evaluation's small sample and reviewer scope.
@@ -174,13 +176,15 @@ course deadlines determine the work schedule.
 - Confirm Canvas deadlines and the showcase session date/timezone.
 - Prepare the longer presentation recording, the one-slide live talk, and the
   EdDiscussion title, summary, and headline result with their advance deadlines.
-- Complete and record the fresh-project two-meeting acceptance run.
-- Verify full software checks at the final frozen revision. The current
-  `2479b1e` checkpoint has 415 passing database-backed tests.
+- Record the rehearsed meeting #3 demo. A fresh-project two-meeting state-update
+  run remains separate, unverified work if the team chooses to claim it.
+- Verify full software checks at the final frozen revision. The historical
+  `2479b1e` checkpoint had 415 passing database-backed tests; retain dated counts.
 - Finish the independent setup check and packaging explanation.
 - Finalize the required report sections and architecture diagram, deployment
   links, targeted comparison, limitations, references, and contributions.
-- Finalize the existing Model and System Cards and evaluation reproduction commands.
+- Review the final cards and tested reproduction commands after any model,
+  evaluation, or scope changes.
 - Export the team demo, verify audio/captions and readability, and test its public
   link while signed out.
 - Link the final demo and fixed release revision from the repository.
