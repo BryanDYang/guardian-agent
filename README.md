@@ -16,6 +16,8 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 ## Final repository review
 
+**Canvas repository submission:** [Download the linked submission PDF](output/pdf/LabSync_Final_Repository_Submission.pdf).
+
 **Track: AI Engineering.** Start with the [credential-free quick-start and final
 evaluation reproduction guide](docs/milestone_5/evaluation.md). It generates
 representative task outputs without model credentials or the external transcriber.

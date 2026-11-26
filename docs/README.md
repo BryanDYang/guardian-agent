@@ -30,6 +30,7 @@ For the group recording workflow, use the
 | How do I test task email and automatic approval? | [Follow-through setup, dated recording scripts, and result log](archive/milestone_3/follow_through.md) |
 | How do I record a new test result? | [Reusable result.md template](evidence/result.md), then add the completed run to the walkthrough |
 | What actually happened or passed? | [Weekly journal](weekly_journal.md) for progress; [native walkthrough](evidence/demo_walkthrough.md) for observed steps/evidence |
+| What do we upload for the repository assignment? | [Single linked submission PDF](../output/pdf/LabSync_Final_Repository_Submission.pdf) |
 | What will we submit for the final milestone? | [Final report draft](milestone_5/submission_draft.md) |
 | What did we submit for Milestone 4? | [Submitted report](archive/milestone_4/milestone4_submission.pdf) |
 | What did we prepare for Milestone 3? | [Milestone 3 report draft](archive/milestone_3/submission_draft.md), including cards and results; its draft prose does not supersede acceptance evidence |
