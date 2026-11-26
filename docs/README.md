@@ -4,8 +4,8 @@ Use the [final submission roadmap](milestone_5/roadmap.md) to finish the release
 and the [final report draft](milestone_5/submission_draft.md) to assemble the report.
 Milestone 4 is archived with the [submitted PDF](archive/milestone_4/milestone4_submission.pdf).
 The final assignment references are local files in `contexts/milestone_5/`.
-That directory is Git-ignored. Exact Canvas deadlines
-and the showcase session date await confirmation.
+That directory is Git-ignored. Canvas shows the presentation PDF due December 6 at 8:59 p.m.; other exact
+assignment deadlines and the showcase session date await confirmation.
 
 For the final presentation, use Bryan's human-review judgments only. His eight
 personal-case judgments and 28 RAG judgments retain separate scopes and counts.
@@ -24,6 +24,7 @@ For the group recording workflow, use the
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
 | Where do we review model outputs? | [M4 answer review](archive/milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
+| Which slides and notes do we submit/present? | [Presentation PDFs, presenter notes, Ed summary, and showcase alt text](milestone_5/presentation_notes.md) |
 | How do we divide and record the final team demo? | [Will, Guadalupe, and Bryan sections and dry run](milestone_5/group_demo_script.md) |
 | Where are the final cards and reproduction steps? | [Model Card](milestone_5/model_card.md), [System Card](milestone_5/system_card.md), and [evaluation reproduction](milestone_5/evaluation.md) |
 | What remains for the final submission? | [Final scope and acceptance](milestone_5/roadmap.md) |

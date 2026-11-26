@@ -1173,3 +1173,21 @@ identity, config filenames, URL scheme, and historical evidence. The signed
 simulator build passed; 42 focused backend tests against disposable PostgreSQL,
 Ruff lint/format, and project-file validation passed. Regenerated the repository
 submission PDF with the Guardian Agent name and a pinned reviewed source revision.
+
+### November 26: final presentation and separate showcase materials
+
+Reviewed the newly supplied presentation/showcase requirements and Canvas
+screenshot. Canvas displays December 6, 8:59 p.m. for the presentation PDF.
+Created an eight-slide 16:9 presentation and a separate single-slide 16:9
+showcase. Editable native charts preserve the recorded extraction comparison.
+The main presentation has a 9:45 rehearsal plan with a 4:30 app segment, not a
+measured recording duration. The single slide has 18 words including chart labels
+and a minimum effective type size of 28.5 points, with no video or animation.
+
+Exported PDFs from the saved presentation snapshots with embedded Arial fonts.
+Inspected all eight slides and the showcase slide as rendered PNGs; checked page
+counts and text bounds. Source citations and scope notes remain in the editable
+decks' speaker notes. The scrollable presentation guide contains speaking parts,
+a separate spoken-only showcase draft, an exactly 50-word EdDiscussion summary,
+headline result, and alt text. The final recording/public URL and session-relative
+submission dates remain open; the slide decks do not claim those tasks completed.

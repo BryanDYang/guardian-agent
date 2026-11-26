@@ -3,7 +3,8 @@
 Updated November 26, 2026 for CIS-5980 AI Engineering. This document owns the
 remaining work for Milestone 5 or the final submission. The three course PDFs stored locally in `contexts/milestone_5/` establish the
 final deliverables.
-Canvas owns the exact submission dates. The showcase session date and timezone
+Canvas shows the presentation PDF due December 6 at 8:59 p.m. The other
+assignment dates remain separate. The showcase session date and timezone
 are still needed to calculate its advance deadlines.
 
 ## Confirmed course deliverables
@@ -12,6 +13,10 @@ The presentation/showcase is 150 points, the technical report is 40 points,
 and repository/documentation is 10 points.
 
 ### Recorded presentation and public demo
+
+The [presentation notes](presentation_notes.md) link the eight-slide presentation
+PDF and separate one-slide showcase PDF, with speaking sections, a 9:45 rehearsal
+target, EdDiscussion text, and alt text. Final recording/publication is still open.
 
 Prepare the longer Final Capstone Presentation recording for submission three
 days before the showcase session. The presentation rubric rewards a 9-10 minute

@@ -1,7 +1,9 @@
 # Three presenter final demo script
 
 Use this 4-5 minute app demonstration within the longer recorded final
-presentation. Will, Guadalupe, and Bryan each have a speaking section below.
+presentation. The [full presentation notes and PDFs](presentation_notes.md) place
+this app segment within a 9:45 rehearsal target. Will, Guadalupe, and Bryan each
+have a speaking section below.
 Record together on Zoom with one person sharing and operating the app. Rehearse
 once, then record a continuous take and retake individual sections if needed.
 If availability requires separate recording, combine the clips in the same order.
