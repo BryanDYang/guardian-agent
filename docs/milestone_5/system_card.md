@@ -1,4 +1,4 @@
-# LabSync System Card
+# Guardian Agent System Card
 
 Final repository documentation, November 26, 2026. Track: AI Engineering.
 

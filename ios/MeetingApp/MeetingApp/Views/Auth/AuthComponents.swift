@@ -7,7 +7,7 @@ struct AuthBrandHeader: View {
     var body: some View {
         VStack(spacing: 12) {
             AppMark(size: 56)
-            Text("LabSync")
+            Text("Guardian Agent")
                 .font(.title2.bold())
                 .foregroundStyle(Palette.ink)
             Text(subtitle)

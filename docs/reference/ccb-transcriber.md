@@ -34,14 +34,14 @@ The second uses your Codex login and sends the transcript to Codex; use
 `--provider claude --model claude-sonnet-4-5` with `ANTHROPIC_API_KEY` instead. MP4 and other
 FFmpeg-readable inputs also work. Each transcription needs a new output directory.
 
-LabSync calls CCB's `load_whisper_model` and `transcribe_audio` directly.
+Guardian Agent calls CCB's `load_whisper_model` and `transcribe_audio` directly.
 It normalizes the input to a temporary 16 kHz mono WAV and disables conditioning
 on previous text, matching the source's normal processing configuration.
 `transcribe` and `serve` require `--whisper-backend`: `mlx` runs local
 MLX-Whisper (Apple Silicon only) and `openai` runs local open-source OpenAI
 Whisper. There is no automatic choice, and `mlx` fails instead of falling back.
 `ccb-transcript.json` records the backend and, for MLX, the weights repo.
-Neither calls a paid transcription API. LabSync pins full-precision
+Neither calls a paid transcription API. Guardian Agent pins full-precision
 `mlx-community` weights because CCB's own map names missing base/small repos.
 The AMI benchmark below still uses local OpenAI Whisper so its results reproduce.
 The `audio` extra includes an FFmpeg binary fallback if FFmpeg is not on PATH.
@@ -56,7 +56,7 @@ Artifacts:
 
 - `ccb-transcript.json`: CCB-compatible segments in seconds plus run metadata,
   including input audio and CCB script hashes, model, and diarization status.
-- `transcript.json`: validated LabSync turns with millisecond timestamps.
+- `transcript.json`: validated Guardian Agent turns with millisecond timestamps.
 - `turn-sources.json`: each turn ID mapped to the segment IDs it was merged from.
 - `extraction.json`: validated Codex predictions, usage, and prompt metadata.
 

@@ -2,7 +2,7 @@
 
 This root file previously contained a supplied third-party snapshot. Its upstream
 revision and redistribution license have not been verified. Historical Git
-revisions may still contain that copy; LabSync's MIT license does not establish
+revisions may still contain that copy; Guardian Agent's MIT license does not establish
 rights to that upstream code.
 
 The app loads the separately obtained source from

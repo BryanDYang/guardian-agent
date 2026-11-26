@@ -13,7 +13,7 @@ The separate live showcase uses one static slide and spoken delivery. See the
 
 > We are a three-person project team preparing our final demo. Across three
 > meetings, we assign work, adjust deadlines, and decide which issues to defer.
-> LabSync helps us review those actions and return to the discussion behind them.
+> Guardian Agent helps us review those actions and return to the discussion behind them.
 
 Use the existing **Guardian Agent Group Project** recordings.
 
@@ -69,7 +69,7 @@ timeline. Meeting #2's comparison is optional if it interrupts the flow.
 Show the shared project and its three meetings.
 
 > We're Will, Guadalupe, and Bryan. Our team meetings create work, but the
-> plan changes between check-ins. We built LabSync to help us track those
+> plan changes between check-ins. We built Guardian Agent to help us track those
 > commitments and recover why a decision changed. These are three staged
 > meetings recorded with our own voices.
 
@@ -213,7 +213,7 @@ Use **AI retrieval + grounded answer + citation**.
 
 Show the three meetings or the reviewed task list.
 
-> Across these meetings, LabSync gives us a way to review commitments,
+> Across these meetings, Guardian Agent gives us a way to review commitments,
 > receive follow-ups, and recover decisions. Our tests also exposed speaker
 > and transcription errors. Keeping the source evidence and human review
 > in the workflow helps us recognize and correct those mistakes.

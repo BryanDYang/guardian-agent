@@ -30,7 +30,7 @@ The audited tree has no `meeting_transcriber.py`, `source_handlers/`, or
 audio tool now supplied in `contexts/meeting_transcriber-master`. The simulation LLM factory
 supports OpenAI, Anthropic, and mock clients; there is no Gemini adapter to swap.
 
-LabSync's Codex client and extraction contract are new project code. No upstream
+Guardian Agent's Codex client and extraction contract are new project code. No upstream
 runtime code was copied or modified. The provider-independent boundary follows
 the reference's separation of model calls from application logic, but it is not
 a full implementation of its simulation `LlmClient` protocol. The initial

@@ -1163,3 +1163,13 @@ The repository submission PDF pins the reviewed source revision and provides
 clickable setup, cards, evaluation, evidence, and earlier-demo links. Canvas asks
 for one PDF for the group; the final technical report and presentation remain
 separate deliverables.
+
+### November 26: Guardian Agent project name
+
+Renamed current product-facing documentation, the native app display name,
+authentication/consent/invitation text, backend title, and future task-email
+subjects to Guardian Agent. Preserved the existing package/CLI names, bundle
+identity, config filenames, URL scheme, and historical evidence. The signed
+simulator build passed; 42 focused backend tests against disposable PostgreSQL,
+Ruff lint/format, and project-file validation passed. Regenerated the repository
+submission PDF with the Guardian Agent name and a pinned reviewed source revision.

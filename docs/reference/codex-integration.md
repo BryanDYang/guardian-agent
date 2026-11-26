@@ -17,7 +17,7 @@ simulation code is still not part of the meeting-processing runtime.
 
 ## Runnable path
 
-LabSync uses the supported `codex exec` interface, not an unofficial REST endpoint
+Guardian Agent uses the supported `codex exec` interface, not an unofficial REST endpoint
 or copied login tokens. It reuses the installed CLI's authentication. This initial
 local prototype needs no Gemini key or separately configured OpenAI key.
 It sends transcript text to Codex and consumes your account's usage.
@@ -53,7 +53,7 @@ are rejected; existing result files are never overwritten.
 
 ### Selecting the backend's CLI executable
 
-By default LabSync runs `codex` from the backend's PATH. Set `LABSYNC_CODEX_CLI`
+By default Guardian Agent runs `codex` from the backend's PATH. Set `LABSYNC_CODEX_CLI`
 in that host's private `.env` to an executable path when pinning a verified CLI.
 The same executable is used for startup availability checks, inference, and
 reported version metadata. A missing configured executable is an error; it does
@@ -63,7 +63,7 @@ Keep this setting host-specific and never copy authentication tokens.
 On October 20, the backend's Homebrew CLI 0.157.1 returned HTTP 429 while the
 official desktop-bundled CLI 0.163.0-alpha.10.2 completed the same synthetic
 structured request with the same signed-in account and `gpt-5.6-sol`. Normal
-LabSync synthetic extraction then succeeded using the configured bundled CLI.
+Guardian Agent synthetic extraction then succeeded using the configured bundled CLI.
 The reported subscription allowances were not exhausted. This comparison
 isolates a CLI/runtime-specific failure; the upstream reason for the older
 client's 429 is not established. Before attributing future 429s to credits,

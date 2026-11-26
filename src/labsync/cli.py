@@ -307,6 +307,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.json:
         print(json.dumps(state))
     else:
-        print(f"LabSync {state['version']} - transcript extraction via Codex")
+        print(f"Guardian Agent {state['version']} - transcript extraction via Codex")
         print("Run labsync serve for the local UI backend.")
     return 0

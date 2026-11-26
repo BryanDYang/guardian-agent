@@ -7,7 +7,7 @@ every path has passed native or model-quality acceptance. See the
 
 ## 1. System shape
 
-LabSync is a native iOS client backed by a Python application. Supabase provides
+Guardian Agent is a native iOS client backed by a Python application. Supabase provides
 identity, PostgreSQL, and shared audio storage. A Mac runs the API and processing
 workers; Cloudflare Tunnel makes that API reachable from the phone. Model services
 perform text extraction, answers, and embeddings. Audio inference runs locally.

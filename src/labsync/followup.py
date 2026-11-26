@@ -333,10 +333,10 @@ class EmailWorker:
                 return True
             payload = row["payload"] or {
                 "from": getattr(
-                    self.sender, "sender", "LabSync <capture@example.test>"
+                    self.sender, "sender", "Guardian Agent <capture@example.test>"
                 ),
                 "to": [recipient["email"]],
-                "subject": "LabSync: "
+                "subject": "Guardian Agent: "
                 + task["title"].replace("\n", " ").replace("\r", " ")[:150],
                 "text": (
                     f"Your task: {task['title']}\n"
@@ -349,8 +349,8 @@ class EmailWorker:
                     )
                     + f"{task['quote'] or 'No source quote'}\n\n"
                     + "Review your tasks: meetingmemory://tasks\n\n"
-                    "Open LabSync > Tasks > To-do to review, correct, or complete "
-                    "this task. Manage follow-up email in the project's "
+                    "Open Guardian Agent > Tasks > To-do to review, correct, "
+                    "or complete this task. Manage follow-up email in the project's "
                     "Follow-through settings.\n"
                     "This is a task follow-up, not a recurring reminder."
                 ),

@@ -1,4 +1,4 @@
-# LabSync final report draft
+# Guardian Agent final report draft
 
 Course CIS-5980. Track AI Engineering. Team Will Liu, Guadalupe Cantera, and
 Bryan Yang. Updated November 26, 2026. This is a working final-report draft.
@@ -8,7 +8,7 @@ The [final roadmap](roadmap.md) owns outstanding work and acceptance gates.
 
 ## Abstract
 
-LabSync is a meeting follow-through application for research teams. It combines
+Guardian Agent is a meeting follow-through application for research teams. It combines
 speaker-attributed transcription, structured summaries and task extraction,
 human-confirmed ownership and task updates, immediate email follow-through,
 and cited project chat. On a 24-case synthetic development suite, the recorded
@@ -22,7 +22,7 @@ not a new accuracy benchmark or a complete cross-meeting reconciliation test.
 
 ## Project overview
 
-LabSync helps research teams turn recorded discussions into reviewable work and
+Guardian Agent helps research teams turn recorded discussions into reviewable work and
 recover the evidence behind decisions across meetings. A user records or uploads
 a meeting, receives a speaker-attributed transcript and summary, reviews extracted
 tasks, and uses project-scoped chat to ask questions with source citations.
@@ -218,7 +218,7 @@ backend/setup instructions appropriate to that method.
 
 ## Conclusion and future work
 
-LabSync provides a reviewable path from meeting recordings to tasks, follow-up,
+Guardian Agent provides a reviewable path from meeting recordings to tasks, follow-up,
 and cited project memory. The final report should summarize the completed
 functional rehearsal and tie each headline result to
 its evaluation scope. Practical next work includes stronger speaker evaluation,

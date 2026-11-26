@@ -1,4 +1,4 @@
-# Meeting Follow-Through Assistant
+# Guardian Agent
 
 Turns meeting recordings into summaries, cited decisions, and action items.
 
@@ -16,7 +16,7 @@ Turns meeting recordings into summaries, cited decisions, and action items.
 
 ## Final repository review
 
-**Canvas repository submission:** [Download the linked submission PDF](output/pdf/LabSync_Final_Repository_Submission.pdf).
+**Canvas repository submission:** [Download the linked submission PDF](output/pdf/Guardian_Agent_Final_Repository_Submission.pdf).
 
 **Track: AI Engineering.** Start with the [credential-free quick-start and final
 evaluation reproduction guide](docs/milestone_5/evaluation.md). It generates
@@ -251,7 +251,7 @@ The audio run requires the separately supplied CCB source at
 Obtain it from the project team or course sponsor before attempting audio inference.
 The supplied archive has no verified upstream commit/license. The current root
 copy is an explanatory stub; historical Git revisions contain the supplied copy.
-LabSync's MIT license does not establish redistribution rights for that dependency. Download AMI inputs using the protocol manifest. Raw audio run
+Guardian Agent's MIT license does not establish redistribution rights for that dependency. Download AMI inputs using the protocol manifest. Raw audio run
 artifacts stay local. The rule-based extraction example below works without CCB,
 model credentials, or audio downloads. Use a fresh output directory for each run. Offline benchmark tests use the dev extra.
 

@@ -278,7 +278,7 @@ def create_app(
             if app.state.pool is not None:
                 app.state.pool.close()
 
-    app = FastAPI(title="LabSync local backend", lifespan=lifespan)
+    app = FastAPI(title="Guardian Agent local backend", lifespan=lifespan)
     app.state.pool = None
     app.state.embedder = embedder or OpenAIEmbedder()
     app.state.auth = TokenVerifier(supabase_url, jwt_secret) if supabase_url else None

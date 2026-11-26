@@ -1,4 +1,4 @@
-# LabSync Model Card
+# Guardian Agent Model Card
 
 Final repository documentation, November 26, 2026. Track: AI Engineering.
 This card describes an application using pretrained models, not a newly trained
