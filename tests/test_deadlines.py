@@ -77,6 +77,10 @@ def test_ambiguous_dates_stay_unresolved_with_context():
         ("tomorrow, Wednesday the 25th", date(2026, 11, 25)),
         ("tomorrow, Thursday the 26th", None),
         ("Friday, November 26, 2026", None),
+        ("tomorrow at 10 a.m.", date(2026, 11, 25)),
+        ("tomorrow at 9 a.m.", date(2026, 11, 25)),
+        ("seven tonight", date(2026, 11, 24)),
+        ("10 tonight", date(2026, 11, 24)),
         ("next week", None),
     ],
 )

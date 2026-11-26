@@ -11,12 +11,26 @@ def explicit_deadline(
         return None
     value = re.sub(r"^(?:by|on|due(?:\s+(?:by|on))?)\s+", "", text.strip(), flags=re.I)
     value = value.rstrip(".").strip()
-    value = re.sub(
-        r"\s+(?:before\s+(?:noon|midnight)|(?:at|before)\s+\d{1,2}(?::\d{2})?(?:\s*[ap]m)?)$",
-        "",
-        value,
-        flags=re.I,
-    ).rstrip(", ")
+    # A clock time beside the day ("tomorrow at 10 a.m.", "seven tonight") is
+    # not part of which calendar day was meant.
+    hour = r"(?:\d{1,2}|seven|eight|nine|ten|eleven|twelve)(?::\d{2})?"
+    ampm = r"[ap]\.?m\.?"
+    for _ in range(3):
+        trimmed = re.sub(
+            rf"\s+(?:before\s+(?:noon|midnight)|(?:at|before|around)\s+{hour}(?:\s*{ampm})?|{hour}\s*{ampm})$",
+            "",
+            value,
+            flags=re.I,
+        ).rstrip(", ")
+        trimmed = re.sub(
+            rf"^(?:(?:at|before|around)\s+)?{hour}(?:\s*{ampm})?\s+(?=(?:today|tonight|tomorrow)\b)",
+            "",
+            trimmed,
+            flags=re.I,
+        )
+        if trimmed == value:
+            break
+        value = trimmed
     value = re.sub(r"\s+(?:morning|afternoon|evening|night)$", "", value, flags=re.I)
     if isinstance(meeting_date, datetime):
         meeting_date = meeting_date.date()
