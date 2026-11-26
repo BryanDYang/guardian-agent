@@ -1101,3 +1101,31 @@ changing shared tasks. In the simulator, Retry cleared HTTP 404 and playback
 advanced to 2:33 of 9:57 with enabled seek and pause controls. Paused playback
 after verification. This restores playback on Bryan's backend; other backends
 still need their own recording copy or shared audio storage.
+
+### November 26: group demo simulator rehearsal
+
+Completed the functional path in Bryan's signed-in simulator against the local
+backend. People showed Bryan and Guadalupe as members and Will as owner.
+Meeting #3's summary and reviewed speaker accounts loaded. Tasks showed the
+December 4 deadlines with their original relative-date quotes. Opened the
+uncertain refresh-issue deadline's Edit sheet and cancelled without changing
+Will's task or guessing a date.
+
+Approved Bryan's pending Google-login test task through the UI. It appeared in
+To-do, and its new follow-up arrived in the Personal inbox in Mail. Opened the
+message and checked the matching title, meeting #3, December 3 date, and source
+quote. This verifies inbox arrival, beyond provider acceptance. The final-report
+task remains the planned pending candidate for the recording; check its status
+before the take rather than resetting an accepted task.
+
+With Bryan's explicit approval for the chat data transmission, selected Guardian
+Agent Group Project in Chat and asked why the duplicate-task fix was deferred.
+The answer described incomplete handling of differently worded tasks and avoiding
+a risky last-minute change. Citations linked meeting #3 at 04:39 and 05:05.
+Opened the second citation, verified the transcript, played from 05:05, and
+paused after a short excerpt. All chat and audio requests completed successfully.
+
+Returned the app to meeting #3's Summary. This was a functional rehearsal, not
+a timed three-presenter recording or microphone check. Those remain the final
+recording setup checks. No automated diarization rerun or cross-meeting task
+reconciliation was demonstrated by this rehearsal.

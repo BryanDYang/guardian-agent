@@ -30,9 +30,9 @@ meeting days already stored in the app.
 
 1. Pull the latest changes and restart the backend used for processing. Keep the
    selected backend accessible for the whole rehearsal and take.
-2. Use a backend that can play the recordings. The current stored audio paths
-   point to Will's Mac. Verify timestamp playback there before filming. The local
-   backend on Bryan's Mac returned HTTP 404 for these recording files.
+2. Use Bryan's backend for this take. Meeting #3's original audio is restored
+   there, and timestamp playback passed the November 26 rehearsal. Keep meeting
+   #3 as the main example; the other recordings are context for the timeline.
 3. Open **Project ⋯ > People** and verify the three actual member accounts.
 4. Review the three processed meetings. Check speaker labels against the audio
    and use **Review speaker names** to confirm actual identities and accounts.
@@ -48,8 +48,17 @@ meeting days already stored in the app.
 November 24 verification restored dates on 34 pending tasks, with audit entries,
 and confirmed date badges in meeting 3. Broader speaker-identification improvements
 remain future work. Speaker correction, approval, and cross-meeting updates use
-the existing human-review controls. Email and chat in this final sequence still
-need their complete rehearsal.
+the existing human-review controls. The November 26 simulator rehearsal passed
+task approval, To-do visibility, actual email arrival in Bryan's Mail inbox,
+and the scripted chat question with working transcript and audio citations.
+The three-presenter narration and recording microphone levels still need a
+short rehearsal together.
+
+For the simplest take, keep **meeting #3** as the main example throughout:
+Will shows its summary and transcript, Guadalupe shows its proposed task and
+December 4 deadline, and Bryan approves a suitable task before showing email
+and the cited decision. Briefly show the three-meeting list to establish the
+timeline. Meeting #2's comparison is optional if it interrupts the flow.
 
 ## Will presents the team and meeting capture
 
@@ -67,7 +76,7 @@ Show the shared project and its three meetings.
 ### Show
 
 Open **Project ⋯ > People**, show the members and roles, and tap **Done**.
-Open **Team meeting #1** and show **Summary**, then **Transcript**. Play about
+Open **Team meeting #3** and show **Summary**, then **Transcript**. Play about
 five seconds containing a speaker change once playback has been verified.
 
 > We upload a recording, and AI generates a transcript and summary.
@@ -89,17 +98,16 @@ Save your clip as `demo-01-will.mp4` if recording separately.
 
 ### Tell
 
-Open **Team meeting #2 > Tasks**.
+Open **Team meeting #3 > Tasks**.
 
 > A useful action item needs an owner, a deadline, and evidence. AI proposes
 > tasks from the discussion, and we check the details before accepting them.
 
 ### Show a task and its date
 
-Choose an actual extracted commitment with a date and quote. Show the owner,
-calendar date, and supporting transcript words. Prefer the task-status deadline
-of December 3 or the Google login handoff to Bryan if correctly represented in
-this recording. Titles can vary.
+Scroll to **Process this recording and have all three meetings connected**.
+Show Bryan, **Due Dec 4**, and the quote **by tomorrow at 9 a.m.** at **03:47**.
+This is the main deadline example for the simplest take.
 
 > Here is the proposed action and its source. The meeting date provides
 > context for relative deadlines. We can review the owner and the resulting
@@ -109,20 +117,24 @@ Use **AI task extraction + evidence** and **Deadline resolved from meeting date*
 
 ### Show the third meeting and its limitation
 
-Open **Team meeting #3 > Tasks**. Show the evaluation-slides commitment with
-**Due Dec 4** and the quote **by tomorrow at 10 a.m.**. Alternatively show the
-recording-processing task with **Due Dec 4** and **by tomorrow at 9 a.m.**.
-The stored meeting date is December 3.
+Stay on that task. The stored meeting date is December 3.
 
-> This later meeting says tomorrow at ten a.m., so the calendar date is
+> This meeting says tomorrow at nine a.m., so the calendar date is
 > December 4. Our rehearsal exposed missing dates for this wording, and we
 > corrected the parser and repaired the existing pending tasks.
 
 The date field has day precision. The original time remains in the quote.
 
-Show an unresolved **SPEAKER** label or the refresh-issue task whose transcript
-says **tomorrow morning at night**. Choose the example with the clearest audio
-and correction path during rehearsal.
+Speaker 1 has been confirmed as Bryan and Speakers 2 and 3 as Will. Guadalupe
+was already named. Do not undo these corrections or present an unresolved label
+as the current state. Show **Review speaker names** briefly and explain:
+
+> The diarizer originally split Will's voice into two labels. We confirmed
+> both as Will, so the reviewed transcript now shows our three participants.
+
+For an actual remaining review example, use the refresh-issue task whose
+transcript says **tomorrow morning at night**. Play its source and show the
+review controls. Only set a date if the recording makes the intended date clear.
 
 > This recording also exposed a limitation. Some speaker identities were
 > missed, and some words were transcribed incorrectly. Those errors affect
@@ -135,8 +147,8 @@ multiple people needs segment-level review. For the unclear deadline, open
 **Edit** and set a date only after checking the intended commitment in the audio.
 If the source remains unclear, leave it for review and say so.
 
-Use **Known limitation + human review**. Capture one correction within the time
-limit. Rehearse it before the take.
+Use **Known limitation + human review**. Show one real review example within
+the time limit. A completed correction can be explained without reenacting it.
 
 ### Hand off
 
@@ -159,7 +171,14 @@ Show a pending task assigned to your confirmed account.
 ### Show task approval and email
 
 Use **Approve** on the rehearsed candidate, then show it under bottom **Tasks**
-with this project selected. Switch to Gmail and open its matching message.
+with this project selected. Switch to Mail and open its matching message.
+
+For the recording, use **Combine everything into final report**, assigned to
+Bryan and due **Dec 10**, if it is still pending. The rehearsal approved
+**Test Google login on simulator and send results** and verified its actual
+email arrival. That earlier task is now accepted; do not reset it to manufacture
+another first approval. A second rehearsal can show its existing task and email.
+Mail on Bryan's Mac was verified for the inbox segment, so it can replace Gmail.
 
 > I reviewed and approved this task. Here it is in my task list and in my
 > inbox, with its meeting context.
@@ -182,6 +201,8 @@ Open **Chat**, select this shared project, and choose **All** meetings. Ask
 Inspect the answer and open its supporting citation in meeting 3. The discussion
 says the team chose stabilization and documenting the limitation over risking
 changes immediately before the demo. Read the actual supported answer.
+The rehearsed answer cited **04:39** and **05:05**. Open **[2] @ 05:05** to show
+the discussion, then tap its timestamp for a few seconds of audio and pause.
 
 > AI retrieves meeting evidence and returns an answer with a source citation.
 > We can recover why we deferred an issue and open the discussion to check it.
@@ -203,7 +224,8 @@ Save your clip as `demo-03-bryan.mp4` if recording separately.
 
 - Confirm the backend can play the shared audio and all three accounts appear.
 - Verify the selected task evidence, owners, and repaired date badges.
-- Rehearse one actual speaker or deadline correction from meeting 3.
+- Rehearse the remaining deadline review example from meeting 3; keep confirmed
+  speaker mappings intact.
 - Complete one task approval and verify its email in Bryan's inbox.
 - Run the deferred-fix question and inspect its answer and citation.
 - Time Will, Guadalupe, and Bryan together. Aim for 4-5 minutes for this segment.
