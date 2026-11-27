@@ -1191,3 +1191,20 @@ decks' speaker notes. The scrollable presentation guide contains speaking parts,
 a separate spoken-only showcase draft, an exactly 50-word EdDiscussion summary,
 headline result, and alt text. The final recording/public URL and session-relative
 submission dates remain open; the slide decks do not claim those tasks completed.
+
+### November 27: architecture diagrams and Penn-colored submission PDFs
+
+Replaced the simple architecture overview with two editable slides based on
+Bryan's supplied figure: system components and processing/review flow. Kept
+Whisper and pyannote inside the Mac processing boundary, external text/embedding
+services distinct, and shared audio/durable jobs explicitly optional. The
+presentation now has nine slides; the two architecture slides share the original
+50-second speaking allocation, preserving the 9:45 rehearsal target.
+
+Applied Penn blue #011F5B and red #990000 to the main presentation, the single
+static showcase, and the two-page repository submission PDF. Color values were
+checked against Penn's brand standards. Regenerated and visually inspected all
+nine presentation pages, the showcase slide, and both repository pages. Adjusted
+diagram text padding/heights after the first render exposed overlap. The showcase
+remains one slide with 18 words and effective type of at least 28.5 points.
+Repository PDF hyperlinks and historical evaluation/source revision are preserved.

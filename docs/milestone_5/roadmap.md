@@ -14,7 +14,7 @@ and repository/documentation is 10 points.
 
 ### Recorded presentation and public demo
 
-The [presentation notes](presentation_notes.md) link the eight-slide presentation
+The [presentation notes](presentation_notes.md) link the nine-slide presentation
 PDF and separate one-slide showcase PDF, with speaking sections, a 9:45 rehearsal
 target, EdDiscussion text, and alt text. Final recording/publication is still open.
 

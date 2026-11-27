@@ -1,12 +1,12 @@
 # Guardian Agent final presentation and showcase
 
 Track: AI Engineering. Team: Will Liu, Guadalupe Cantera, Bryan Yang.
-Prepared November 26, 2026 against the supplied presentation/showcase instructions.
+Updated November 27, 2026 against the supplied presentation/showcase instructions.
 
 ## Which file goes where
 
 For the 150-point presentation assignment shown in Canvas, upload the
-[eight-slide presentation PDF](../../output/pdf/Guardian_Agent_Final_Presentation.pdf).
+[nine-slide presentation PDF](../../output/pdf/Guardian_Agent_Final_Presentation.pdf).
 Canvas displays **December 6 at 8:59 p.m.** for this assignment. This is a group
 submission. The slides support the longer presentation recording; the recording
 itself still needs to be made and its public URL added to the README.
@@ -14,7 +14,7 @@ itself still needs to be made and its public URL added to the README.
 For the separate live showcase, use only the
 [single static slide](../../output/pdf/Yang_Bryan_GuardianAgent.pdf). Its filename
 uses Bryan Yang as the submitting presenter. Rename it if a different presenter
-is the designated submitter. Do not combine this slide with the eight-slide deck
+is the designated submitter. Do not combine this slide with the nine-slide deck
 for the live talk. No app switching, video, audio playback, animation, or props
 are allowed in that showcase.
 
@@ -24,11 +24,21 @@ single-slide PDF plus image alt text 48 hours before the session. The session
 date has not been supplied, so those relative deadlines are not converted here.
 At least one team member attends live, camera on. Join ten minutes early.
 
+## Visual theme and architecture
+
+The two editable architecture slides follow the supplied system-components and
+processing/review figures. They distinguish local speech inference, external
+text/embedding calls, optional shared storage/jobs, and reviewed task/email flow.
+The presentation, single-slide showcase, and repository PDF use
+[Penn blue #011F5B and Penn red #990000](https://branding.web-resources.upenn.edu/logos-and-branding/elements-penn-logo)
+with neutral backgrounds. They do not use a Penn seal or university wordmark.
+The single-slide showcase remains a results chart, preserving its one-slide limit.
+
 ## Longer presentation: target 9:45
 
 This is a rehearsal target, not a measured recording duration. Each person should
 practice their section aloud. Keep the app segment to 4:30; cut narration before
-rushing the last slide. The main deck has eight slides. The app segment is part
+rushing the last slide. The main deck has nine slides. The app segment is part
 of the presentation, not an extra 4:30 after it.
 
 ### Slide 1: Will, 0:00-0:35
@@ -48,19 +58,23 @@ of the presentation, not an extra 4:30 after it.
 > the day; the original time remains in the quote. That distinction matters
 > because a plausible-looking task is not enough if its owner or date is wrong.
 
-### Slide 3: Will, 1:15-2:05
+### Slide 3: Will, 1:15-1:40
 
-> The iPhone app uploads a recording to an authenticated Python backend on a
-> Mac. Speech recognition and speaker separation run locally. A configured text
-> model extracts summaries, decisions, and task candidates. The database stores
-> the meeting state and supporting evidence. Chat retrieves information within
-> the selected project and checks citations before displaying an answer. A
-> separate email worker handles approved-task follow-ups. Text and embedding
-> requests do go to external providers. The workflow uses AI outputs with
-> explicit rules and review; we have not implemented autonomous model-selected
-> tools.
+> The iPhone sends recordings and review requests to our Mac backend. The API
+> checks identity and project membership. A processing worker runs local Whisper
+> and pyannote, then calls the configured text and embedding services. Supabase
+> stores identity and project data. A separate outbox worker handles task emails.
+> Shared audio storage and durable jobs are optional; this demo used local audio.
 
-### Slide 4: Guadalupe, 2:05-2:50
+### Slide 4: Will, 1:40-2:05
+
+> The second diagram shows how those components support three paths. Audio
+> becomes validated task candidates. A reviewer checks the person, date, and
+> evidence before accepting work into tasks, calendar, or email. Stored meeting
+> evidence also supports project-scoped retrieval. Chat returns a cited answer
+> or a refusal when supporting information is unavailable.
+
+### Slide 5: Guadalupe, 2:05-2:50
 
 > The group recordings exposed failures that our scripted text tests did not.
 > A three-person recording produced four speaker labels, and explicit deadline
@@ -70,7 +84,7 @@ of the presentation, not an extra 4:30 after it.
 > original recording fixed playback on Bryan's backend. These changes made the
 > workflow usable, while mixed speakers and duplicate tasks remain limitations.
 
-### Slide 5: shared app segment, 2:50-7:20
+### Slide 6: shared app segment, 2:50-7:20
 
 Switch to the actual app, or insert the recorded app footage when editing the
 longer presentation. Follow the [existing group demo script](group_demo_script.md).
@@ -89,7 +103,7 @@ that it is being approved for the first time. Leave another legitimate candidate
 pending until filming. Do not claim automatic approval from this manual path.
 Do not undo corrected speaker names to recreate a failure.
 
-### Slide 6: Guadalupe, 7:20-8:20
+### Slide 7: Guadalupe, 7:20-8:20
 
 > We compared model extraction with rules on 24 synthetic development cases.
 > The task F1 proxy was 0.897 for Codex and 0.710 for rules. This measures lexical
@@ -100,7 +114,7 @@ Do not undo corrected speaker names to recreate a failure.
 > are a separate evaluation from the extraction comparison. Our new team demo
 > verifies a functional path, rather than adding another accuracy benchmark.
 
-### Slide 7: Bryan, 8:20-9:05
+### Slide 8: Bryan, 8:20-9:05
 
 > Review is part of the system because errors can compound. A speaker error can
 > become an ownership error, and a transcription error can change a deadline.
@@ -110,7 +124,7 @@ Do not undo corrected speaker names to recreate a failure.
 > text can be sensitive. Our small red-team suite and software tests are useful
 > checks, but they do not establish production safety.
 
-### Slide 8: Bryan, 9:05-9:45
+### Slide 9: Bryan, 9:05-9:45
 
 > Our result is a working path from a reviewed commitment to a real inbox, and
 > from a question back to the recorded discussion. The project taught us to
