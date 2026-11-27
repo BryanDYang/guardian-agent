@@ -92,12 +92,15 @@ The [walkthrough](../evidence/demo_walkthrough.md#november-26-group-demo-simulat
 records the completed path and corrections. This was not a fresh-project two-meeting
 state-reconciliation run, a new scored benchmark, or a timed team presentation.
 
-Use the [three-presenter script](group_demo_script.md): Will presents capture,
-Guadalupe task evidence and review, Bryan email and cited chat. Keep the other
-meetings as timeline context. Record a short microphone check together, then the
-4-5 minute app segment within the longer presentation. Publish the final video
-and replace the README's clearly labeled earlier demo link. Cross-meeting changes
-or unsupported-question behavior should only be added after their own rehearsal.
+The revised [three-presenter script](group_demo_script.md) follows one recording-
+processing task from meeting #2 to meeting #3: initial December 7 commitment,
+reviewed change to December 4, and an answer citing both meetings. The November
+27 isolated API rehearsal and live retrieval/model check passed; the continuous
+on-screen approval/update sequence still needs rehearsal/filming. Will presents
+the original plan and initial email, Guadalupe the reviewed update, and Bryan
+the current task and citations. Record the 4:30 app segment within the longer
+presentation, publish the final video, and update the README. Unsupported-question
+behavior remains a separate check.
 
 ### Verify the release after the latest changes
 

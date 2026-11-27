@@ -1208,3 +1208,42 @@ nine presentation pages, the showcase slide, and both repository pages. Adjusted
 diagram text padding/heights after the first render exposed overlap. The showcase
 remains one slide with 18 words and effective type of at least 28.5 points.
 Repository PDF hyperlinks and historical evaluation/source revision are preserved.
+
+### November 27: consecutive-meeting storyline checks
+
+Inspected the actual shared-project task states and source quotes. Selected
+Bryan's meeting #2 candidate, Process all three demo recordings at 04:46, and
+meeting #3's Process this recording and have all three meetings connected at
+03:47. The earlier quote says Monday the seventh; its older extracted date is
+null and requires reviewer confirmation of December 7. The later quote explicitly
+moves that work from Monday December 7 to tomorrow at 9 a.m.; the stored December
+3 meeting date resolves this to December 4. Both candidates were pending and
+assigned to Bryan when checked. Meeting #1 supplies context, not a third verified
+merge. Reassignment is not supported by the reconcile sheet's action choices.
+
+Five existing reconciliation tests passed against disposable PostgreSQL. An
+isolated HTTP rehearsal with copies of the recorded titles/quotes approved the
+earlier task for December 7 and reconciled the later candidate as a deadline
+change to December 4. Verified the original task ID/meeting remained, one accepted
+task existed for the work, the later candidate was dismissed, and the exact later
+quote was stored in the reconciliation audit. The first rehearsal passed its
+assertions but its temporary cleanup code referenced an unstarted executor;
+removed that cleanup assumption, cleaned the isolated records, and repeated with
+a clean exit. Email was disabled, and the shared project was not mutated.
+
+Code inspection shows reconciliation does not enqueue a revised-deadline email.
+The revised demo shows the original approval email before the later update and
+does not claim a new email is sent for that update. It does not claim that the
+current task card combines all source quotes or that chat provides a guaranteed
+live task-status timeline.
+
+With Bryan's explicit approval to send this new question and retrieved project
+evidence to OpenAI/Codex, asked how the planned processing deadline changed
+between meetings #2 and #3. The retrieval/model check returned December 7, then
+December 4 at 9 a.m., with meeting #2 decision evidence at 04:46 and meeting #3
+transcript evidence at 03:47, in 9.1 seconds. This was a backend retrieval/model
+check; it did not store a new chat conversation or complete the new UI sequence.
+
+Rewrote the group script and matching presenter notes/slides around that task.
+Kept shared candidates untouched for filming. A continuous on-screen run remains
+required before claiming the new sequence was demonstrated in the native app.

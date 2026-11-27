@@ -51,12 +51,11 @@ of the presentation, not an extra 4:30 after it.
 
 ### Slide 2: Will, 0:35-1:15
 
-> Here is a commitment from our staged team recording. Bryan says he will have
-> the meetings connected by tomorrow at nine. The stored meeting date is
-> December 3, so the proposed calendar date is December 4. We preserve the words
-> and timestamp so a reviewer can check the interpretation. The database stores
-> the day; the original time remains in the quote. That distinction matters
-> because a plausible-looking task is not enough if its owner or date is wrong.
+> Our story follows one task through consecutive check-ins. In meeting #2, Bryan
+> plans to process all three demo recordings by Monday, December 7. In meeting
+> #3, he says that is too late and brings the deadline forward to December 4 at
+> nine in the morning. We want one current task, with the original discussions
+> still available. The app supports this through an explicit reviewed update.
 
 ### Slide 3: Will, 1:15-1:40
 
@@ -86,22 +85,27 @@ of the presentation, not an extra 4:30 after it.
 
 ### Slide 6: shared app segment, 2:50-7:20
 
-Switch to the actual app, or insert the recorded app footage when editing the
-longer presentation. Follow the [existing group demo script](group_demo_script.md).
-The slide is a transition cue, not a substitute for the app demonstration.
+Switch to the actual app or insert the recorded app footage. Follow the
+[group storyline script](group_demo_script.md) for exact controls and narration.
+The slide is a transition cue rather than a substitute for the app demonstration.
 
-- Will, 55 seconds: People, meeting #3 Summary, Transcript, brief source playback.
-- Guadalupe, 95 seconds: recording-processing task at 03:47, Due Dec 4 and its
-  quote; show the ambiguous refresh-issue wording and Edit, then Cancel.
-- Bryan, 120 seconds: approve his still-pending final-report task due Dec 10,
-  show To-do and the matching real email, then run the deferred-duplicate-fix
-  question. Select the shared project and All meetings in Chat. Open citation
-  [2] at 05:05, play briefly, and pause.
+- Will, 85 seconds: establish the three-meeting context. In meeting #2, show
+  Bryan's recording-processing task at 04:46, confirm December 7 from the quote,
+  approve it, and show the initial task/email handoff.
+- Guadalupe, 110 seconds: in meeting #3, show the changed commitment at 03:47.
+  Use Update an existing task, choose the original accepted task, select Deadline
+  changed, set December 4, confirm the quoted support, and confirm the update.
+  Show one accepted task for that work with the new date.
+- Bryan, 75 seconds: show the updated task and ask the new cross-meeting deadline
+  question from the group script. Open citations to meeting #2 at 04:46 and
+  meeting #3 at 03:47. Explain reviewer-confirmed consolidation and its limits.
 
-The rehearsal already approved the Google-login task. Do not reset it or imply
-that it is being approved for the first time. Leave another legitimate candidate
-pending until filming. Do not claim automatic approval from this manual path.
-Do not undo corrected speaker names to recreate a failure.
+The older result in meeting #2 has no stored date; show the real manual review
+rather than describe it as perfect extraction. Do not approve the later candidate
+as a new task. Do not claim a revised-deadline email is sent by reconciliation.
+The initial email is sent after the earlier task is approved. The isolated API
+rehearsal passed with the actual titles/quotes, and the new chat rehearsal cited
+both meetings. The live shared task states were left pending for filming.
 
 ### Slide 7: Guadalupe, 7:20-8:20
 
@@ -126,8 +130,8 @@ Do not undo corrected speaker names to recreate a failure.
 
 ### Slide 9: Bryan, 9:05-9:45
 
-> Our result is a working path from a reviewed commitment to a real inbox, and
-> from a question back to the recorded discussion. The project taught us to
+> Our result is a review path where a later meeting can update one existing task,
+> and a question can lead back to the discussions explaining the change. The project taught us to
 > reproduce failures and verify what users actually see before claiming a feature
 > works. Next we would test more natural research meetings, improve speaker
 > handling and reviewed task continuity, and make the audio setup easier to
