@@ -98,11 +98,12 @@ transcription/extraction output.
 - Will, 90 seconds: show meeting #1 Summary, meeting #2 Bryan Storyline, the
   original task and transcript/audio evidence, then the accepted December 7 task
   and its matching initial approval email in Bryan's inbox. Keep email to 15 seconds.
-- Guadalupe, 105 seconds: upload meeting #3 with its December 3 recorded date.
+- Guadalupe, 115 seconds: upload meeting #3 with its December 3 recorded date.
   Cut the processing wait with an After processing caption. Show its revised
   commitment, confirm Bryan's speaker account, then show the original task due
-  December 4 and its automatic change history. Do not manually edit the deadline.
-- Bryan, 75 seconds: ask the cross-meeting question, inspect both citations, and
+  December 4 and its automatic change history, then the separate updated-deadline
+  email showing both dates. Do not manually edit the deadline.
+- Bryan, 65 seconds: ask the cross-meeting question, inspect both citations, and
   close with the connection between discussion, commitment, and current task.
 
 Read the group script's preflight and dry-run sections before recording. Confirm
@@ -112,7 +113,7 @@ approval; verify actual inbox receipt during preparation. Keep automation enable
 during the preferred take. If the fresh-upload rule does
 not fire, do not silently apply a manual change and call it automatic. Use the
 verified completed-update backup honestly if needed. The email demonstrates the
-initial handoff; the later deadline revision does not send another email. The
+initial handoff; a separate deadline-change email communicates the revision. The
 4:30 target excludes the visibly labeled processing wait.
 
 ### Slide 7: Guadalupe, 7:20-8:20

@@ -73,6 +73,21 @@ def revision_dates(quote, due_text, day):
     return old, new, promise
 
 
+def revision_context(content, quote):
+    """Expand a short extracted promise only across its adjacent old-date clause."""
+    if quote not in content:
+        return quote
+    prefix = re.search(
+        r"\bI (?:originally|previously) said [^.!?]+?,? but "
+        r"that(?:['’]s| is) too (?:late|early)(?: now)?[.!]\s+$",
+        content[: content.index(quote)],
+        re.I,
+    )
+    if prefix and re.match(r"I(?:['’]ll| will)\b", quote, re.I):
+        return content[prefix.start() : content.index(quote) + len(quote)]
+    return quote
+
+
 def apply_revision(conn, task, meeting, labels):
     """Return True only after atomically updating one unambiguous accepted task.
 
@@ -92,7 +107,8 @@ def apply_revision(conn, task, meeting, labels):
     e = evidence[0]
     if e["speaker_label"] not in labels or e["quote"] not in e["content"]:
         return False
-    dates = revision_dates(e["quote"], task["due_date_text"], meeting["meeting_date"])
+    context = revision_context(e["content"], e["quote"])
+    dates = revision_dates(context, task["due_date_text"], meeting["meeting_date"])
     if not dates or task["due_date"] != dates[1]:
         return False
     old, new, promise = dates
@@ -154,11 +170,11 @@ def apply_revision(conn, task, meeting, labels):
     )
     note = (
         f"Deadline automatically changed from {old} to {new} after "
-        f"{meeting['name']}. Evidence: {e['quote']}"
+        f"{meeting['name']}. Evidence: {context}"
     )
-    conn.execute(
+    audit = conn.execute(
         "INSERT INTO task_audit_log(task_id,action,old_value,new_value) "
-        "VALUES (%s,'AUTO_DEADLINE',%s,%s)",
+        "VALUES (%s,'AUTO_DEADLINE',%s,%s) RETURNING id",
         (
             target["id"],
             Jsonb({"due_date": str(old)}),
@@ -170,10 +186,14 @@ def apply_revision(conn, task, meeting, labels):
                     "source_task_id": str(task["id"]),
                     "meeting_id": str(meeting["id"]),
                     "transcript_id": e["turn_key"],
-                    "quote": e["quote"],
+                    "quote": context,
+                    "extracted_quote": e["quote"],
                     "timestamp_ms": e["start_time_ms"],
                 }
             ),
         ),
-    )
+    ).fetchone()
+    from .followup import enqueue
+
+    enqueue(conn, target, change_id=audit["id"])
     return True

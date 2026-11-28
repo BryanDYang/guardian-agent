@@ -172,7 +172,7 @@ def audit_details(
     action: str,
     actor_id: UUID,
     note: str | None = None,
-) -> None:
+) -> UUID:
     """Keep human review/edit history alongside meeting reconciliation evidence."""
     keys = ("title", "due_date", "assignee_user_id", "owner_label", "review_status")
 
@@ -182,11 +182,11 @@ def audit_details(
     updated = snapshot(new)
     if note and note.strip():
         updated["note"] = note.strip()
-    conn.execute(
+    return conn.execute(
         "INSERT INTO task_audit_log (task_id, action, old_value, new_value, actor_id) "
-        "VALUES (%s, %s, %s, %s, %s)",
+        "VALUES (%s, %s, %s, %s, %s) RETURNING id",
         (new["id"], action, Jsonb(snapshot(old)), Jsonb(updated), actor_id),
-    )
+    ).fetchone()["id"]
 
 
 def find_audit(conn: Connection, revert_token: UUID) -> dict | None:

@@ -229,7 +229,7 @@ flowchart TD
     Policy["Optional narrow automatic-approval rule"]
     Review["Remain pending for review"]
     Accepted["Approved task and audit"]
-    Queue["Email enabled: insert unique task/recipient outbox row"]
+    Queue["Email enabled: deduplicate approval or recorded change per recipient"]
     Worker["Email worker claims committed row"]
     Check["Recheck open task, assignment, membership and preferences"]
     Capture["Capture mode: preview in app"]
@@ -272,11 +272,15 @@ flowchart TD
   earlier open task are required. Conflicting edits and busy target rows leave
   the candidate pending. The rule updates only the existing deadline, dismisses
   the later candidate, and records `AUTO_DEADLINE` with both dates and the exact
-  quote. It does not infer reassignment/completion or resend email. Task history
+  quote. It does not infer reassignment/completion. Short promise quotes may expand
+  to an immediately adjacent old-date clause in the same turn. Task history
   exposes the change; general semantic matching remains a reviewed workflow.
 - `followup.enqueue` runs inside approval/edit transactions. An independent
   `EmailWorker` claims committed outbox rows, leaving audio processing independent.
-- A unique task/recipient pair and stable provider idempotency key limit duplicates.
+- Approval email is unique per task/recipient; deadline-change email is unique
+  per task/recipient/audit event. The change message includes previous/new dates
+  and quoted evidence when that change records it. A stable provider idempotency
+  key limits retry duplicates.
   Retries stop before the provider's deduplication window expires. Task/recipient
   changes can cancel pending delivery. An in-flight send cannot always be stopped.
 - Capture is the default; it stores previews without contacting an email provider.

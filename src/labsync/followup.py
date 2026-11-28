@@ -27,26 +27,30 @@ def delivery_mode():
     return mode
 
 
-def enqueue(conn, task, mode=None):
-    """Queue once per task/recipient in the approval transaction."""
+def enqueue(conn, task, mode=None, *, change_id=None):
+    """Queue once per approval or recorded deadline change and recipient."""
     if task["review_status"] != "approved" or not task["assignee_user_id"]:
         return
     conn.execute(
-        "INSERT INTO task_followup_emails(task_id,recipient_id,mode) "
-        "SELECT %s,pm.user_id,%s FROM project_members pm "
-        "JOIN projects p ON p.id=pm.project_id "
-        "WHERE p.id=%s AND pm.user_id=%s AND p.followup_email_enabled "
-        "AND p.deleted_at IS NULL "
-        "AND NOT EXISTS (SELECT 1 FROM tasks st JOIN meetings sm ON "
-        "sm.id=st.meeting_id "
-        "WHERE st.id=%s AND sm.deleted_at IS NOT NULL) "
-        "AND pm.followup_email_enabled ON CONFLICT DO NOTHING",
+        "INSERT INTO task_followup_emails(task_id,recipient_id,mode,change_id,"
+        "task_revision) SELECT t.id,pm.user_id,%s,%s,"
+        "CASE WHEN %s::uuid IS NOT NULL THEN t.updated_at END "
+        "FROM tasks t JOIN project_members pm ON pm.project_id=t.project_id "
+        "AND pm.user_id=t.assignee_user_id JOIN projects p ON p.id=t.project_id "
+        "WHERE t.id=%s AND p.followup_email_enabled AND p.deleted_at IS NULL "
+        "AND pm.followup_email_enabled AND NOT EXISTS (SELECT 1 FROM meetings m "
+        "WHERE m.id=t.meeting_id AND m.deleted_at IS NOT NULL) "
+        "AND (%s::uuid IS NULL OR EXISTS (SELECT 1 FROM task_audit_log a "
+        "WHERE a.id=%s AND a.task_id=t.id "
+        "AND a.old_value->>'due_date' IS DISTINCT FROM a.new_value->>'due_date')) "
+        "ON CONFLICT DO NOTHING",
         (
-            task["id"],
             mode or delivery_mode(),
-            task["project_id"],
-            task["assignee_user_id"],
+            change_id,
+            change_id,
             task["id"],
+            change_id,
+            change_id,
         ),
     )
 
@@ -333,7 +337,9 @@ class EmailWorker:
             expired = row["first_attempt_at"] and now - row[
                 "first_attempt_at"
             ] >= timedelta(hours=23)
-            changed = row["payload"] and row["task_revision"] != task["updated_at"]
+            changed = (row["payload"] or row["change_id"]) and (
+                row["task_revision"] != task["updated_at"]
+            )
             if row["payload"] and recipient:
                 changed = changed or row["payload"]["to"] != [recipient["email"]]
             if not valid or changed or expired:
@@ -373,6 +379,31 @@ class EmailWorker:
                     "This is a task follow-up, not a recurring reminder."
                 ),
             }
+            if row["change_id"] and not row["payload"]:
+                change = conn.execute(
+                    "SELECT old_value,new_value FROM task_audit_log "
+                    "WHERE id=%s AND task_id=%s",
+                    (row["change_id"], task["id"]),
+                ).fetchone()
+                old, new = change["old_value"], change["new_value"]
+                payload["subject"] = (
+                    "Guardian Agent deadline updated: "
+                    + task["title"].replace("\n", " ").replace("\r", " ")[:150]
+                )
+                payload["text"] = (
+                    f"Your task's deadline changed: {task['title']}\n"
+                    f"Previous deadline: {old.get('due_date') or 'No deadline set'}\n"
+                    f"New deadline: {new.get('due_date') or 'No deadline set'}\n\n"
+                    + (
+                        f"Supporting meeting evidence: {new['quote']}\n\n"
+                        if new.get("quote")
+                        else ""
+                    )
+                    + (f"Change note: {new['note']}\n\n" if new.get("note") else "")
+                    + "Open Guardian Agent > Tasks > To-do > View changes "
+                    "to review this update. Manage email in Follow-through settings.\n"
+                    "This is a deadline-change notification, not a recurring reminder."
+                )
             conn.execute(
                 "UPDATE task_followup_emails SET state='sending',payload=%s,"
                 "task_revision=%s,claim_token=%s,"

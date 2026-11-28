@@ -31,8 +31,10 @@ Upload these recordings to the demo project in order:
 
 Before confirming speakers or approving the original task, open **Project ⋯ >
 Follow-through**. Keep **Automatically approve and update clear commitments**
-off during preparation. Enable **Email task owners after approval** and Bryan's
-**Receive emails for my tasks**. Use live email delivery for the inbox evidence.
+off during preparation. Enable **Email task owners about approvals and deadline changes** and Bryan's
+**Receive emails for my tasks**. Older builds label the project email toggle
+**Email task owners after approval**; it controls the same delivery preference.
+Use live email delivery for the inbox evidence.
 For this rehearsal, connect only Bryan's speaker to an app account; other speakers
 can have display names without account links.
 
@@ -55,8 +57,8 @@ send that message. If necessary, use a fresh rehearsal project and its real
 approval; do not reset an existing task to force another email.
 
 Have the matching email open in Mail or Gmail beside the simulator, ready to
-switch to in Camtasia. Show only this message. The later deadline update does not
-send another email. Keep the backend running.
+switch to in Camtasia. Show only this message. A real deadline change now sends a separate notification with the previous
+and new dates. Keep the backend running.
 
 Keep **guardian_agent_3.m4a** accessible in the simulator's Files picker, but
 **do not upload it yet**. Its recorded date must be **December 3, 2026**, not the
@@ -110,7 +112,8 @@ title and December 7 deadline, then return to the task in the simulator.
 
 Video label: **Initial task approval email received in Bryan's inbox**.
 This is evidence of actual receipt, not just provider acceptance. Do not use an
-unrelated older email or imply this message will reflect the later deadline.
+unrelated older email. This initial message remains the original handoff; a
+separate deadline-change email carries the later revision.
 
 ### Tell: establish the before state
 
@@ -121,7 +124,7 @@ Video labels: **AI meeting summary**, **AI speaker overview**, then **AI task
 extraction with reviewed transcript/audio evidence**. Keep the original date
 visible long enough to read. Do not edit its date during the take.
 
-## Guadalupe: the next check-in, 1:30-3:15
+## Guadalupe: the next check-in, 1:30-3:25
 
 ### Tell: introduce the new information
 
@@ -170,11 +173,19 @@ show **Deadline updated automatically**, both dates, and meeting #3's quote.
 > the app applied the explicit revision to one matching open task. The change
 > history shows the previous date, the new date, and the source evidence.
 
+Switch briefly to the new email with subject **Guardian Agent deadline updated:**
+and the same task title. Show **Previous deadline: 2026-12-07** and **New deadline:
+2026-12-04**. Allow about 10 seconds for this stop. If you cut a delivery wait,
+label it **After email delivery**. Check actual inbox receipt before narrating it.
+
+> The task owner also receives a separate deadline-change email. The original
+> message stays intact, and this one explains the revised deadline.
+
 Video label: **Automatic deadline revision from extracted meeting evidence**.
 This is a conservative rule using confirmed identity and explicit old/new dates,
 not general automatic merging. Ambiguous matches remain in review.
 
-## Bryan: ask how the plan changed, 3:15-4:30
+## Bryan: ask how the plan changed, 3:25-4:30
 
 ### Tell
 
@@ -207,6 +218,8 @@ rule and approval-order fix passed HTTP tests. In the original shared project,
 the simulator showed the December 4 task and its automatic change history. A
 previous chat check cited both meetings. Those checks do not establish that a
 new transcription/extraction will produce the same titles and quoted spans.
+The rule can inspect an immediately adjacent old-date clause in the same
+transcript turn when extraction quotes only the new promise.
 
 Rehearse in a separate **Guardian Agent Rehearsal** project. Record the rehearsal
 as backup footage. Follow the same sequence, including the real meeting #3 upload.
@@ -218,6 +231,8 @@ Check each of these before calling the fresh-upload take ready:
   that explicitly references December 7 and the new commitment.
 - After confirming Bryan: the same task ID, **December 4**, one accepted task for
   that work, and an automatic history entry. No manual task/date selection.
+- Updated email: a separate message for this change, showing both dates and
+  received in Bryan's inbox. Repeated refresh/confirmation must not resend it.
 - Chat: the answer describes both plans and the citations support each date.
 - Recording: readable text, audible narration, short source-audio excerpts, and
   a labeled processing cut. Keep the edited app segment around 4:30.
@@ -238,6 +253,8 @@ with the cross-meeting question using that project's scope.
 This version demonstrates the result and its evidence. It does not show a new
 upload causing the transition. Do not reset the shared task or stage another
 first approval. Show the matching initial email only if it is available, and
-identify it as the earlier December 7 handoff. A deadline update does not resend
-email. Reassignment, completion automation, and recurring reminders are outside
+identify it as the earlier December 7 handoff. Show the distinct deadline-change
+message if received. In the latest fresh upload, Bryan applied the revision
+manually before the context fix was deployed; that existing manual history must
+not be described as a successful automatic transition. Reassignment, completion automation, and recurring reminders are outside
 this focused take.

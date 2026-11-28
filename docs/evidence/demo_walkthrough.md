@@ -1318,3 +1318,46 @@ exact meeting #3 quote. Returned to the task list with December 4 still visible.
 The shared transition has now happened; the script directs the current take to
 show its history rather than pretend to approve the task again. The first-run
 transition was not recorded.
+
+
+## November 27: fresh extraction context and deadline-change email
+
+The real fresh upload quoted only the new self-commitment, omitting the adjacent
+old-date sentence from item evidence. Both remained in the same transcript turn.
+The original rule required both inside the extracted quote, so speaker
+confirmation did not apply the revision. The new HTTP regression reproduced this
+failure before the fix. The rule can now expand a short promise only through an
+immediately adjacent explicit old-date clause in that same turn. It records both
+the exact expanded transcript context and the original extracted quote. A
+negative regression prevents borrowing an unrelated old-date sentence.
+
+The live task was subsequently reconciled as a duplicate and its deadline edited
+manually from December 7 to December 4. That manual history is preserved; the new
+code does not relabel it as an automatic transition. Read-only validation of the
+new upload's exact quote and transcript now resolves both dates successfully.
+
+Added a private-outbox migration allowing one approval message per task/recipient
+and one deadline-change message per task/recipient/audit event. Automatic,
+reviewed, and manually edited deadline changes use the same existing recipient
+preferences and delivery worker. Change messages include the previous/new dates;
+quoted evidence is included when that actual change records it. Repeated
+confirmation or retry does not enqueue another message for the same event.
+Superseded queued changes and opted-out recipients are cancelled. Delivery
+history distinguishes deadline changes from initial approvals.
+
+Validation: all 461 backend tests passed on disposable PostgreSQL; Ruff passed.
+Focused capture tests verified separate approval/change messages, both dates,
+evidence, event deduplication, opt-outs, superseded updates, and manual edits.
+Two existing upstream TestClient deprecation warnings remain. The signed
+simulator build passed, but was not installed over Bryan's active recording.
+The migration was applied and tracked on the shared database, the backend was
+restarted, and health returned OK. Verified outbox RLS remained enabled with no
+direct SELECT/INSERT/UPDATE/DELETE privileges for anon/authenticated. CLI
+security advisors could not load the plain local fixture because its Supabase
+signing_keys.json is absent; the direct privilege checks passed.
+
+The requested live backfill email has not been queued or sent. Automatic approval
+review rejected sending task details through Resend without explicit approval for
+that payload. Its proposed content is the current task title and the actual
+manual change from December 7 to December 4, without a source quote or change
+note. No other recipient is included. Await explicit approval before sending.

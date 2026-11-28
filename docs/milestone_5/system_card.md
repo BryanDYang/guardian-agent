@@ -30,10 +30,14 @@ model does not autonomously select tools, send emails, or modify task state.
   identity, a narrow rule can revise one open task's deadline from a later
   commitment that explicitly names the previous date and its replacement.
   It requires the same owner, matching work words, a uniquely matching task,
-  and no newer conflicting edit. Ambiguous changes, completions, and
+  and no newer conflicting edit. A short extracted promise may use its immediately
+  adjacent old-date clause in the same transcript turn; unrelated context is
+  not borrowed. Ambiguous changes, completions, and
   reassignments require review. This is not general semantic consolidation.
   Automatic deadline changes retain the old/new dates and exact quote in
-  task history. They do not send another task email.
+  task history. A separate, deduplicated deadline-change email can notify the
+  current task owner, subject to project delivery and recipient preferences.
+  Superseded queued changes are cancelled before delivery.
 - Experimental automatic approval checks confirmed identity, explicit
   self-commitment, title/evidence grounding, date resolution, and duplicate
   conditions. It may leave clear-looking work pending. The November 26 demo

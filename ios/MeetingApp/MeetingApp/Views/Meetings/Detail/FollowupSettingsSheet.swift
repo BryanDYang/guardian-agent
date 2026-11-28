@@ -17,14 +17,14 @@ struct FollowupSettingsSheet: View {
             Form {
                 if let settings {
                     Section {
-                        Toggle("Email task owners after approval", isOn: $emailEnabled)
+                        Toggle("Email task owners about approvals and deadline changes", isOn: $emailEnabled)
                             .disabled(!settings.can_manage || busy)
                         Toggle("Automatically approve and update clear commitments", isOn: $autoApprove)
                             .disabled(!settings.can_manage || busy)
                     } header: {
                         Text("Project automation")
                     } footer: {
-                        Text("After processing a recording, confirm the speaker’s app member in Review speaker names. Clear commitments are then approved automatically and emailed when task email is on. Explicit deadline revisions can also update one matching open task owned by the confirmed speaker. View changes on the task to see the previous date and quoted evidence. Ambiguous changes stay in review.")
+                        Text("After processing, confirm the speaker’s app member. Clear commitments can be approved automatically, and explicit deadline revisions can update one matching open task. When email is on, task owners can receive approval and deadline-change messages. Ambiguous changes stay in review. View changes shows the evidence.")
                     }
                     Section {
                         Toggle("Receive emails for my tasks", isOn: $receiveEmail)

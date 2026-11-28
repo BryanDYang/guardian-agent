@@ -74,7 +74,9 @@ def emails(project_id: UUID, user: User, conn: Conn):
     owner = projects.member_role(conn, project_id, user.id) == "owner"
     # Members see only their own messages; owners see the project delivery log.
     return conn.execute(
-        "SELECT e.id,t.title,e.state,e.mode,e.attempts,e.provider_id,e.last_error,"
+        "SELECT e.id,CASE WHEN e.change_id IS NULL THEN t.title "
+        "ELSE 'Deadline updated: ' || t.title END AS title,"
+        "e.state,e.mode,e.attempts,e.provider_id,e.last_error,"
         "e.created_at,e.updated_at,pr.display_name AS recipient_name,"
         "CASE WHEN e.mode='capture' THEN e.payload->>'text' END AS preview "
         "FROM task_followup_emails e JOIN tasks t ON t.id=e.task_id "

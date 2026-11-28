@@ -278,3 +278,127 @@ def test_approving_earlier_task_rechecks_already_confirmed_later_meeting(revisio
     assert accepted[0]["due_date"] == "2026-12-04"
     changes = f["client"].get(f"/api/v1/tasks/{f['task']}/changes").json()
     assert sum(x["action"] == "AUTO_DEADLINE" for x in changes) == 1
+
+
+def test_revision_uses_adjacent_transcript_context(revision):
+    f = revision
+    promise = QUOTE[QUOTE.index("I'll process") :]
+    with f["app"].state.pool.connection() as conn:
+        conn.execute(
+            "UPDATE item_evidence SET quote=%s WHERE task_id=%s", (promise, f["source"])
+        )
+    trigger(f)
+    accepted = (
+        f["client"]
+        .get("/api/v1/tasks/accepted", params={"project_id": f["project"]})
+        .json()
+    )
+    assert accepted[0]["due_date"] == "2026-12-04"
+
+
+def test_short_quote_cannot_borrow_unrelated_old_date(revision):
+    f = revision
+    promise = QUOTE[QUOTE.index("I'll process") :]
+    content = QUOTE.replace(
+        "I'll process", "We also discussed another task. I'll process"
+    )
+    with f["app"].state.pool.connection() as conn:
+        conn.execute(
+            "UPDATE item_evidence SET quote=%s WHERE task_id=%s", (promise, f["source"])
+        )
+        conn.execute(
+            "UPDATE meeting_transcripts SET content=%s WHERE meeting_id=%s",
+            (content, f["later"]),
+        )
+    trigger(f)
+    task = (
+        f["client"]
+        .get("/api/v1/tasks/accepted", params={"project_id": f["project"]})
+        .json()[0]
+    )
+    assert task["due_date"] == "2026-12-07"
+
+
+def test_automatic_revision_sends_distinct_change_email_once(revision):
+    from test_followup import logs
+
+    from labsync.followup import EmailWorker, enqueue
+
+    f = revision
+    worker = EmailWorker(f["app"].state.pool)
+    assert worker.process_one()
+    assert "2026-12-07" in logs(f)[0]["preview"]
+    trigger(f)
+    assert worker.process_one()
+    assert not worker.process_one()
+    messages = logs(f)
+    assert len(messages) == 2
+    change = next(x for x in messages if x["title"].startswith("Deadline updated:"))
+    assert "Previous deadline: 2026-12-07" in change["preview"]
+    assert "New deadline: 2026-12-04" in change["preview"]
+    assert QUOTE in change["preview"]
+    with f["app"].state.pool.connection() as conn:
+        audit = conn.execute(
+            "SELECT id FROM task_audit_log WHERE task_id=%s AND action='AUTO_DEADLINE'",
+            (f["task"],),
+        ).fetchone()["id"]
+        task = conn.execute("SELECT * FROM tasks WHERE id=%s", (f["task"],)).fetchone()
+        enqueue(conn, task, change_id=audit)
+    trigger(f)
+    assert len(logs(f)) == 2
+
+
+@pytest.mark.parametrize("block", ["project", "recipient", "superseded", "completed"])
+def test_deadline_email_respects_current_state(revision, block):
+    from test_followup import logs
+
+    from labsync.followup import EmailWorker
+
+    f = revision
+    worker = EmailWorker(f["app"].state.pool)
+    assert worker.process_one()
+    trigger(f)
+    with f["app"].state.pool.connection() as conn:
+        if block == "project":
+            conn.execute(
+                "UPDATE projects SET followup_email_enabled=false WHERE id=%s",
+                (f["project"],),
+            )
+        elif block == "recipient":
+            conn.execute(
+                "UPDATE project_members SET followup_email_enabled=false "
+                "WHERE project_id=%s",
+                (f["project"],),
+            )
+        elif block == "superseded":
+            conn.execute(
+                "UPDATE tasks SET due_date='2026-12-05',updated_at=now() WHERE id=%s",
+                (f["task"],),
+            )
+        else:
+            conn.execute(
+                "UPDATE tasks SET lifecycle_status='done',updated_at=now() WHERE id=%s",
+                (f["task"],),
+            )
+    assert worker.process_one()
+    change = next(x for x in logs(f) if x["title"].startswith("Deadline updated:"))
+    assert change["state"] == "cancelled"
+
+
+def test_manual_date_edit_sends_change_email(revision):
+    from test_followup import logs
+
+    from labsync.followup import EmailWorker
+
+    f = revision
+    worker = EmailWorker(f["app"].state.pool)
+    assert worker.process_one()
+    response = f["client"].patch(
+        f"/api/v1/tasks/{f['task']}", json={"due_date": "2026-12-04"}
+    )
+    assert response.status_code == 200, response.text
+    assert worker.process_one()
+    change = next(x for x in logs(f) if x["title"].startswith("Deadline updated:"))
+    assert "Previous deadline: 2026-12-07" in change["preview"]
+    assert "New deadline: 2026-12-04" in change["preview"]
+    assert "Supporting meeting evidence" not in change["preview"]

@@ -171,8 +171,14 @@ def edit_task(task_id: UUID, body: TaskEdit, user: User, conn: Conn) -> dict:
             body.due_date if "due_date" in body.model_fields_set else task["due_date"]
         ),
     )
-    tasks.audit_details(conn, previous, task, "DETAILS_EDIT", user.id, body.change_note)
-    followup.enqueue(conn, task)
+    audit_id = tasks.audit_details(
+        conn, previous, task, "DETAILS_EDIT", user.id, body.change_note
+    )
+    followup.enqueue(
+        conn,
+        task,
+        change_id=audit_id if previous["due_date"] != task["due_date"] else None,
+    )
     return {"task": task}
 
 
@@ -231,9 +237,9 @@ def reconcile(task_id: UUID, body: Reconciliation, user: User, conn: Conn) -> di
         "%s",
         (task_id,),
     )
-    conn.execute(
+    audit = conn.execute(
         "INSERT INTO task_audit_log (task_id, action, old_value, new_value, actor_id) "
-        "VALUES (%s, 'MEETING_RECONCILIATION', %s, %s, %s)",
+        "VALUES (%s, 'MEETING_RECONCILIATION', %s, %s, %s) RETURNING id",
         (
             target["id"],
             Jsonb(old),
@@ -252,8 +258,11 @@ def reconcile(task_id: UUID, body: Reconciliation, user: User, conn: Conn) -> di
             ),
             user.id,
         ),
-    )
-    return {"task": locked(conn, target["id"])}
+    ).fetchone()
+    task = locked(conn, target["id"])
+    if body.action == "deadline" and old["due_date"] != str(due):
+        followup.enqueue(conn, task, change_id=audit["id"])
+    return {"task": task}
 
 
 @router.post("/{task_id}/state")
