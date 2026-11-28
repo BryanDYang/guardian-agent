@@ -25,8 +25,11 @@ Team: Will Liu, Guadalupe Cantera, Bryan Yang. CIS-5980, AI Engineering.
   includes the slide notes and Q&A for rehearsal.
 
 The older expanded deck is retained in `archive/` for reference.
-The final video still needs an accessible published URL. Do not submit the
-review report unchanged while its final-video placeholder remains.
+The [5:35 demo recording](https://raw.githubusercontent.com/BryanDYang/guardian-agent/main/docs/milestone_5/guardian_agent.mp4)
+is included in the repository. This is Bryan's recorded take; the team can
+replace the voice-over using the shared script. Do not submit the review report
+unchanged while its final-video placeholder remains. If using this recording
+for submission, put its accessible URL in the report and export a replacement.
 
 Source documents: [Final Technical Report](https://docs.google.com/document/d/1lAQ9qjxQD6AXb4aP3PBdIQMv7ctDbD47Re_STAPht28/edit?tab=t.pywo5do9z1qs)
 and [team voice-over script](https://docs.google.com/document/d/1lAQ9qjxQD6AXb4aP3PBdIQMv7ctDbD47Re_STAPht28/edit?tab=t.2d4m863sr13f).
