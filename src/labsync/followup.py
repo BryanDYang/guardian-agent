@@ -12,6 +12,7 @@ from uuid import uuid4
 
 from psycopg.types.json import Jsonb
 
+from .auto_deadlines import apply_revision
 from .db import tasks
 from .deadlines import explicit_deadline
 
@@ -77,11 +78,15 @@ def auto_approve(conn, meeting_id):
     """A narrow, auditable rule, not a calibrated model-confidence score.
 
     Human speaker/account confirmation is required once per recording. Provisional
-    voice matches never qualify. Unknown dates and possible duplicates stay pending.
+    voice matches never qualify. Explicit deadline revisions can update one
+    accepted task.
+    Unknown dates and ambiguous matches stay pending.
     """
     meeting = conn.execute(
         "SELECT m.*,p.auto_approve_tasks FROM meetings m JOIN projects p "
-        "ON p.id=m.project_id WHERE m.id=%s AND m.deleted_at IS NULL FOR UPDATE OF p",
+        "ON p.id=m.project_id WHERE m.id=%s AND m.deleted_at IS NULL "
+        "AND m.archived_at IS NULL "
+        "AND p.deleted_at IS NULL FOR UPDATE OF p",
         (meeting_id,),
     ).fetchone()
     if not meeting or not meeting["auto_approve_tasks"]:
@@ -93,6 +98,7 @@ def auto_approve(conn, meeting_id):
     reviews = (meeting["model_metadata"] or {}).get("speaker_name_reviews", {})
     candidates = conn.execute(
         "SELECT id FROM tasks WHERE meeting_id=%s AND review_status='pending' "
+        "AND archived_at IS NULL AND deleted_at IS NULL "
         "AND NOT EXISTS (SELECT 1 FROM task_audit_log a WHERE a.task_id=tasks.id "
         "AND a.action='RETURN_FOR_REVIEW') "
         "ORDER BY id FOR UPDATE",
@@ -102,13 +108,6 @@ def auto_approve(conn, meeting_id):
     for row in candidates:
         task = tasks.lock_task(conn, row["id"])
         if task["category"] != "commitment" or not task["assignee_user_id"]:
-            continue
-        if (task["due_date_text"] or task["due_date"]) and (
-            not task["due_date_text"]
-            or explicit_deadline(task["due_date_text"], meeting["meeting_date"])
-            != task["due_date"]
-            or task["due_date"] is None
-        ):
             continue
         # Require an actual current account mapping, not a guessed name.
         labels = {
@@ -124,6 +123,15 @@ def auto_approve(conn, meeting_id):
                 "SELECT 1 FROM project_members WHERE project_id=%s AND user_id=%s",
                 (task["project_id"], task["assignee_user_id"]),
             ).fetchone()
+        ):
+            continue
+        if apply_revision(conn, task, meeting, labels):
+            continue
+        if (task["due_date_text"] or task["due_date"]) and (
+            not task["due_date_text"]
+            or explicit_deadline(task["due_date_text"], meeting["meeting_date"])
+            != task["due_date"]
+            or task["due_date"] is None
         ):
             continue
         evidence = conn.execute(

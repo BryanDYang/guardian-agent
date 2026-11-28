@@ -63,7 +63,7 @@ struct TaskChangesSheet: View {
                 ForEach(changes) { change in
                     VStack(alignment: .leading, spacing: 6) {
                         Text(change.title).font(.headline)
-                        Text(change.actorName ?? (change.action == "AUTO_APPROVE" ? "Project automation" : "Project member")).font(.subheadline)
+                        Text(change.actorName ?? (["AUTO_APPROVE", "AUTO_DEADLINE"].contains(change.action) ? "Project automation" : "Project member")).font(.subheadline)
                         if let date = RemoteProject.timestamp(change.createdAt) {
                             Text(date, format: .dateTime.month().day().hour().minute())
                                 .font(.caption).foregroundStyle(.secondary)

@@ -55,7 +55,8 @@ of the presentation, not an extra 4:30 after it.
 > plans to process all three demo recordings by Monday, December 7. In meeting
 > #3, he says that is too late and brings the deadline forward to December 4 at
 > nine in the morning. We want one current task, with the original discussions
-> still available. The app supports this through an explicit reviewed update.
+> still available. After confirming the speaker, project automation can apply
+> an explicit deadline revision to one matching open task.
 
 ### Slide 3: Will, 1:15-1:40
 
@@ -93,16 +94,17 @@ The slide is a transition cue rather than a substitute for the app demonstration
   Bryan's recording-processing task at 04:46, confirm December 7 from the quote,
   approve it, and show the initial task/email handoff.
 - Guadalupe, 110 seconds: in meeting #3, show the changed commitment at 03:47.
-  Use Update an existing task, choose the original accepted task, select Deadline
-  changed, set December 4, confirm the quoted support, and confirm the update.
-  Show one accepted task for that work with the new date.
+  Enable automatic approval and updates after confirming Bryan's speaker
+  account. Show the same accepted task changing to December 4 and open View
+  changes for the old/new dates and source quote. See the script's preflight
+  instructions so the real transition is recorded once.
 - Bryan, 75 seconds: show the updated task and ask the new cross-meeting deadline
   question from the group script. Open citations to meeting #2 at 04:46 and
-  meeting #3 at 03:47. Explain reviewer-confirmed consolidation and its limits.
+  meeting #3 at 03:47. Explain the narrow automatic deadline rule and its review fallback.
 
 The older result in meeting #2 has no stored date; show the real manual review
 rather than describe it as perfect extraction. Do not approve the later candidate
-as a new task. Do not claim a revised-deadline email is sent by reconciliation.
+as a new task. Do not claim a revised-deadline email is sent by the update.
 The initial email is sent after the earlier task is approved. The isolated API
 rehearsal passed with the actual titles/quotes, and the new chat rehearsal cited
 both meetings. The live shared task states were left pending for filming.

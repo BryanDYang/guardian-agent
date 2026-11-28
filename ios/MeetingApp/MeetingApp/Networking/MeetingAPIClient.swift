@@ -1341,6 +1341,7 @@ struct RemoteTaskChange: Decodable, Identifiable {
         case "REVIEW_APPROVE": "Approved"
         case "REVIEW_EDIT": "Review updated"
         case "AUTO_APPROVE": "Automatically approved"
+        case "AUTO_DEADLINE": "Deadline updated automatically"
         default: "Task changed"
         }
     }

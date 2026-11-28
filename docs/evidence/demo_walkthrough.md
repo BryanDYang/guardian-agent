@@ -1247,3 +1247,38 @@ check; it did not store a new chat conversation or complete the new UI sequence.
 Rewrote the group script and matching presenter notes/slides around that task.
 Kept shared candidates untouched for filming. A continuous on-screen run remains
 required before claiming the new sequence was demonstrated in the native app.
+
+
+## November 27: automatic deadline revision acceptance
+
+Reproduced the missing behavior through authenticated HTTP endpoints on disposable
+PostgreSQL: confirming the later speaker left the earlier accepted task at
+December 7. Added an opt-in automatic deadline revision under the existing project
+automation setting. The recorded meeting #3 quote explicitly references the old
+December 7 date and promises the same recording-processing work by tomorrow at
+9 a.m.; the stored December 3 meeting date resolves that to December 4.
+
+The HTTP regression now verifies the same accepted task ID and original meeting
+link, December 4 deadline, one accepted task, dismissal of the later candidate,
+and a single idempotent `AUTO_DEADLINE` history entry with the old/new dates,
+source meeting/turn, timestamp, and exact quote. Sixteen negative scenarios cover
+disabled automation, unconfirmed identity, another owner, completed/archived/deleted
+work, an old-date mismatch, different work, ambiguous targets, conflicting edits,
+unquoted/uncertain evidence, non-later meetings, newer updates, a busy target, and
+an archived source. These are backend regression cases, not model-quality scores.
+
+Validation: all 452 backend tests passed on disposable PostgreSQL, including the
+17 new HTTP cases; Ruff passed. Two existing upstream TestClient deprecation
+warnings remain. The signed simulator build succeeded and was installed without
+clearing the account. The backend was restarted and `/api/health` returned OK.
+A read-only check of the two real shared demo tasks confirmed both are still
+pending, the same owner, one exact later evidence quote, current human speaker
+confirmation, matching work words, and the expected parsed old/new dates. The
+shared task transition was not consumed by testing.
+
+Updated the group script, presenter notes, System Card, and matching presentation
+slides for the automatic path. The native continuous recording remains to be
+captured. Automatic updates are deliberately limited to explicit old/new deadline
+revisions; ambiguous changes, reassignment, and completion still need review.
+Deadline revisions do not send a second email. An initial accepted task and a
+confirmed speaker are required before demonstrating this behavior.

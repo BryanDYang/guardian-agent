@@ -264,6 +264,14 @@ flowchart TD
 - `api/meetings.confirm_speaker` can evaluate automatic approval after confirming
   a speaker/account. Saving project automation settings can also evaluate existing
   completed-meeting candidates. It is not a calibrated model-confidence score.
+- `auto_deadlines.apply_revision` runs under the same project automation lock.
+  A human-confirmed speaker must explicitly name the old deadline and make a
+  new self-commitment. Parsed dates, same owner, matching work words, and one
+  earlier open task are required. Conflicting edits and busy target rows leave
+  the candidate pending. The rule updates only the existing deadline, dismisses
+  the later candidate, and records `AUTO_DEADLINE` with both dates and the exact
+  quote. It does not infer reassignment/completion or resend email. Task history
+  exposes the change; general semantic matching remains a reviewed workflow.
 - `followup.enqueue` runs inside approval/edit transactions. An independent
   `EmailWorker` claims committed outbox rows, leaving audio processing independent.
 - A unique task/recipient pair and stable provider idempotency key limit duplicates.

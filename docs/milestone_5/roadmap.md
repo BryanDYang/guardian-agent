@@ -94,10 +94,10 @@ state-reconciliation run, a new scored benchmark, or a timed team presentation.
 
 The revised [three-presenter script](group_demo_script.md) follows one recording-
 processing task from meeting #2 to meeting #3: initial December 7 commitment,
-reviewed change to December 4, and an answer citing both meetings. The November
+automatic deadline revision to December 4, and an answer citing both meetings. The November
 27 isolated API rehearsal and live retrieval/model check passed; the continuous
 on-screen approval/update sequence still needs rehearsal/filming. Will presents
-the original plan and initial email, Guadalupe the reviewed update, and Bryan
+the original plan and initial email, Guadalupe the automatic update, and Bryan
 the current task and citations. Record the 4:30 app segment within the longer
 presentation, publish the final video, and update the README. Unsupported-question
 behavior remains a separate check.

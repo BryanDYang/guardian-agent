@@ -26,8 +26,14 @@ model does not autonomously select tools, send emails, or modify task state.
   Multiple acoustic clusters may be confirmed as the same person. Reviewed task
   assignments remain distinct from unreviewed speaker suggestions.
 - Users can approve, edit, dismiss, complete, or return tasks for review with
-  change notes. Cross-meeting changes require review; automatic reconciliation
-  of every completion, deadline change, or reassignment is not established.
+  change notes. With project automation enabled and human-confirmed speaker
+  identity, a narrow rule can revise one open task's deadline from a later
+  commitment that explicitly names the previous date and its replacement.
+  It requires the same owner, matching work words, a uniquely matching task,
+  and no newer conflicting edit. Ambiguous changes, completions, and
+  reassignments require review. This is not general semantic consolidation.
+  Automatic deadline changes retain the old/new dates and exact quote in
+  task history. They do not send another task email.
 - Experimental automatic approval checks confirmed identity, explicit
   self-commitment, title/evidence grounding, date resolution, and duplicate
   conditions. It may leave clear-looking work pending. The November 26 demo

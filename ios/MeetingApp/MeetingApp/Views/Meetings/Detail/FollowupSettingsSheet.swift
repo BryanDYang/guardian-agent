@@ -19,12 +19,12 @@ struct FollowupSettingsSheet: View {
                     Section {
                         Toggle("Email task owners after approval", isOn: $emailEnabled)
                             .disabled(!settings.can_manage || busy)
-                        Toggle("Automatically approve clear commitments", isOn: $autoApprove)
+                        Toggle("Automatically approve and update clear commitments", isOn: $autoApprove)
                             .disabled(!settings.can_manage || busy)
                     } header: {
                         Text("Project automation")
                     } footer: {
-                        Text("After processing a recording, confirm the speaker’s app member in Review speaker names. Clear commitments are then approved automatically and emailed when task email is on. Tasks needing clarification stay in review.")
+                        Text("After processing a recording, confirm the speaker’s app member in Review speaker names. Clear commitments are then approved automatically and emailed when task email is on. Explicit deadline revisions can also update one matching open task owned by the confirmed speaker. View changes on the task to see the previous date and quoted evidence. Ambiguous changes stay in review.")
                     }
                     Section {
                         Toggle("Receive emails for my tasks", isOn: $receiveEmail)
