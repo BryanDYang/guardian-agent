@@ -89,30 +89,27 @@ of the presentation, not an extra 4:30 after it.
 Switch to the actual app or insert the recorded app footage. Follow the
 [group storyline script](group_demo_script.md) for exact controls and narration.
 The slide is a transition cue rather than a substitute for the app demonstration.
-For the current shared project, the update has already been applied and verified
-in the simulator. Use the group script's completed-update version: show the old
-and new meeting quotes, the task due December 4, and its automatic change history.
-Do not describe a new approval click or pretend the transition is happening live.
+The preferred take uses a separate demo project: meetings #1 and #2 are prepared
+before filming, and meeting #3 is uploaded during the app segment. The original
+shared project is the completed-update backup. The fresh-upload sequence still
+needs its own rehearsal; existing API and simulator checks do not establish new
+transcription/extraction output.
 
+- Will, 90 seconds: show meeting #1 Summary, meeting #2 Bryan Storyline, the
+  original task and transcript/audio evidence, then the accepted December 7 task.
+- Guadalupe, 105 seconds: upload meeting #3 with its December 3 recorded date.
+  Cut the processing wait with an After processing caption. Show its revised
+  commitment, confirm Bryan's speaker account, then show the original task due
+  December 4 and its automatic change history. Do not manually edit the deadline.
+- Bryan, 75 seconds: ask the cross-meeting question, inspect both citations, and
+  close with the connection between discussion, commitment, and current task.
 
-- Will, 85 seconds: establish the three-meeting context. In meeting #2, show
-  Bryan's recording-processing task at 04:46, confirm December 7 from the quote,
-  approve it, and show the initial task/email handoff.
-- Guadalupe, 110 seconds: in meeting #3, show the changed commitment at 03:47.
-  Enable automatic approval and updates after confirming Bryan's speaker
-  account. Show the same accepted task changing to December 4 and open View
-  changes for the old/new dates and source quote. See the script's preflight
-  instructions so the real transition is recorded once.
-- Bryan, 75 seconds: show the updated task and ask the new cross-meeting deadline
-  question from the group script. Open citations to meeting #2 at 04:46 and
-  meeting #3 at 03:47. Explain the narrow automatic deadline rule and its review fallback.
-
-The older result in meeting #2 has no stored date; show the real manual review
-rather than describe it as perfect extraction. Do not approve the later candidate
-as a new task. Do not claim a revised-deadline email is sent by the update.
-The initial email is sent after the earlier task is approved. The isolated API
-rehearsal passed with the actual titles/quotes, and the new chat rehearsal cited
-both meetings. The live shared task states were left pending for filming.
+Read the group script's preflight and dry-run sections before recording. Confirm
+any missing original date before filming and describe that task as reviewed.
+Keep automation enabled during the preferred take. If the fresh-upload rule does
+not fire, do not silently apply a manual change and call it automatic. Use the
+verified completed-update backup honestly if needed. Email is omitted from this
+focused app segment. The 4:30 target excludes the visibly labeled processing wait.
 
 ### Slide 7: Guadalupe, 7:20-8:20
 

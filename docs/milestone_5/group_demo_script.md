@@ -1,225 +1,213 @@
-# Group demo: one task across consecutive meetings
+# Group demo: a new meeting changes the plan
 
-Use this 4:30 app segment inside the longer final presentation. Will, Guadalupe,
-and Bryan each have a narration part below. Bryan records the app footage from
-his account; teammates can record their narration separately for editing.
-Their personal task lists will not show Bryan's assigned task.
-For a solo backup, Bryan can read all three parts in order. The
-[full presentation notes](presentation_notes.md) place this segment in the 9:45
-rehearsal plan. These are staged meeting scenarios recorded with our own voices.
+A 4:30 tell-show-tell app segment for Will, Guadalupe, and Bryan. Bryan operates
+and records the app from his account. Teammates can record their narration
+separately, or speak while Bryan shares the screen. Bryan can read all parts for
+a solo backup. Their personal task lists will not show Bryan's assigned task.
+Use this inside the [full presentation](presentation_notes.md), not after it.
 
-## The user story
+## The story
 
-> We are preparing our final team demo. Processing the recordings is one piece
-> of work, but its deadline changes at the next check-in. We want one current
-> task, with the discussions available to explain how the plan changed.
+> Our team is preparing the final demo. Bryan has accepted a task to process
+> the recordings by December 7. At our next check-in, that deadline changes.
+> Can Guardian Agent keep one current task and show us why the plan changed?
 
-Meeting #1 establishes the project context. The actual task-update example uses
-**meeting #2 and meeting #3**, not three automatic merges.
+These are staged scenarios recorded with our own voices. Meeting #1 establishes
+context. Meeting #2 establishes the commitment. **Meeting #3 is uploaded later,
+while recording**, so the audience sees what causes the update.
 
-- Meeting #1 is stored as November 23, 2026: project planning context.
-- Meeting #2 is December 2: Bryan plans to process the three demo recordings by
-  Monday, December 7.
-- Meeting #3 is December 3: Bryan says Monday is too late and brings the deadline
-  forward to tomorrow at 9 a.m., meaning December 4.
+## Prepare before filming
 
-**What the app does:** with project automation enabled and the recording's
-speaker confirmed as Bryan, an explicit revision can update the deadline of one
-matching open task. The original task keeps its identity and meeting link; the
-later candidate is dismissed and the old/new dates and quote appear in **View
-changes**. This is a conservative evidence rule, not general automatic merging.
-Ambiguous matches, different owners, completed work, and conflicting edits stay
-in review. Reassignment and completion still require a person.
+Use a separate project named **Guardian Agent Demo**. The existing **Guardian
+Agent Group Project** already has the December 4 update; preserve its history.
+Do not reset that task or upload another copy into the existing project.
 
-## Current shared-project state
+Upload these recordings to the demo project in order:
 
-The deadline update has now been applied and verified in the simulator. The
-original **Process all three demo recordings** task is accepted and due
-**December 4, 2026**. Its **⋯ > View changes** entry shows December 7 changing
-to December 4 and the exact meeting #3 quote. The later candidate is dismissed.
+1. **Team meeting #1**, recorded date **November 23, 2026**:
+   `contexts/final_guardian_agent_audio/guardian_agent_1.m4a`.
+2. **Team meeting #2**, recorded date **December 2, 2026**:
+   `contexts/final_guardian_agent_audio/guardian_agent_2.m4a`.
 
-For your current recording, use the **already completed** version near the end:
-show the two meetings' evidence, the current task, and its automatic change
-history, then ask the cross-meeting chat question. Say the update has already
-happened. Do not attempt another approval or reset the shared task. Pull down on
-the Tasks list if its cached date needs refreshing. The first-run steps below
-remain the sequence for a fresh rehearsal, with automation off until filming
-its real transition.
+Wait for each to finish. Confirm the speakers' names and connect Bryan's speaker
+to his signed-in app account. Add teammates as project members if showing People;
+that is optional for this take. Review the actual results rather than assuming
+speaker labels or extracted task titles will be identical on every run.
 
-## Before you press Record
+Find Bryan's commitment to **process all three demo recordings**. Check the
+transcript and approve the original task with **Due Dec 7, 2026**. If extraction
+misses that original date, correct it during this preparation and describe it as
+a reviewed task in the narration. Do not claim the initial date was extracted
+perfectly. There should be one accepted task for this work.
 
-1. Open **Guardian Agent Group Project**. Keep Bryan's backend running. Audio for
-   meetings #1, #2, and #3 has been restored locally.
-2. Keep **Project ⋯ > Follow-through > Automatically approve and update clear
-   commitments** off until the original task has been accepted and shown. This
-   stages the one real transition for filming. Keep email enabled if showing
-   the initial email. Check **Project ⋯ > People**. Confirm Will, Guadalupe,
-   and Bryan. Keep the existing speaker corrections; do not undo them to recreate a failure.
-3. In **meeting #2 > Tasks**, find **Process all three demo recordings**, at
-   **04:46**. It belongs to Bryan; in a fresh rehearsal it begins pending. Its older
-   extraction has no stored due date. The quote says **Monday the seventh**.
-4. In **meeting #3 > Tasks**, find **Process this recording and have all three
-   meetings connected**, at **03:47**, with **Due Dec 4**. In a fresh rehearsal,
-   keep it pending until the automatic-update segment.
-5. Check project email and Bryan's receive-email preference. Have Mail ready.
-   The email shown below is the initial approval email. The automatic deadline
-   update does not send another email.
-6. In **meeting #3 > Review speaker names**, check that Bryan's quoted turn is
-   confirmed as Bryan's app account. This identity confirmation is required.
-   Check that Chat is set to this project and **All** meetings.
-7. Do a short microphone test. If you rehearse the real approval/update before
-   filming, record those actions as usable footage. They change shared state;
-   do not reset approved or dismissed work to stage another first run.
+In **Project ⋯ > Follow-through**, enable **Automatically approve and update
+clear commitments**. Keep it enabled throughout the recording. Leave email off
+for this focused take. The demonstrated deadline update does not send another
+email. Keep the backend running.
 
-The HTTP regression uses the recorded revision quote and the same task titles.
-It exercises speaker confirmation, project automation, the accepted-task list,
-and change history on disposable PostgreSQL. The tests did not change the shared project. A later targeted repair applied
-the existing shared revision, and the simulator task card and history were
-verified. The first-run transition itself was not recorded.
+Keep **guardian_agent_3.m4a** accessible in the simulator's Files picker, but
+**do not upload it yet**. Its recorded date must be **December 3, 2026**, not the
+current upload day. Have the file ready before starting the take.
 
-## Will: the original plan, 0:00-1:25
+Check that meeting #1 has a useful Summary and meeting #2 has Bryan's Storyline.
+Storyline is an AI-generated speaker summary, not quote-checked evidence. If it
+is unavailable, omit that short stop and use Transcript; do not invent a result.
 
-### Tell
+## Will: the original plan, 0:00-1:30
 
-Show the project and three meetings. Open **Team meeting #1 > Summary** briefly
-while introducing the project context, then return to the meeting list. Keep
-this overview to about 10 seconds so the task walkthrough stays within the
-segment's time budget.
+### Tell: what problem are we solving?
 
-> We built Guardian Agent, an AI-powered meeting follow-through app.
->
-> From the guardian agent group project,
-> These three recordings follow our team preparing for the final demo. Meeting
-> #1 establishes the work we need to do. Meeting #2 gives Bryan a commitment to
-> process the recordings by December 7. In meeting #3, that deadline moves
-> forward to December 4.
->
-> I'll show how we review the original commitment, automatically update its
-> deadline after the next meeting, and ask the AI to explain what changed
-> using evidence from both meetings.
+Show the demo project with **only meetings #1 and #2**.
 
-### Show
+> We built Guardian Agent, an AI-powered meeting follow-through app. In our
+> group project, these recordings follow our team preparing for the final
+> demo. I'll follow one task from the original discussion to a later change.
 
-Open **Team meeting #2 > Tasks** and scroll to **Process all three demo
-recordings**. Tap **04:46**, play a short excerpt, and pause.
+### Show: Summary, Storyline, and the original commitment
 
-> AI extracted this task from our discussion. The source says Monday the
-> seventh. Because this meeting is December 2, the intended day is December 7.
-> This older result missed the calendar date, so I will confirm it from the
-> source instead of pretending the extraction was perfect.
+Open **meeting #1 > Summary** for about 15 seconds.
 
-Tap **Edit** on that candidate. Keep Bryan as assignee. Turn **Due date** on,
-choose **December 7, 2026**, and **Save**. Then tap **Approve**.
+> The AI summary helps us catch up on the meeting before reviewing the work.
 
-> Bryan reviews and accepts this task. We now have a task we can carry into
-> the next meeting.
+Open **meeting #2 > Storyline > Bryan Yang** for about 15 seconds.
 
-Open bottom **Tasks > To-do**, select this project if needed, and show the
-recording-processing task with **Due Dec 7**. Briefly open its matching email
-in Mail after it arrives. If you cut a delivery wait in editing, label the shortened wait.
+> Storyline gives us an AI-generated overview of one speaker's contributions.
+> For exact evidence, we go back to the transcript and recording.
 
-> Here is the initial handoff in the task list and inbox. Next, the plan changes.
+Open **meeting #2 > Tasks**. Show the accepted recording-processing commitment,
+then its source timestamp. In the original extraction the relevant turn is
+around **04:46**; confirm the timestamp in this fresh run. If accepted tasks are
+no longer shown there, open **Transcript** and seek to the matching turn.
+Play five to eight seconds, then pause.
 
-On-video label: **AI task extraction + evidence; human-confirmed date**.
-The approval and any date correction are user actions.
+> AI extracted Bryan's commitment from the discussion. We reviewed it against
+> the source: process the demo recordings by Monday, December 7.
 
-## Guadalupe: the later change, 1:25-3:15
+Open bottom **Tasks > To-do**, filter to **Guardian Agent Demo**, and show the
+original task with **Due Dec 7, 2026**. Expand it if needed to show its source.
 
-### Tell
+### Tell: establish the before state
 
-Open **Team meeting #3 > Tasks**. Find **Process this recording and have all
-three meetings connected**, at **03:47**.
+> This is our accepted plan. Now let's add the next meeting and see what changes.
 
-> At the next check-in, Bryan says the previous Monday deadline is too late.
-> He now commits to tomorrow at nine. This meeting is December 3, so the new
-> calendar date is December 4. This is the same recording-processing work.
+Video labels: **AI meeting summary**, **AI speaker overview**, then **AI task
+extraction with reviewed transcript/audio evidence**. Keep the original date
+visible long enough to read. Do not edit its date during the take.
 
-Show its quote, **Due Dec 4**, and Bryan's account. Play briefly at **03:47**
-and pause.
+## Guadalupe: the next check-in, 1:30-3:15
 
-### Show
+### Tell: introduce the new information
 
-1. Leave the later candidate pending. **Do not Approve it as a new task.**
-2. Open **Project ⋯ > Follow-through**. Turn **Automatically approve and update
-   clear commitments** on and tap **Done**. This also checks existing candidates.
-3. If Bryan's speaker account was not already confirmed, open **meeting #3 >
-   Review speaker names**, connect the quoted speaker to Bryan, and confirm.
-   Keep the existing corrections for other speakers.
+Return to the demo project's session stream and add a meeting.
 
-> The speaker is confirmed as Bryan. With automation enabled, the app checks
-> the explicit old and new dates against one matching open task. I do not need
-> to choose the task or re-enter December 4.
+> At the next check-in, Bryan says the original deadline is too late. I'll
+> upload that recording so the app can process the revised commitment.
 
-Return to bottom **Tasks > To-do**. Show the original title, Bryan, and the
-updated **Dec 4** due date. The later candidate is no longer a pending proposal.
-There may be other unrelated tasks in the list; the claim is one accepted task
-for this recording-processing work, not one task in the whole project.
+### Show: upload meeting #3
 
-> The title is still our original task. Its deadline now reflects the later
-> meeting. This deadline update happened automatically after the identity and
-> automation requirements were satisfied.
+In the add-meeting sheet:
 
-Open the task's **⋯ > View changes**. Show **Deadline updated automatically**,
-the old/new dates, and the quoted meeting #3 evidence.
+1. Name it **Team meeting #3**.
+2. Set **Date** to **December 3, 2026**. This is recording metadata, not a task edit.
+3. Select **Import Audio File** and choose **guardian_agent_3.m4a**.
+4. Confirm the recording/processing consent and tap **Upload & Process**.
 
-On-video label: **Automatic deadline update from explicit meeting evidence**.
-The task card retains the original meeting link. Its change history contains the
-later quote; open meeting #3 to play the source audio.
+Record the real processing state. Cut the wait in Camtasia and insert a visible
+**After processing** caption. The 4:30 target excludes this labeled wait; do not
+make an unmeasured speed claim.
 
-If the change remains pending, show it honestly and use **Update an existing
-task** as the reviewed fallback. Do not call the fallback automatic. The rule
-requires explicit wording about the old date and a new self-commitment, one
-matching task with the same owner, and no newer conflicting edit.
+### Show: the later evidence and the automatic change
 
-## Bryan: the evolving plan and its evidence, 3:15-4:30
+Open **meeting #3 > Transcript**. Find the turn around **03:47** in the original
+recording; check the fresh transcript's actual timestamp. Show the old/new plan
+and play five to eight seconds, then pause:
+
+> I originally said Monday, December 7th, but that's too late now. I'll process
+> this recording tonight and have all three meetings connected by tomorrow at
+> 9 a.m.
+
+> This meeting is December 3, so tomorrow means December 4. The speaker is
+> revising the same work, rather than making a separate commitment.
+
+Open **Review speaker names**. Listen to the relevant turn and confirm Bryan's
+speaker as **Bryan Yang's app account**. Do not claim that voice recognition
+confirmed his identity automatically. Automation requires this human confirmation.
+
+Return to bottom **Tasks > To-do**. Pull down to refresh if needed. Show the
+**same original task**, now **Due Dec 4, 2026**. Open **⋯ > View changes** and
+show **Deadline updated automatically**, both dates, and meeting #3's quote.
+
+### Tell: explain the result
+
+> I didn't choose another task or edit its deadline. After speaker confirmation,
+> the app applied the explicit revision to one matching open task. The change
+> history shows the previous date, the new date, and the source evidence.
+
+Video label: **Automatic deadline revision from extracted meeting evidence**.
+This is a conservative rule using confirmed identity and explicit old/new dates,
+not general automatic merging. Ambiguous matches remain in review.
+
+## Bryan: ask how the plan changed, 3:15-4:30
 
 ### Tell
 
-Keep the updated task visible.
+> We now have one current task. We can also ask how the plan changed across
+> meetings, instead of searching through each recording ourselves.
 
-> The useful result is one current piece of work, rather than a growing list of
-> repeated commitments. The date changed from December 7 to December 4 after
-> the app checked the later commitment against the existing task. The meetings
-> still let us check why.
+### Show: cross-meeting chat and citations
 
-### Show
-
-Open **Chat**, select **Guardian Agent Group Project**, and choose **All**.
-Ask:
+Open **Chat**, select **Guardian Agent Demo**, and choose **All** meetings. Ask:
 
 > Between Team meeting #2 and Team meeting #3, how did the planned deadline for processing all three demo recordings change? Cite both meetings.
 
-The backend rehearsal returned December 7, then December 4, with citations to
-meeting #2 at **04:46** and meeting #3 at **03:47** in 9.1 seconds. This was a
-retrieval/model rehearsal, not yet a continuous UI recording of the new flow.
-Read the actual answer. Open its citations and check whether they support the
-old plan and the new plan. Do not narrate a two-source success unless the answer
-actually cites both meetings. If only one source is retrieved, show the two
-meeting quotes directly and describe that retrieval limit honestly.
+Read the actual answer. Open its citations and show that one supports December 7
+and the other supports December 4. This question asks about the recorded plans;
+do not describe the response as a direct lookup of the current task database.
 
-On-video label: **AI retrieval across meeting evidence + checked citations**.
+Video label: **AI cross-meeting retrieval with checked source citations**.
 
 ### Tell and close
 
-> This is the workflow we can demonstrate today: AI proposes work, a person
-> checks the original task, and an explicit later commitment can automatically
-> revise its deadline. Uncertain dates, ambiguous matches, and speaker errors
-> still need review. Automatic reassignment and general conversation merging
-> are outside this demonstration.
+> Guardian Agent connects the discussion, the commitment, and the current task.
+> We can check AI suggestions against the transcript and audio, apply a clear
+> deadline revision, and return to the meetings to understand why. Uncertain
+> changes still need a person to review them.
 
-## If you already completed the update before recording
+## Dry run before the final take
 
-Show the original task's current state, then open the two meetings' quotes and
-explain the completed change. Use footage captured during the real update for
-the action sequence. Do not manufacture another approval or imply the initial
-email reflects the revised deadline. If showing the older deferred-fix chat
-question as a fallback, label it as decision retrieval, not task consolidation.
+**This fresh-upload sequence has not yet passed a full rehearsal.** The automatic
+rule and approval-order fix passed HTTP tests. In the original shared project,
+the simulator showed the December 4 task and its automatic change history. A
+previous chat check cited both meetings. Those checks do not establish that a
+new transcription/extraction will produce the same titles and quoted spans.
 
-## What to leave out of this take
+Rehearse in a separate **Guardian Agent Rehearsal** project. Record the rehearsal
+as backup footage. Follow the same sequence, including the real meeting #3 upload.
+Check each of these before calling the fresh-upload take ready:
 
-Keep the example focused on the deadline change. The update sheet supports
-**Same task mentioned again**, **Deadline changed**, and **Explicitly completed**.
-Changing an assignee is a separate manual task edit; this sheet does not apply
-reassignment. Neither a reviewed nor an automatic deadline update sends another
-email. Recurring reminders and general automatic cross-meeting merging remain
-outside this demonstration.
+- Before upload: one accepted task, Bryan as owner, **December 7** deadline.
+- After processing: usable transcript, correct meeting date, and a quoted revision
+  that explicitly references December 7 and the new commitment.
+- After confirming Bryan: the same task ID, **December 4**, one accepted task for
+  that work, and an automatic history entry. No manual task/date selection.
+- Chat: the answer describes both plans and the citations support each date.
+- Recording: readable text, audible narration, short source-audio excerpts, and
+  a labeled processing cut. Keep the edited app segment around 4:30.
+
+If it stays pending, inspect the result. A different title, incomplete quote,
+uncertain date, another owner, ambiguous match, or conflicting edit can prevent
+an automatic update. Do not silently correct the task and call it automatic.
+If a manual review is needed, label it as manual review.
+
+## Backup: record the verified existing project
+
+If the fresh-upload rehearsal is not ready, use **Guardian Agent Group Project**.
+Its update has already happened. Show meeting #1's Summary, meeting #2's Storyline
+and original transcript quote, meeting #3's revised quote, then the current task
+and **View changes**. Say **“The app has already applied this update.”** Finish
+with the cross-meeting question using that project's scope.
+
+This version demonstrates the result and its evidence. It does not show a new
+upload causing the transition. Do not reset the shared task or stage another
+first approval. Email, reassignment, completion automation, and recurring reminders
+are outside this focused take.
