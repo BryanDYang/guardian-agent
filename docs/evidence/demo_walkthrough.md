@@ -1409,3 +1409,25 @@ within page bounds, chart values 0.710/0.897, local links, Ed summary word count
 and the showcase's minimum upright font size of 28.5 pt. The editable compact
 Spaces deck is page_ca4bee9234988191b8fd0992fab58f04; the older nine-slide deck is
 retained separately. This is slide/document validation, not new model evaluation.
+# November 27 - Final report export and presenter package
+
+Exported the shared Google Doc's Final Technical Report tab as a 19-page PDF
+and editable DOCX into `output/`. Compared its sections with the supplied final
+technical-report requirements and reviewed all PDF pages in a contact sheet.
+The report covers the required section structure but remains a review copy:
+the final video URL is pending, the repository hyperlink targets the old repo,
+and recording acceptance, final revision verification, and MISeD provenance
+are explicitly unfinished. The owner review in
+`docs/milestone_5/presentation_notes.md` lists the specific closure items. The
+source document and exports retain those limitations rather than claiming
+missing evidence was collected.
+
+Added detailed notes to the existing three-slide saved presentation, assigned
+to Will, Guadalupe, and Bryan. Exported a matching local PPTX with three notes
+parts, native editable architecture shapes, and an editable chart with literal
+data packaged in an embedded workbook. Package integrity, declared geometry,
+Arial font policy, native chart checks, and first-party reimport passed. These
+are structural checks, not verification of native PowerPoint playback.
+Checked all three embedded note texts. Created and visually reviewed a six-page
+Penn-color presenter guide with the slide notes and bounded faculty Q&A. The
+visible three-slide PDF was unchanged. No new application evaluation was run.
