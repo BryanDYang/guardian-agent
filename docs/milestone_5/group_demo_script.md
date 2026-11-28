@@ -29,6 +29,13 @@ Upload these recordings to the demo project in order:
 2. **Team meeting #2**, recorded date **December 2, 2026**:
    `contexts/final_guardian_agent_audio/guardian_agent_2.m4a`.
 
+Before confirming speakers or approving the original task, open **Project ⋯ >
+Follow-through**. Keep **Automatically approve and update clear commitments**
+off during preparation. Enable **Email task owners after approval** and Bryan's
+**Receive emails for my tasks**. Use live email delivery for the inbox evidence.
+For this rehearsal, connect only Bryan's speaker to an app account; other speakers
+can have display names without account links.
+
 Wait for each to finish. Confirm the speakers' names and connect Bryan's speaker
 to his signed-in app account. Add teammates as project members if showing People;
 that is optional for this take. Review the actual results rather than assuming
@@ -41,9 +48,15 @@ a reviewed task in the narration. Do not claim the initial date was extracted
 perfectly. There should be one accepted task for this work.
 
 In **Project ⋯ > Follow-through**, enable **Automatically approve and update
-clear commitments**. Keep it enabled throughout the recording. Leave email off
-for this focused take. The demonstrated deadline update does not send another
-email. Keep the backend running.
+clear commitments** after accepting the December 7 task. Keep it enabled
+throughout the recording. Check Bryan's inbox for the matching initial approval
+email before filming. Enabling email after acceptance does not retroactively
+send that message. If necessary, use a fresh rehearsal project and its real
+approval; do not reset an existing task to force another email.
+
+Have the matching email open in Mail or Gmail beside the simulator, ready to
+switch to in Camtasia. Show only this message. The later deadline update does not
+send another email. Keep the backend running.
 
 Keep **guardian_agent_3.m4a** accessible in the simulator's Files picker, but
 **do not upload it yet**. Its recorded date must be **December 3, 2026**, not the
@@ -65,11 +78,11 @@ Show the demo project with **only meetings #1 and #2**.
 
 ### Show: Summary, Storyline, and the original commitment
 
-Open **meeting #1 > Summary** for about 15 seconds.
+Open **meeting #1 > Summary** for about 10 seconds.
 
 > The AI summary helps us catch up on the meeting before reviewing the work.
 
-Open **meeting #2 > Storyline > Bryan Yang** for about 15 seconds.
+Open **meeting #2 > Storyline > Bryan Yang** for about 10 seconds.
 
 > Storyline gives us an AI-generated overview of one speaker's contributions.
 > For exact evidence, we go back to the transcript and recording.
@@ -86,9 +99,23 @@ Play five to eight seconds, then pause.
 Open bottom **Tasks > To-do**, filter to **Guardian Agent Demo**, and show the
 original task with **Due Dec 7, 2026**. Expand it if needed to show its source.
 
+### Show: the task reaches Bryan's inbox, about 15 seconds
+
+Switch to the matching initial approval email in Mail or Gmail. Show its task
+title and December 7 deadline, then return to the task in the simulator.
+
+> This commitment also reached my inbox after approval. The email shows the
+> original December 7 deadline, so the handoff reaches the task owner outside
+> the app as well.
+
+Video label: **Initial task approval email received in Bryan's inbox**.
+This is evidence of actual receipt, not just provider acceptance. Do not use an
+unrelated older email or imply this message will reflect the later deadline.
+
 ### Tell: establish the before state
 
-> This is our accepted plan. Now let's add the next meeting and see what changes.
+> That is our accepted plan and initial email handoff. Now let's add the next
+> meeting and see what changes.
 
 Video labels: **AI meeting summary**, **AI speaker overview**, then **AI task
 extraction with reviewed transcript/audio evidence**. Keep the original date
@@ -185,7 +212,8 @@ Rehearse in a separate **Guardian Agent Rehearsal** project. Record the rehearsa
 as backup footage. Follow the same sequence, including the real meeting #3 upload.
 Check each of these before calling the fresh-upload take ready:
 
-- Before upload: one accepted task, Bryan as owner, **December 7** deadline.
+- Before upload: one accepted task, Bryan as owner, **December 7** deadline,
+  and its matching initial approval email received in Bryan's inbox.
 - After processing: usable transcript, correct meeting date, and a quoted revision
   that explicitly references December 7 and the new commitment.
 - After confirming Bryan: the same task ID, **December 4**, one accepted task for
@@ -209,5 +237,7 @@ with the cross-meeting question using that project's scope.
 
 This version demonstrates the result and its evidence. It does not show a new
 upload causing the transition. Do not reset the shared task or stage another
-first approval. Email, reassignment, completion automation, and recurring reminders
-are outside this focused take.
+first approval. Show the matching initial email only if it is available, and
+identify it as the earlier December 7 handoff. A deadline update does not resend
+email. Reassignment, completion automation, and recurring reminders are outside
+this focused take.
