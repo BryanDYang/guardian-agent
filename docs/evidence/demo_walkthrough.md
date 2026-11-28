@@ -1361,3 +1361,26 @@ review rejected sending task details through Resend without explicit approval fo
 that payload. Its proposed content is the current task title and the actual
 manual change from December 7 to December 4, without a source quote or change
 note. No other recipient is included. Await explicit approval before sending.
+
+
+## November 27: recorded demo and voice-over handoff
+
+Reviewed the 5:35 exported `docs/milestone_5/guardian_agent.mp4` through local
+Whisper transcription and sampled frames, including close-ups of the evidence,
+task, and answer. Suggested narration handoffs follow the actual cut: Will
+0:00-2:30, Guadalupe 2:30-4:13, Bryan 4:13-5:35. These are current-cut ranges,
+not the shorter planned recording schedule.
+
+The video shows the original December 7 task, later December 4 task, and a chat
+answer citing both meetings. Its inbox narration is not accompanied by an inbox
+view, and its automatic-change narration is stronger than the recorded/manual
+history supports. Updated the voice-over to describe a reviewed deadline change
+and email capability, preserving the footage. The earlier audio excerpt concerns
+a different task and is labeled as a general playback example. Added optional
+zoom/citation pickups rather than requiring a full re-record.
+
+Added the recording-matched voice-over, speaker portions, editing notes, and a
+link to the full sequential-upload guide to the shared Google Doc's **Final Demo
+Script** tab. Verified the formatted content and Saved to Drive status. No Slack
+message was sent. The video file and the user's separate showcase PDF deletion
+are not part of the documentation commit.

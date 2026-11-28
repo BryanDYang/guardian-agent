@@ -6,6 +6,80 @@ separately, or speak while Bryan shares the screen. Bryan can read all parts for
 a solo backup. Their personal task lists will not show Bryan's assigned task.
 Use this inside the [full presentation](presentation_notes.md), not after it.
 
+## Voice-over for the current 5:35 recording
+
+Current recording: guardian_agent.mp4, 5 minutes 35 seconds. These ranges refer to the existing cut, not the shorter planned script. They may move when we edit.
+
+- **Will:** 0:00-2:30
+- **Guadalupe:** 2:30-4:13
+- **Bryan:** 4:13-5:35
+
+### Recording instructions
+
+Watch your section first, then record narration only. Keep the wording close to the script, but speak naturally. You do not need to record the app again or match every second. Leave two seconds of silence at the beginning and end. WAV or M4A is fine. Please leave the original meeting-audio excerpts in the video for Bryan to preserve during editing; do not read those quotes over the recording.
+
+This version keeps the existing footage. It describes the deadline revision as reviewed, because this take does not demonstrate a verified automatic transition. Email is described as a capability; actual inbox evidence needs a separate insert if we want to demonstrate receipt.
+
+### Will: the original commitment
+
+We built Guardian Agent, an AI-powered meeting follow-through app. These recordings follow our team preparing for the final demo. I'll follow one task from the original discussion to a later change.
+
+Meeting #1 gives us the background. The AI summary helps us catch up on the discussion, including the decisions and suggested work. We can also explore the speakers, transcript, and tasks.
+
+Storyline gives us an AI-generated overview of one speaker's contributions. For exact evidence, we can return to the transcript and recording. Tapping a timestamp plays the original discussion.
+
+[Keep the short meeting-audio excerpt around 1:06-1:12. It illustrates audio playback; it is about another task.]
+
+Now let's follow Bryan's commitment to process all three demo recordings. Here is the suggested task, its owner, and the source evidence. We review the commitment before accepting it. The original deadline is Monday, December 7.
+
+After approval, the task appears in Bryan's personal task list. We can see the December 7 deadline, and the Calendar view gives us another way to find dated work.
+
+Follow-through emails can also notify the task owner outside the app when delivery is enabled.
+
+That is our accepted plan. Now let's add the next meeting and see what changes.
+
+### Guadalupe: the later meeting
+
+Now we add Team meeting #3 to the same project. We set its recorded date to December 3, the day after meeting #2, and import the audio. The app also supports recording audio directly and importing a Zoom summary. We confirm that the participants agreed to recording and processing, then submit the meeting.
+
+[At the cut after upload, add the caption "After processing".]
+
+The meeting has now been processed. At this check-in, Bryan says the original deadline is too late. Let's look at the transcript around 3:47.
+
+[Keep the original meeting audio around 3:25-3:35 in this video: Bryan references December 7 and commits to tomorrow at 9 a.m.]
+
+This meeting was recorded on December 3, so tomorrow means December 4. The speaker is revising the same recording-processing work rather than making a separate commitment.
+
+We reviewed that revision against the transcript. The existing task now shows December 4 instead of December 7. We can still open its original source, and the later meeting explains why the plan changed.
+
+### Bryan: cross-meeting recall and closing
+
+We now have one current task for this work. We can also ask how the plan changed across meetings instead of searching through each recording ourselves.
+
+In Chat, I select our project and ask: "Between Team meeting #2 and Team meeting #3, how did the planned deadline for processing all three demo recordings change? Cite both meetings."
+
+The answer identifies the original December 7 deadline in meeting #2 and the revised December 4 deadline in meeting #3. It includes citations to both discussions, with timestamps that let us return to the source.
+
+Guardian Agent connects the discussion, the commitment, and the current task. We can check AI suggestions against transcript and audio evidence, review changes, and return to the meetings to understand why. Uncertain changes still need a person to review them.
+
+### Current-cut editing notes
+
+1. Replace the 3:53-4:11 narration claiming that the deadline updated automatically without a task/date edit. Use Guadalupe's reviewed-change wording above, unless replacing that footage with a newly verified automatic transition.
+2. The 1:59-2:20 narration discusses an inbox email, while the footage shows the task/calendar and meeting tasks. Use the capability wording above, or insert the matching inbox message for about 10 seconds. Do not describe the inbox as visible when it is not.
+3. The clip around 1:06-1:12 is about fixing relative dates, not processing recordings. Keep it as a general playback example, or replace it with the recording-processing quote.
+4. Zoom into the task, date, transcript quote, and chat answer in Camtasia so the text is readable. No need to re-record the whole app.
+5. The answer's two citations are visible near the end. Opening one would strengthen the evidence, but is an optional pickup.
+
+### Full sequential-upload guide and dry run
+
+https://github.com/BryanDYang/guardian-agent/blob/main/docs/milestone_5/group_demo_script.md
+
+
+## Planned fresh-upload take
+
+The remaining sections describe the separate sequential-upload rehearsal, not
+a claim that the existing recording captured an automatic transition.
+
 ## The story
 
 > Our team is preparing the final demo. Bryan has accepted a task to process
