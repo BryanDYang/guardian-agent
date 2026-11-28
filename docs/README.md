@@ -24,7 +24,7 @@ For the group recording workflow, use the
 | How do I run the app? | [Root README](../README.md) |
 | How is everything connected, and where do I debug? | [Architecture, code-review tour, and source cleanup plan](architecture.md) |
 | Where do we review model outputs? | [M4 answer review](archive/milestone_4/human_review.md); [M3 personal-case reviews](archive/milestone_3/human_review.md) |
-| Which slides and notes do we submit/present? | [Presentation PDFs, presenter notes, Ed summary, and showcase alt text](milestone_5/presentation_notes.md) |
+| Which slides and notes do we submit/present? | [Three-slide presentation, single-slide showcase, and short outline](milestone_5/presentation_notes.md) |
 | How do we divide and record the final team demo? | [Will, Guadalupe, and Bryan sections and dry run](milestone_5/group_demo_script.md) |
 | Where are the final cards and reproduction steps? | [Model Card](milestone_5/model_card.md), [System Card](milestone_5/system_card.md), and [evaluation reproduction](milestone_5/evaluation.md) |
 | What remains for the final submission? | [Final scope and acceptance](milestone_5/roadmap.md) |

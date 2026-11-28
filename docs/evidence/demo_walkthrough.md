@@ -1384,3 +1384,28 @@ link to the full sequential-upload guide to the shared Google Doc's **Final Demo
 Script** tab. Verified the formatted content and Saved to Drive status. No Slack
 message was sent. The video file and the user's separate showcase PDF deletion
 are not part of the documentation commit.
+
+
+## November 27: compact slide deliverables
+
+Rechecked the supplied presentation/showcase PDF. The longer presentation targets
+9-10 minutes and includes an end-to-end demo and a known failure example. The
+separate live showcase permits one static slide with no audio/video or app
+switching. Created a three-slide Penn-color deck covering the problem/workflow,
+architecture, and bounded extraction result plus speaker/date limitations and
+next steps. Included the concrete three-person/four-label rehearsal failure.
+The 5:35 app clip plus about four minutes of slides targets 9:35, not a measured
+completed presentation. The deck has no embedded speaker notes.
+
+Saved current files to `output/slides/`: `Guardian_Agent_Final_Presentation.pdf`
+(three pages) and `Yang_Bryan_GuardianAgent.pdf` (one static showcase page).
+Moved the older expanded deck into `output/archive/`. Preserved the user's
+separate deletion of the old showcase PDF path. Shortened the presentation guide
+to file routing, brief speaking cues, submission reminders, the 50-word Ed
+summary, and showcase alt text. No new video was published or submitted.
+
+Rendered and visually inspected all new slides. Verified PDF page counts, text
+within page bounds, chart values 0.710/0.897, local links, Ed summary word count,
+and the showcase's minimum upright font size of 28.5 pt. The editable compact
+Spaces deck is page_ca4bee9234988191b8fd0992fab58f04; the older nine-slide deck is
+retained separately. This is slide/document validation, not new model evaluation.
