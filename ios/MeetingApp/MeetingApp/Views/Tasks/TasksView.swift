@@ -235,6 +235,7 @@ struct TasksView: View {
             .listRowSeparator(.hidden)
             .listRowBackground(Color.clear)
         }
+        .refreshable { await refreshCalendar() }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
     }

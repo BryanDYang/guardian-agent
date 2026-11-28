@@ -52,12 +52,7 @@ def update_settings(project_id: UUID, body: Settings, user: User, conn: Conn):
         (body.email_enabled, body.auto_approve, project_id),
     )
     # Turning on automation also evaluates existing candidates. No model calls.
-    for row in conn.execute(
-        "SELECT id FROM meetings WHERE project_id=%s AND status='completed' "
-        "ORDER BY meeting_date,created_at",
-        (project_id,),
-    ).fetchall():
-        followup.auto_approve(conn, row["id"])
+    followup.auto_approve_project(conn, project_id)
     # Existing accepted work isn't bulk-emailed just by enabling this setting.
     return settings(conn, project_id, user.id)
 

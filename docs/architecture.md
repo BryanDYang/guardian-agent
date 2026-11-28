@@ -262,8 +262,10 @@ flowchart TD
   a date only when it exactly matches that conversion and the original deadline
   text is present in cited evidence; manual-only or mismatched dates stay pending.
 - `api/meetings.confirm_speaker` can evaluate automatic approval after confirming
-  a speaker/account. Saving project automation settings can also evaluate existing
-  completed-meeting candidates. It is not a calibrated model-confidence score.
+  a speaker/account. Saving project automation settings or manually approving
+  a task also evaluates existing completed-meeting candidates. Approval takes
+  the project lock before task locks; automatic scans skip busy task rows.
+  The approval response and EventKit payload use the resulting current date. It is not a calibrated model-confidence score.
 - `auto_deadlines.apply_revision` runs under the same project automation lock.
   A human-confirmed speaker must explicitly name the old deadline and make a
   new self-commitment. Parsed dates, same owner, matching work words, and one

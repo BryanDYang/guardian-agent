@@ -53,7 +53,7 @@ struct TaskRow: View {
                     .font(.subheadline.bold())
                     .foregroundStyle(task.isCompleted ? Color.secondary : Color.primary)
                     .strikethrough(task.isCompleted)
-                    .lineLimit(isExpanded ? nil : 1)
+                    .lineLimit(isExpanded ? nil : 2)
 
                 HStack(spacing: 6) {
                     Text(personName)
@@ -64,6 +64,17 @@ struct TaskRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+
+                if let dueDate = task.dueDate {
+                    Label {
+                        Text("Due \(dueDate, format: .dateTime.month(.abbreviated).day().year())")
+                    } icon: {
+                        Image(systemName: "calendar")
+                    }
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(task.isCompleted ? Color.secondary : Color.blue)
+                    .padding(.top, 3)
+                }
             }
 
             Spacer(minLength: 8)

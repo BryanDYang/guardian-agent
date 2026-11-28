@@ -250,3 +250,31 @@ def test_uncertain_revision_stays_pending(revision, block):
             "AND new_value->>'policy'='explicit-deadline-revision-v1'",
             (f["task"],),
         ).fetchone()
+
+
+def test_approving_earlier_task_rechecks_already_confirmed_later_meeting(revision):
+    f = revision
+    # Fixture setup: both recordings already exist; the earlier task is still
+    # pending when automation and the later speaker are confirmed.
+    with f["app"].state.pool.connection() as conn:
+        conn.execute(
+            "UPDATE tasks SET review_status='pending',approved_at=NULL WHERE id=%s",
+            (f["task"],),
+        )
+    trigger(f)
+    response = f["client"].patch(
+        f"/api/v1/tasks/{f['task']}/review", json={"action": "approve"}
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["task"]["due_date"] == "2026-12-04"
+    assert response.json()["eventkit"]["due_date"] == "2026-12-04"
+    accepted = (
+        f["client"]
+        .get("/api/v1/tasks/accepted", params={"project_id": f["project"]})
+        .json()
+    )
+    assert len(accepted) == 1
+    assert accepted[0]["id"] == f["task"]
+    assert accepted[0]["due_date"] == "2026-12-04"
+    changes = f["client"].get(f"/api/v1/tasks/{f['task']}/changes").json()
+    assert sum(x["action"] == "AUTO_DEADLINE" for x in changes) == 1

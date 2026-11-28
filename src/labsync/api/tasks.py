@@ -110,6 +110,13 @@ def accepted_tasks(project_id: UUID, user: User, conn: Conn) -> list[dict]:
 @router.patch("/{task_id}/review")
 def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
     require_task(conn, user, task_id)
+    # Automation takes the project lock before pending task rows. Use that same
+    # order here before rechecking later recordings after this approval.
+    conn.execute(
+        "SELECT p.id FROM projects p JOIN tasks t ON t.project_id=p.id "
+        "WHERE t.id=%s FOR UPDATE OF p",
+        (task_id,),
+    )
     task = locked(conn, task_id)
     if task["review_status"] != "pending":
         raise HTTPException(409, f"Task was already {task['review_status']}")
@@ -134,6 +141,9 @@ def review_task(task_id: UUID, body: Review, user: User, conn: Conn) -> dict:
         conn, previous, task, "REVIEW_" + body.action.upper(), user.id, body.change_note
     )
     if body.action == "approve":
+        followup.auto_approve_project(conn, task["project_id"])
+        task = locked(conn, task_id)
+        due_date = task["due_date"]
         followup.enqueue(conn, task)
     if body.action != "approve" or due_date is None:
         return {"task": task}

@@ -1282,3 +1282,39 @@ captured. Automatic updates are deliberately limited to explicit old/new deadlin
 revisions; ambiguous changes, reassignment, and completion still need review.
 Deadline revisions do not send a second email. An initial accepted task and a
 confirmed speaker are required before demonstrating this behavior.
+
+
+## November 27: approval-order trigger and native deadline verification
+
+Bryan reported that the automatic change was still not working. Read-only checks
+found the original meeting #2 task accepted for December 7, the meeting #3
+candidate pending with December 4 and a confirmed Bryan speaker, and project
+automation on. Reproduced the actual sequence through HTTP on disposable
+PostgreSQL: enabling automation and confirming the later speaker before accepting
+the earlier task left the old deadline unchanged. The earlier acceptance did not
+trigger another pass over later meetings.
+
+Manual approval now rechecks existing project recordings in chronological order,
+under the same project automation lock. Busy candidate rows are skipped to avoid
+inverting locks against manual reconciliation. The returned task and EventKit
+payload are refreshed after the automatic update. The added regression verifies
+this exact order, stable task identity, one accepted task, December 4 in both
+response payloads, and one automatic history entry. All 453 backend tests pass;
+Ruff passes. Two existing upstream TestClient deprecation warnings remain.
+
+Native acceptance first confirmed December 7 in the task editor. The task list
+previously omitted deadlines, so task cards now display their date and allow two
+lines for the title. Added pull-to-refresh. The signed simulator build passed
+and was installed without clearing the account. Restarted the backend with the
+fix. Applied only the existing extracted revision to Bryan's specific approved
+task using the same policy function and locks; verified unchanged email-queue
+count. No recordings were reprocessed, no model calls were made, and speaker
+corrections were preserved.
+
+In Device Hub, refreshed the actual Tasks list and observed **Due Dec 4, 2026**
+on **Process all three demo recordings**. Opened **View changes** and observed
+**Deadline updated automatically**, **Project automation**, both dates, and the
+exact meeting #3 quote. Returned to the task list with December 4 still visible.
+The shared transition has now happened; the script directs the current take to
+show its history rather than pretend to approve the task again. The first-run
+transition was not recorded.

@@ -31,6 +31,21 @@ changes**. This is a conservative evidence rule, not general automatic merging.
 Ambiguous matches, different owners, completed work, and conflicting edits stay
 in review. Reassignment and completion still require a person.
 
+## Current shared-project state
+
+The deadline update has now been applied and verified in the simulator. The
+original **Process all three demo recordings** task is accepted and due
+**December 4, 2026**. Its **⋯ > View changes** entry shows December 7 changing
+to December 4 and the exact meeting #3 quote. The later candidate is dismissed.
+
+For your current recording, use the **already completed** version near the end:
+show the two meetings' evidence, the current task, and its automatic change
+history, then ask the cross-meeting chat question. Say the update has already
+happened. Do not attempt another approval or reset the shared task. Pull down on
+the Tasks list if its cached date needs refreshing. The first-run steps below
+remain the sequence for a fresh rehearsal, with automation off until filming
+its real transition.
+
 ## Before you press Record
 
 1. Open **Guardian Agent Group Project**. Keep Bryan's backend running. Audio for
@@ -41,11 +56,11 @@ in review. Reassignment and completion still require a person.
    the initial email. Check **Project ⋯ > People**. Confirm Will, Guadalupe,
    and Bryan. Keep the existing speaker corrections; do not undo them to recreate a failure.
 3. In **meeting #2 > Tasks**, find **Process all three demo recordings**, at
-   **04:46**. It belongs to Bryan and was pending at the last check. Its older
+   **04:46**. It belongs to Bryan; in a fresh rehearsal it begins pending. Its older
    extraction has no stored due date. The quote says **Monday the seventh**.
 4. In **meeting #3 > Tasks**, find **Process this recording and have all three
-   meetings connected**, at **03:47**, with **Due Dec 4**. It was pending at the
-   last check. Keep it pending until the automatic-update segment.
+   meetings connected**, at **03:47**, with **Due Dec 4**. In a fresh rehearsal,
+   keep it pending until the automatic-update segment.
 5. Check project email and Bryan's receive-email preference. Have Mail ready.
    The email shown below is the initial approval email. The automatic deadline
    update does not send another email.
@@ -58,8 +73,9 @@ in review. Reassignment and completion still require a person.
 
 The HTTP regression uses the recorded revision quote and the same task titles.
 It exercises speaker confirmation, project automation, the accepted-task list,
-and change history on disposable PostgreSQL. The shared project has not been
-changed by those tests. The continuous on-screen sequence still needs filming.
+and change history on disposable PostgreSQL. The tests did not change the shared project. A later targeted repair applied
+the existing shared revision, and the simulator task card and history were
+verified. The first-run transition itself was not recorded.
 
 ## Will: the original plan, 0:00-1:25
 
@@ -72,6 +88,7 @@ segment's time budget.
 
 > We built Guardian Agent, an AI-powered meeting follow-through app.
 >
+> From the guardian agent group project,
 > These three recordings follow our team preparing for the final demo. Meeting
 > #1 establishes the work we need to do. Meeting #2 gives Bryan a commitment to
 > process the recordings by December 7. In meeting #3, that deadline moves

@@ -89,6 +89,11 @@ of the presentation, not an extra 4:30 after it.
 Switch to the actual app or insert the recorded app footage. Follow the
 [group storyline script](group_demo_script.md) for exact controls and narration.
 The slide is a transition cue rather than a substitute for the app demonstration.
+For the current shared project, the update has already been applied and verified
+in the simulator. Use the group script's completed-update version: show the old
+and new meeting quotes, the task due December 4, and its automatic change history.
+Do not describe a new approval click or pretend the transition is happening live.
+
 
 - Will, 85 seconds: establish the three-meeting context. In meeting #2, show
   Bryan's recording-processing task at 04:46, confirm December 7 from the quote,

@@ -74,6 +74,16 @@ def explicit_self_commitment(content, quote):
     )
 
 
+def auto_approve_project(conn, project_id):
+    """Recheck existing recordings when a newly accepted task can match them."""
+    for row in conn.execute(
+        "SELECT id FROM meetings WHERE project_id=%s AND status='completed' "
+        "ORDER BY meeting_date,created_at,id",
+        (project_id,),
+    ).fetchall():
+        auto_approve(conn, row["id"])
+
+
 def auto_approve(conn, meeting_id):
     """A narrow, auditable rule, not a calibrated model-confidence score.
 
@@ -101,7 +111,7 @@ def auto_approve(conn, meeting_id):
         "AND archived_at IS NULL AND deleted_at IS NULL "
         "AND NOT EXISTS (SELECT 1 FROM task_audit_log a WHERE a.task_id=tasks.id "
         "AND a.action='RETURN_FOR_REVIEW') "
-        "ORDER BY id FOR UPDATE",
+        "ORDER BY id FOR UPDATE SKIP LOCKED",
         (meeting_id,),
     ).fetchall()
     approved = 0
